@@ -22,6 +22,7 @@ def regex_syn(word,amount=10):
 
 # ("something"," does"," something") to concatenate
 # ["something","something else","another thing"] to randomly choose or for replies accept any
+# for replies only; inputs use regex
 
 RESPONSES = [
     # CONVERSATION
