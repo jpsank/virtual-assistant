@@ -6,7 +6,7 @@ To run type
 
     python jerf.py
 
-You can talk to it
+The first time you run it, you'll have to set it up by telling it your name. Then you guys can talk and get to know each other.
 
 ## Prerequisites
 You'll need the modules lxml and requests
