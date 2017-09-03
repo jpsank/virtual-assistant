@@ -4,7 +4,7 @@ Text-based virtual assistant that tells you all you need to know
 ## Usage
 to run type
 
-  python jerf.py
+    python jerf.py
 
 you can talk to it
 
