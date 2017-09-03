@@ -1,20 +1,47 @@
 import time
 import json
 import random
-from responses import RESPONSES
-import re
 import webbrowser
+import winsound
+import re
+import os
+from responses import RESPONSES
+
 import requests
 from lxml import html
-import winsound
+import enchant
 
+
+dictionary = enchant.Dict('en_US')
 
 primaryCommandPrompt = '>> '
 secondaryCommandPrompt = '> '
 
-
-with open('contacts.json','r') as f:
-    CONTACTS = json.load(f)
+if os.path.exists('contacts.json'):
+    with open('contacts.json','r') as f:
+        CONTACTS = json.load(f)
+else:
+    print("Welcome to virtual-assistant setup, friend")
+    CONTACTS = [{"BDAY": "", "GENDER": "", "NN": "", "N": ""}]
+    time.sleep(1)
+    print("Enter your nickname, or hit return and I'll keep calling you 'friend': ")
+    CONTACTS[0]["NN"] = input(primaryCommandPrompt)
+    CONTACTS[0]["NN"] = CONTACTS[0]["NN"] if CONTACTS[0]["NN"] != '' else 'friend'
+    time.sleep(1)
+    print("Okay, %s, here's some guidance:" % CONTACTS[0]["NN"])
+    time.sleep(2)
+    print(" - At any time, you can tell me more about yourself and change your contact info")
+    time.sleep(2)
+    print(" - You can tell me your birthday, gender, full name, where you live, and you can also add other contacts")
+    time.sleep(2)
+    print(" - You can also ask me for help if you get hopelessly lost")
+    with open('contacts.json', 'w') as f:
+        json.dump(CONTACTS, f)
+    time.sleep(1)
+    print("Setup complete")
+    print()
+    time.sleep(1)
+    print("Now talk to me!")
 
 
 class toolBox:
@@ -60,8 +87,8 @@ class toolBox:
         tree = html.fromstring(page.content)
         syns = tree.xpath('//div[@class="relevancy-list"]/ul/li/a/span[@class="text"]')
         if syns:
-            return [d.text_content() for d in syns]
-        return [random.choice(["Never heard of it", "A %s?" % word])]
+            return ', '.join([d.text_content() for d in syns])
+        return random.choice(["Never heard of it", "A %s?" % word])
 
     def weather(self,*keys):
         appid = 'a98689d8418b0ca737434c67064bb29d'
@@ -158,15 +185,25 @@ class JERF:
         self.text = None
         self.toolBox = toolBox()
 
+    def spellcheck(self,text):
+        split = text.split()
+        for w,word in enumerate(split):
+            if not dictionary.check(word):
+                suggestions = dictionary.suggest(word)
+                if suggestions:
+                    split[w] = suggestions[0]
+        print(split)
+        return ' '.join(split)
+
     def contractify(self,text):
         dictionary = {
-            "was":"'s",
-            "is":"'s",
-            "were":"'re",
-            "are":"'re",
-            "did":"'d"
+            " was":"'s",
+            " is":"'s",
+            " were":"'re",
+            " are":"'re",
+            " did":"'d"
         }
-        regex = r"(\w+) (%s) " % "|".join([d for d in dictionary])
+        regex = r"(\w+)(%s) " % "|".join([d for d in dictionary])
         for m in re.finditer(regex,text):
             text = text.replace(m.group(0),"%s%s " % (m.group(1),dictionary[m.group(2)]))
         return text
@@ -178,8 +215,8 @@ class JERF:
             text = text.replace(m.group(0),result if isinstance(result,str) else '')
         regex = re.compile(r"<exec>(.+?)</exec>",re.DOTALL)
         for m in re.finditer(regex, text):
-            exec(m.group(1))
-            text = text.replace(m.group(0),'')
+            result = exec(m.group(1))
+            text = text.replace(m.group(0),result if isinstance(result,str) else '')
         return text
 
     def replaceify(self,text):
@@ -196,7 +233,7 @@ class JERF:
         return text_blueprint
 
     def reply(self,text):
-        text = self.contractify(text.lower())
+        text = self.contractify(self.spellcheck(text.lower()))
         self.text = text
         for r in RESPONSES:
             self.match = None
@@ -210,8 +247,8 @@ class JERF:
         return 'say what'
 
 
-jerf = JERF()
+assistant = JERF()
 
 while True:
     text = input(primaryCommandPrompt)
-    print(jerf.reply(text))
+    print(assistant.reply(text))

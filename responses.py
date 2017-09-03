@@ -106,7 +106,8 @@ RESPONSES = [
      "reply": ["How am I supposed to know? Ask the chicken","which chicken?","it just happened to","it probably just wanted to make a difference in the world"]},
     {"input": ["where're you"],
      "reply": ["I'm with you, NN", "Where do you think I am?"]},
-
+    {"input": [".*i lost the game"],
+     "reply": ("yes you did","<exec>webbrowser.open('http://losethegame.com')</exec>")},
 
     {"input": [".*stop talking",".*shut .*up",".*go away"],
      "reply": ("Now you've done it, NN","<eval>RESPONSES.insert(0,{'input':['.*'],'reply':['...','Beg','...','Beg or else']})</eval>",
@@ -123,6 +124,12 @@ RESPONSES = [
      "reply": ["<eval>self.text</eval>"]},
     {"input": [".*prank me"],
      "reply": (["Will do, NN","I would never","Don't give me any ideas"],["<eval>webbrowser.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ')</eval>","<eval>webbrowser.open('http://www.nyan.cat')</eval>"])},
+
+    # FAVORITES (to be added)
+    {"input": [".*your favorite (.+)"],
+     "reply": ['I have no favorite <exec>self.match.group(1)</exec>',"I don't like to play favorites, NN"]},
+
+    #
 
     # RANDOM DECISIONS
     {"input": [".*number between (\d+) and (\d+)",".*pick a number from (\d+) to (\d+)"],
@@ -181,9 +188,9 @@ for i in range(num):
 
     # dictionary stuff
     {"input": ["define (.+)",".+definition of (.+)",".+meaning of (.+)",".+ does (.+) mean"],
-     "reply": ["<eval>self.toolBox.define(re.sub(r'[\W]', ' ', self.match.group(1)),0)</eval>"]},
+     "reply": ("<eval>self.match.group(1)</eval>: ","<eval>self.toolBox.define(re.sub(r'[\W]', ' ', self.match.group(1)),0)</eval>")},
     {"input": [".*synonyms for (.+)",".*synonyms of (.+)",".*synonym for (.+)",".*synonym of (.+)",".*another word for (.+)",".*other word for (.+)",".*other words for (.+)"],
-     "reply": ("Here's some synonyms for <eval>self.match.group(1)</eval>: ","<eval>', '.join(self.toolBox.thesaurus(self.match.group(1)))</eval>")},
+     "reply": (["Here's some synonyms for <eval>self.match.group(1)</eval>: ","Other words for <eval>self.match.group(1)</eval>: "],"<eval>self.toolBox.thesaurus(self.match.group(1))</eval>")},
 
     # weather
     {"input": [".*weather","how's it outside","what's it like outside"],
@@ -271,7 +278,7 @@ for i in range(num):
     {"input": ["i'm sorry","sorry"],
      "reply": ["Don't be sorry, NN","You better be sorry!"]},
 
-    {"input": ["what","huh"],
+    {"input": ["what?!+","huh"],
      "reply": ["what?","huh?"]},
 
     {"input": ["yes\!"],
@@ -289,7 +296,7 @@ for i in range(num):
 
     # Should I search the web for...
 
-    {"input": [".*((how|where|when) (to|do|was|is) .+)",".*(why (do|is|was|are) .+)"],
+    {"input": [".*((how|where|when|what)( to| do|'s|'re) .+)",".*(why( do|'re|'s) .+)"],
      "reply": (["Ok then","If you say so"],'''<exec>tmp=self.match.group(1)
 if self.toolBox.promptYN(random.choice(['Should I search the web for %s? ' % tmp,'Do web search for %s? ' % tmp])):
     webbrowser.open('https://www.google.com/search?q=%s' % tmp)</exec>''')},
