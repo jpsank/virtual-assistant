@@ -211,6 +211,8 @@ for i in range(num):
     # dictionary stuff
     {"input": ["define (.+)",".+definition of (.+)",".+meaning of (.+)",".+ does (.+) mean"],
      "reply": ("<eval>self.match.group(1)</eval>: ","<eval>self.toolBox.define(re.sub(r'[\W]', ' ', self.match.group(1)),0)</eval>")},
+    {"input": [".*example of (.+) .*in a sentence",".*use (.+) in a sentence"],
+     "reply": ("example sentence for <eval>self.match.group(1)</eval>: ","<eval>random.choice(self.toolBox.usedInASentence(re.sub(r'[\W]', ' ', self.match.group(1))))</eval>")},
     {"input": [".*synonyms for (.+)",".*synonyms of (.+)",".*synonym for (.+)",".*synonym of (.+)",".*another word for (.+)",".*other word for (.+)",".*other words for (.+)"],
      "reply": (["Here's some synonyms for <eval>self.match.group(1)</eval>: ","Other words for <eval>self.match.group(1)</eval>: "],"<eval>self.toolBox.thesaurus(self.match.group(1))</eval>")},
 
