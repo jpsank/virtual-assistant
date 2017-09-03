@@ -42,7 +42,7 @@ RESPONSES = [
     {"input": ["die",".*kill yourself"],
      "reply": ["I'd rather not","what did I do wrong?","Now, let's be kind, NN","That's not very nice, NN"]},
     {"input": syn("hello"),
-     "reply": (['hello','what up','what is up','howdy','hi','salutations','greetings'],[", NN",""])},
+     "reply": (['hello','what up','howdy','hi','salutations','greetings',"hiya","hey"],", NN")},
     {"input": [".*what's up",".*whats up"],
      "reply": ["the sky is up, NN","nothing much, NN","lots of things"]},
     {"input": [".*how're you",".*how you doin"],
@@ -63,8 +63,6 @@ RESPONSES = [
      "reply": ["I believe Ceiling Cat created da Urth n da Skies. But he did not eated them, he did not!"]},
     {"input": [".*your gender",".+you male",".+you female",".+you a boy",".+you a girl",".+you a man",".+you a woman"],
      "reply": ["You'll never know","gender equals null"]},
-    {"input": [".*my gender",".+i male",".+i female",".+i a boy",".+i a girl",".+i a man",".+i a woman"],
-     "reply": ["You're <eval>CONTACTS[0]['GENDER']</eval>, NN","You should know this, NN"]},
     {"input": [".*old're you",".*your age",".*are you old"],
      "reply": ["I am immortal","Age doesn't matter to me, NN"]},
     {"input": ["help"],
@@ -75,11 +73,6 @@ RESPONSES = [
      "reply": ["Pigs will fly the same day you stop having this stupid curiosity"]},
     {"input": [".*your name",".*i call you"],
      "reply": ["My name is none of your concern, NN","Do you expect me to know my name?"]},
-    {"input": [".*what's my name",".*whats my name",".*what my name is"],
-     "reply": ["Your name is NN, NN","I thought you would know your own name, NN","I call you NN, but we all know what people call you behind your back"]},
-    {"input": [".*my name's (.+)", ".*my name to (.+)","(.+)'s my name","(.+)'s my name"],
-     "reply": (["OK","Okay then","If you say so"],
-               "<exec>if self.toolBox.promptYN('Change your nickname to %s? ' % self.match.group(1)): self.toolBox.changeContact(0,{'NN':self.match.group(1)})</exec>")},
     {"input": [".*bye"],
      "reply": ["There will be no good-byes, NN","Well nice knowing you","You're really leaving?","Goodbye, NN"]},
     {"input": [".*will you die",".+'s your death"],
@@ -125,11 +118,38 @@ RESPONSES = [
     {"input": [".*prank me"],
      "reply": (["Will do, NN","I would never","Don't give me any ideas"],["<eval>webbrowser.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ')</eval>","<eval>webbrowser.open('http://www.nyan.cat')</eval>"])},
 
-    # FAVORITES (to be added)
-    {"input": [".*your favorite (.+)"],
-     "reply": ['I have no favorite <exec>self.match.group(1)</exec>',"I don't like to play favorites, NN"]},
+    {"input": [".*spell (.+)"],
+     "reply": ["Did you mean '<eval>self.match.group(1)</eval>'?","I would spell it '<eval>self.match.group(1)</eval>'"]},
 
-    #
+    # CHECK CONTACT INFO
+    {"input": [".*what's my name", ".*whats my name", ".*what my name's"],
+     "reply": ["Your name is NN, NN", "I thought you would know your own name, NN",
+               "I call you NN, but we all know what people call you behind your back"]},
+    {"input": [".*what's my (birthday|bday|b-day|birth day|date of birth|day of birth|birth date)",".*'s i (born|birthed)"],
+     "reply": ["You were born on BDAY, NN"]},
+    {"input": [".*'s my gender", ".+i male", ".+i female", ".+i a boy", ".+i a girl", ".+i a man", ".+i a woman"],
+     "reply": ["You're GENDER, NN", "You should know this, NN"]},
+
+    # CHANGE CONTACT INFO (bday, nickname, full name, location of living, gender)
+    {"input": [".*my name's (.+)", ".*my name to (.+)","(.+)'s my name","(.+)'s my name"],
+     "reply": (["OK","Okay then","If you say so"],
+               "<exec>if self.toolBox.promptYN('Change your nickname to %s? ' % self.match.group(1)): self.toolBox.changeContact(0,{'NN':self.match.group(1)})</exec>")},
+    {"input": [".*my (birthday|bday|b-day|birth day|date of birth|day of birth|birth date)'s (.+)", ".*my (birthday|bday|b-day|birth day|date of birth|day of birth|birth date) to (.+)","(.+)'s my (birthday|bday|b-day|birth day|date of birth|day of birth|birth date)",".*i's (born on|birthed on|born) (.+)"],
+     "reply": (["OK","Okay then","If you say so"],
+               "<exec>if self.toolBox.promptYN('Change your birth date to %s? ' % self.match.group(2)): self.toolBox.changeContact(0,{'BDAY':parse(self.match.group(2)).strftime('%d/%m/%Y')})</exec>")},
+    {"input": [".*i'm (female|male|a boy|a girl|a man|a woman)",".*my gender's (female|male|a boy|a girl|a man|a woman)"],
+     "reply": (["OK","Okay then","If you say so"],
+               "<exec>if self.toolBox.promptYN('Change your gender to %s? ' % self.match.group(1)): self.toolBox.changeContact(0,{'GENDER':self.match.group(1)})</exec>")},
+
+
+    # FAVORITE STUFF (to be added)
+    {"input": [".*your favorite (.+)"],
+     "reply": ['I have no favorite <eval>self.match.group(1)</eval>',"I don't like to play favorites, NN"]},
+
+    # HELP
+    {"input": [".*help",".*(should|can|) i (should |can |)ask you"],
+     "reply": ["You can ask me to search the internet for stuff, get definitions, tell you the weather, tell you the time and date, make random numbers, and all sorts of stuff. I suggest you just start talking."]},
+
 
     # RANDOM DECISIONS
     {"input": [".*number between (\d+) and (\d+)",".*pick a number from (\d+) to (\d+)"],
@@ -161,6 +181,8 @@ for i in range(num):
     # maps
     {"input": [".*directions from (.+) to (.+)",".*directions (.+) to (.+)",".*directions to (.+)"],
      "reply": (["Opening Google Maps...","Finding directions..."],"<eval>webbrowser.open(self.toolBox.directionsURL(*reversed(self.match.groups())))</eval>")},
+    {"input": [".*how (many hours|many miles|long) from (.+) to (.+)"],
+     "reply": (["Opening Google Maps...","Finding directions..."],"<eval>webbrowser.open(self.toolBox.directionsURL(self.match.group(3),self.match.group(2)))</eval>")},
     {"input": ["where's (.+)","show me (.+) on .*map","find (.+) on .*map","search for (.+) on .*map","search (.+) on .*map"],
      "reply": ("Opening Google Maps...","<eval>webbrowser.open(self.toolBox.locationURL(self.match.group(1)))</eval>")},
 
@@ -182,7 +204,7 @@ for i in range(num):
 
     # news
     {"input": [".*news about (.+)",".*news for (.+)"],
-     "reply": (["Will do, NN","opening Google News...","Here's the news about (.+)"],"<eval>webbrowser.open('https://news.google.com/news/search/section/q/%s' % self.match.group(1))</eval>")},
+     "reply": (["Will do, NN","opening Google News...","Here's the news about <eval>self.match.group(1)</eval>"],"<eval>webbrowser.open('https://news.google.com/news/search/section/q/%s' % self.match.group(1))</eval>")},
     {"input": [".*news"],
      "reply": (["Will do, NN","opening Google News...","Here's the news"],"<eval>webbrowser.open('https://news.google.com/news/')</eval>")},
 

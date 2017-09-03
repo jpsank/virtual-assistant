@@ -1,4 +1,6 @@
 import time
+from datetime import datetime
+from dateutil.parser import parse
 import json
 import random
 import webbrowser
@@ -9,10 +11,10 @@ from responses import RESPONSES
 
 import requests
 from lxml import html
-import enchant
+from enchant.checker import SpellChecker
 
 
-dictionary = enchant.Dict('en_US')
+spellchecker = SpellChecker("en_US")
 
 primaryCommandPrompt = '>> '
 secondaryCommandPrompt = '> '
@@ -22,7 +24,7 @@ if os.path.exists('contacts.json'):
         CONTACTS = json.load(f)
 else:
     print("Welcome to virtual-assistant setup, friend")
-    CONTACTS = [{"BDAY": "", "GENDER": "", "NN": "", "N": ""}]
+    CONTACTS = [{"BDAY": None, "GENDER": None, "NN": None, "FULLNAME": None}]
     time.sleep(1)
     print("Enter your nickname, or hit return and I'll keep calling you 'friend': ")
     CONTACTS[0]["NN"] = input(primaryCommandPrompt)
@@ -124,6 +126,16 @@ class toolBox:
                 return defs
         return random.choice(["Never heard of it","A %s?" % word])
 
+    def usedInASentence(self,word):
+        url = "http://www.dictionary.com/browse/%s" % word
+        page = requests.get(url)
+        tree = html.fromstring(page.content)
+        defsets = tree.xpath('//p[@class="partner-example-text"]')
+        if defsets:
+            defs = [' '.join(d.text_content().split()) for d in defsets]
+            return defs
+        return random.choice(["Never heard of it", "A %s?" % word])
+
     def wikiLookup(self,topic):
         url = "https://en.wikipedia.org/wiki/%s" % topic
         page = requests.get(url)
@@ -186,14 +198,11 @@ class JERF:
         self.toolBox = toolBox()
 
     def spellcheck(self,text):
-        split = text.split()
-        for w,word in enumerate(split):
-            if not dictionary.check(word):
-                suggestions = dictionary.suggest(word)
-                if suggestions:
-                    split[w] = suggestions[0]
-        print(split)
-        return ' '.join(split)
+        spellchecker.set_text(text)
+        for err in spellchecker:
+            err.replace(err.suggest()[0] if err.suggest() else err)
+        #print(spellchecker.get_text())
+        return spellchecker.get_text().lower()
 
     def contractify(self,text):
         dictionary = {
@@ -220,9 +229,9 @@ class JERF:
         return text
 
     def replaceify(self,text):
-        replaces = {'NN':CONTACTS[0]["NN"]}
+        replaces = CONTACTS[0]
         for r in replaces:
-            text = text.replace(r,replaces[r])
+            text = text.replace(r,replaces[r] if replaces[r] is not None else 'UNKNOWN')
         return text
 
     def process_reply(self,text_blueprint):
