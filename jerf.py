@@ -8,7 +8,6 @@ import requests
 from lxml import html
 import winsound
 
-#  J.E.R.F. = Jolly Emergency Room Friend
 
 primaryCommandPrompt = '>> '
 secondaryCommandPrompt = '> '
@@ -216,43 +215,3 @@ jerf = JERF()
 while True:
     text = input(primaryCommandPrompt)
     print(jerf.reply(text))
-
-
-
-
-
-
-
-# def process_userinput(self, text_blueprint):
-#     if isinstance(text_blueprint, tuple):
-#         new_text = []
-#         for p,part in enumerate(text_blueprint):
-#             if isinstance(part, tuple):
-#                 new_text.append(''.join([self.process_userinput(i) for i in part]))
-#             elif isinstance(part, list):
-#                 for choice in range(len(part)):
-#                     newpart = [i[choice] if i == part else i for i in text_blueprint]
-#                     print('t',newpart)
-#                     if isinstance(text_blueprint,tuple): newpart = tuple(newpart)
-#                     new_text.append(self.process_userinput(newpart))
-#             else:
-#                 new_text.append(part)
-#         if all([not isinstance(p,(tuple,list)) for p in text_blueprint]):
-#             new_text = ''.join(new_text)
-#             print(new_text)
-#     elif isinstance(text_blueprint, list):
-#         new_text = []
-#         for p, part in enumerate(text_blueprint):
-#             if isinstance(part, tuple):
-#                 new_text.append(''.join([self.process_userinput(i) for i in part]))
-#             elif isinstance(part, list):
-#                 for choice in range(len(part)):
-#                     newpart = [i[choice] if i == part else i for i in text_blueprint]
-#                     print('l',newpart)
-#                     if isinstance(text_blueprint, tuple): newpart = tuple(newpart)
-#                     new_text.append(self.process_userinput(newpart))
-#             else:
-#                 new_text.append(part)
-#     else:
-#         new_text = text_blueprint
-#     return new_text
