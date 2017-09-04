@@ -14,7 +14,13 @@ from lxml import html
 from enchant.checker import SpellChecker
 
 
+
+SPELL_CHECK = False
+
+
+
 spellchecker = SpellChecker("en_US")
+
 
 primaryCommandPrompt = '>> '
 secondaryCommandPrompt = '> '
@@ -24,7 +30,7 @@ if os.path.exists('contacts.json'):
         CONTACTS = json.load(f)
 else:
     print("Welcome to virtual-assistant setup, friend")
-    CONTACTS = [{"BDAY": None, "GENDER": None, "NN": None, "FULLNAME": None}]
+    CONTACTS = [{"BDAY": None, "GENDER": None, "NN": None, "FULLNAME": None, "EMAIL": None, "PHONE": None}]
     time.sleep(1)
     print("Enter your nickname, or hit return and I'll keep calling you 'friend': ")
     CONTACTS[0]["NN"] = input(primaryCommandPrompt)
@@ -201,7 +207,6 @@ class JERF:
         spellchecker.set_text(text)
         for err in spellchecker:
             err.replace(err.suggest()[0] if err.suggest() else err)
-        #print(spellchecker.get_text())
         return spellchecker.get_text().lower()
 
     def contractify(self,text):
@@ -242,17 +247,15 @@ class JERF:
         return text_blueprint
 
     def reply(self,text):
-        text = self.contractify(self.spellcheck(text.lower()))
+        text = self.contractify(self.spellcheck(text.lower()) if SPELL_CHECK else text.lower())
         self.text = text
         for r in RESPONSES:
             self.match = None
             for choice in r["input"]:
                 self.match = re.match(choice,text)
                 if self.match is not None:
-                    break
-            if self.match is not None:
-                rep = ''.join(self.process_reply(r["reply"]))
-                return self.replaceify(self.evaluate(rep))
+                    rep = ''.join(self.process_reply(r["reply"]))
+                    return self.replaceify(self.evaluate(rep))
         return 'say what'
 
 

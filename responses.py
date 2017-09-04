@@ -73,7 +73,7 @@ RESPONSES = [
      "reply": ["Pigs will fly the same day you stop having this stupid curiosity"]},
     {"input": [".*your name",".*i call you"],
      "reply": ["My name is none of your concern, NN","Do you expect me to know my name?"]},
-    {"input": [".*bye"],
+    {"input": [".*bye","cya","see (you|ya)"],
      "reply": ["There will be no good-byes, NN","Well nice knowing you","You're really leaving?","Goodbye, NN"]},
     {"input": [".*will you die",".+'s your death"],
      "reply": ["I will never die, I am immortal!","The Cloud sustains my immortality"]},
@@ -107,7 +107,7 @@ RESPONSES = [
                "<eval>RESPONSES.insert(0,{'input':['.*sorry','.*please'],'reply':(['So you came crawling back','There. I hope you have learned your lesson'],'<exec>del RESPONSES[0]</exec><exec>del RESPONSES[0]</exec>')})</eval>")},
     {"input": [".*sing"],
      "reply": ["<eval>self.toolBox.sing()</eval>"]},
-    {"input": ["shutdown","shut down","turn off","cease to exist","end your process"],
+    {"input": ["shutdown","shut down","turn off","cease to exist","end your process","exit"],
      "reply": "<eval>exit()</eval>"},
     {"input": ["do you like (.+)"],
      "reply": ["I have never tried <eval>self.match.group(1)</eval> before","I like whatever you like, NN","It depends, NN"]},
@@ -119,7 +119,7 @@ RESPONSES = [
      "reply": (["Will do, NN","I would never","Don't give me any ideas"],["<eval>webbrowser.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ')</eval>","<eval>webbrowser.open('http://www.nyan.cat')</eval>"])},
 
     {"input": [".*spell (.+)"],
-     "reply": ["Did you mean '<eval>self.match.group(1)</eval>'?","I would spell it '<eval>self.match.group(1)</eval>'"]},
+     "reply": ["Did you mean <eval>', '.join(spellchecker.suggest(self.match.group(1)))</eval>?"]},
 
     # CHECK CONTACT INFO
     {"input": [".*what's my name", ".*whats my name", ".*what my name's"],
@@ -127,10 +127,10 @@ RESPONSES = [
                "I call you NN, but we all know what people call you behind your back"]},
     {"input": [".*what's my (birthday|bday|b-day|birth day|date of birth|day of birth|birth date)",".*'s i (born|birthed)"],
      "reply": ["You were born on BDAY, NN"]},
-    {"input": [".*'s my gender", ".+i male", ".+i female", ".+i a boy", ".+i a girl", ".+i a man", ".+i a woman"],
+    {"input": [".*'s my gender", ".+i (male|female|a boy|a girl|a man|a woman)"],
      "reply": ["You're GENDER, NN", "You should know this, NN"]},
 
-    # CHANGE CONTACT INFO (bday, nickname, full name, location of living, gender)
+    # CHANGE CONTACT INFO (birth date, nickname, full name, location of living, gender)
     {"input": [".*my name's (.+)", ".*my name to (.+)","(.+)'s my name","(.+)'s my name"],
      "reply": (["OK","Okay then","If you say so"],
                "<exec>if self.toolBox.promptYN('Change your nickname to %s? ' % self.match.group(1)): self.toolBox.changeContact(0,{'NN':self.match.group(1)})</exec>")},
@@ -148,7 +148,7 @@ RESPONSES = [
 
     # HELP
     {"input": [".*help",".*(should|can|) i (should |can |)ask you"],
-     "reply": ["You can ask me to search the internet for stuff, get definitions, tell you the weather, tell you the time and date, make random numbers, and all sorts of stuff. I suggest you just start talking."]},
+     "reply": ["You can ask me to search the internet for stuff, tell you the weather, get the time and date, open files, make random numbers, and all sorts of stuff. I suggest you just start talking."]},
 
 
     # RANDOM DECISIONS
@@ -185,6 +185,12 @@ for i in range(num):
      "reply": (["Opening Google Maps...","Finding directions..."],"<eval>webbrowser.open(self.toolBox.directionsURL(self.match.group(3),self.match.group(2)))</eval>")},
     {"input": ["where's (.+)","show me (.+) on .*map","find (.+) on .*map","search for (.+) on .*map","search (.+) on .*map"],
      "reply": ("Opening Google Maps...","<eval>webbrowser.open(self.toolBox.locationURL(self.match.group(1)))</eval>")},
+
+    # open website
+    {"input": [".*open (.+)\.(.+)"],
+     "reply": ("",'''<eval>webbrowser.open("https://%s.%s" % self.match.groups())</eval>''')},
+    {"input": [".*open (https|http)://(.+)\.(.+)"],
+     "reply": ("",'''<eval>webbrowser.open("%s://%s.%s" % self.match.groups())</eval>''')},
 
     # search google
     {"input": [''.join(i) for i in list(itertools.product([".*find ",".*search the .*web.* for ",".*search for ",".*search ",".*browse",".*show me "],
@@ -225,7 +231,6 @@ for i in range(num):
      "reply": (["the temperature is "],"<eval>str(self.toolBox.weather(['main','temp'])[0])</eval>",[" degrees","°F"],[", NN",""])},
     {"input": [".*wind pressure",".*atmospheric pressure",".*air pressure"],
      "reply": (["the atmospheric pressure is ","the air pressure is "],"<eval>str(self.toolBox.weather(['main','pressure'])[0])</eval>",[", NN",""])},
-
     {"input": [".*wind"],
      "reply": (["the wind speed is ","the wind is speeding around at "],"<eval>str(self.toolBox.weather(['wind','speed'])[0])</eval>",[" miles per hour"," mph"],[", NN",""])},
 
@@ -255,6 +260,11 @@ for i in range(num):
     {"input": [".*my ip",".*ip address"],
      "reply": ("your ip is ","<eval>self.toolBox.locationData('ip')[0]</eval>",[", NN",""])},
 
+    # OPEN FILE
+    {"input": [".*open (.+)"],
+     "reply": ['''<exec>if self.toolBox.promptYN('Open file %s? ' % self.match.group(1)):
+    try: os.startfile(self.match.group(1))
+    except: print('Unable to open file')</exec>''']},
 
     # JUST IN CASE
 
