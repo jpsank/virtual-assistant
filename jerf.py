@@ -142,9 +142,7 @@ class toolBox:
             return defs
         return random.choice(["Never heard of it", "A %s?" % word])
 
-    def wikiLookup(self,topic):
-        url = "https://en.wikipedia.org/wiki/%s" % topic
-        page = requests.get(url)
+    def wikiScrape(self,page):
         tree = html.fromstring(page.content)
         desc = tree.xpath('//div[@class="mw-parser-output"]/p')
         if desc:
@@ -154,10 +152,43 @@ class toolBox:
                 result = "%s\n%s" % (result, ul[0].text_content())
             return result
 
+    def wikiLookup(self,topic):
+        url = "https://en.wikipedia.org/wiki/?search=%s" % topic
+        page = requests.get(url)
+        if '?search' in page.url:
+            tree = html.fromstring(page.content)
+            result = tree.xpath('//div[@class="mw-search-result-heading"]/a/@href')
+            if result:
+                result = result[0]
+                page = requests.get("https://en.wikipedia.org%s" % result)
+                return self.wikiScrape(page)
+            else:
+                return
+        else:
+            return self.wikiScrape(requests.get(page.url))
+
+    def redditSearchScrape(self, topic):
+        url = "https://www.reddit.com/search?q=%s" % topic
+        page = requests.get(url,headers={'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.78 Safari/537.36 OPR/47.0.2631.55'})
+        tree = html.fromstring(page.content)
+        results = tree.xpath('//div[contains(@class, "search-result-link")]//a[contains(@class, "search-title")]')
+        if results:
+            return results
+
+    def redditLookup(self,topic):
+        searches = self.redditSearchScrape(topic)
+        if searches:
+            prompt = self.promptD("Which number post to open?\n%s" % '\n'.join(["%s. %s" % (i,s.text_content()) for i,s in enumerate(searches)]))
+            p = prompt[0]
+            webbrowser.open(searches[p].get('href'))
+            return random.choice(["Opening reddit post","Opening '%s'" % searches[p].text_content()])
+        else:
+            return
+
     def personLookup(self,name):
         splitname = name.split()
         for contact in CONTACTS:
-            if contact["NN"].lower() == splitname[0].lower() or contact["N"].split()[0].lower() == splitname[0].lower():
+            if (contact["NN"] is not None and contact["NN"].lower() == splitname[0].lower()) or (contact["FULLNAME"] is not None and contact["FULLNAME"].split()[0].lower() == splitname[0].lower()):
                 return "%s is in your contacts" % name
 
         wiki = self.wikiLookup(name)
@@ -175,7 +206,7 @@ class toolBox:
         with open('contacts.json', 'w') as f:
             json.dump(CONTACTS,f)
 
-    def promptYN(self,prompt,failsafe="unsatisfactory answer, retry!",y="y",n="n"):
+    def promptYN(self,prompt,failsafe="unsatisfactory answer, please retry",y="y",n="n"):
         print(prompt)
         answer = input(secondaryCommandPrompt).lower()
         if re.match(y,answer):
@@ -263,4 +294,5 @@ assistant = JERF()
 
 while True:
     text = input(primaryCommandPrompt)
-    print(assistant.reply(text))
+    rep = assistant.reply(text)
+    if rep is not '': print(rep)

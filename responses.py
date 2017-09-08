@@ -192,6 +192,34 @@ for i in range(num):
     {"input": [".*open (https|http)://(.+)\.(.+)"],
      "reply": ("",'''<eval>webbrowser.open("%s://%s.%s" % self.match.groups())</eval>''')},
 
+    # reddit
+    {"input": [".*reddit for (.+)",".*reddit (.+)"],
+     "reply": ['''<exec>tmp=self.toolBox.redditLookup(self.match.group(1))
+if tmp is not None: print(tmp)
+else: print('No Reddit posts found')</exec>''']},
+    {"input": ["(find|look up|show me|open) (.+) on reddit"],
+     "reply": ['''<exec>tmp=self.toolBox.redditLookup(self.match.group(2))
+if tmp is not None: print(tmp)
+else: print('No Reddit posts found')</exec>''']},
+
+    # wikipedia
+    {"input": [".*wikipedia for (.+)",".*wikipedia (.+)"],
+     "reply": ['''<exec>tmp=self.toolBox.wikiLookup(self.match.group(1))
+if tmp is not None: print(tmp)
+else: print('No Wikipedia article found')</exec>''']},
+    {"input": ["(find|look up|show me|open) (.+) on wikipedia"],
+     "reply": ['''<exec>tmp=self.toolBox.wikiLookup(self.match.group(2))
+if tmp is not None: print(tmp)
+else: print('No Wikipedia article found')</exec>''']},
+    {"input": ["who's (.+)","who're (.+)"],
+     "reply": ["<eval>self.toolBox.personLookup(self.match.group(1))</eval>"]},
+
+    # news
+    {"input": [".*news about (.+)",".*news for (.+)"],
+     "reply": (["Will do, NN","opening Google News...","Here's the news about <eval>self.match.group(1)</eval>"],"<eval>webbrowser.open('https://news.google.com/news/search/section/q/%s' % self.match.group(1))</eval>")},
+    {"input": [".*news"],
+     "reply": (["Will do, NN","opening Google News...","Here's the news"],"<eval>webbrowser.open('https://news.google.com/news/')</eval>")},
+
     # search google
     {"input": [''.join(i) for i in list(itertools.product([".*find ",".*search the .*web.* for ",".*search for ",".*search ",".*browse",".*show me "],
                                                          ["(.+) images","(.+) photos","(.+) pictures","(.+) pics","pictures of (.+)","pics of (.+)","images of (.+)","photos of (.+)"]))],
@@ -201,18 +229,6 @@ for i in range(num):
      "reply": ["<eval>webbrowser.open('https://www.google.com/search?q=%s&tbm=vid' % self.match.group(1))</eval>"]},
     {"input": ["google (.+)","look up (.+)","search .*for (.+)"],
      "reply": ["<eval>self.toolBox.googleIt(self.match.group(1))</eval>"]},
-
-    # wikipedia
-    {"input": [".*wikipedia for (.+)",".*wikipedia (.+)"],
-     "reply": ["<eval>self.toolBox.wikiLookup(self.match.group(1)) if self.toolBox.wikiLookup(self.match.group(1)) is not None else 'No Wikipedia article found'</eval>"]},
-    {"input": ["who's (.+)","who're (.+)"],
-     "reply": ["<eval>self.toolBox.personLookup(self.match.group(1))</eval>"]},
-
-    # news
-    {"input": [".*news about (.+)",".*news for (.+)"],
-     "reply": (["Will do, NN","opening Google News...","Here's the news about <eval>self.match.group(1)</eval>"],"<eval>webbrowser.open('https://news.google.com/news/search/section/q/%s' % self.match.group(1))</eval>")},
-    {"input": [".*news"],
-     "reply": (["Will do, NN","opening Google News...","Here's the news"],"<eval>webbrowser.open('https://news.google.com/news/')</eval>")},
 
     # dictionary stuff
     {"input": ["define (.+)",".+definition of (.+)",".+meaning of (.+)",".+ does (.+) mean"],
