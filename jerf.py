@@ -147,9 +147,6 @@ class toolBox:
         desc = tree.xpath('//div[@class="mw-parser-output"]/p')
         if desc:
             result = desc[0].text_content()
-            ul = tree.xpath('//div[@class="mw-parser-output"]/ul')
-            if ul:
-                result = "%s\n%s" % (result, ul[0].text_content())
             return result
 
     def wikiLookup(self,topic):
@@ -157,10 +154,12 @@ class toolBox:
         page = requests.get(url)
         if '?search' in page.url:
             tree = html.fromstring(page.content)
-            result = tree.xpath('//div[@class="mw-search-result-heading"]/a/@href')
-            if result:
-                result = result[0]
-                page = requests.get("https://en.wikipedia.org%s" % result)
+            searches = tree.xpath('//div[@class="mw-search-result-heading"]/a')
+            if searches:
+                prompt = self.promptD("Which number post to open?\n%s" % '\n'.join(
+                    ["%s. %s" % (i, s.text_content()) for i, s in enumerate(searches)]))
+                p = prompt[0]
+                page = requests.get("https://en.wikipedia.org%s" % searches[p].get('href'))
                 return self.wikiScrape(page)
             else:
                 return
