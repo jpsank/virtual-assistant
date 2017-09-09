@@ -52,6 +52,19 @@ else:
     print("Now talk to me!")
 
 
+def printColumns(data):
+    if isinstance(data, dict):
+        title_width = max(len(key) for key in data) + 2  # padding
+        col_width = max(len(word) for key in data for word in data[key]) + 2  # padding
+        for key in data:
+            print(key.ljust(title_width),end="")
+            print("".join(word.ljust(col_width) for word in data[key]))
+    else:
+        col_width = max(len(word) for row in data for word in row) + 2  # padding
+        for row in data:
+            print("".join(word.ljust(col_width) for word in row))
+
+
 class toolBox:
     def __init__(self):
         return
@@ -142,6 +155,39 @@ class toolBox:
             return defs
         return random.choice(["Never heard of it", "A %s?" % word])
 
+    def moviesNearMe(self):
+        url = 'https://www.google.com/search?q=movies%20near%20me'
+        page = requests.get(url)
+        tree = html.fromstring(page.content)
+        movies = tree.xpath('//div[@class="_Nxj"]')
+        if movies:
+            result = []
+            for m in movies:
+                title = m.xpath('./div/a[@class="fl _yxj"]')
+                if title: title = title[0].text_content()
+                genre = m.xpath('./span[@class="_Bxj"]')
+                if genre: genre = genre[0].text_content()
+                if title and genre:
+                    result.append('%s (%s)' % (title,genre))
+            if result:
+                return result
+
+    def movieShowTimes(self,movie):
+        url = "https://www.google.com/search?q=showtimes+for+%s" % movie
+        page = requests.get(url)
+        tree = html.fromstring(page.content)
+        name = tree.xpath('//div[@class="_Kxj"]/span/span')
+        if name:
+            rows = tree.xpath('//table[@class="_W5j _Axj"]/tbody/tr')
+            showtimes = {}
+            for i in range(0,len(rows),3):
+                title = rows[i].text_content()
+                times = rows[i+1].xpath('.//div[@class="_wxj"]')
+                if title and times:
+                    showtimes[title] = [t.text_content() for t in times]
+            if showtimes:
+                return name[0].text_content(), showtimes
+
     def wikiScrape(self,page):
         tree = html.fromstring(page.content)
         desc = tree.xpath('//div[@class="mw-parser-output"]/p')
@@ -205,7 +251,7 @@ class toolBox:
         with open('contacts.json', 'w') as f:
             json.dump(CONTACTS,f)
 
-    def promptYN(self,prompt,failsafe="unsatisfactory answer, please retry",y="y",n="n"):
+    def promptYN(self,prompt,failsafe="Yes or no?",y="y",n="n"):
         print(prompt)
         answer = input(secondaryCommandPrompt).lower()
         if re.match(y,answer):
@@ -215,7 +261,7 @@ class toolBox:
         else:
             return self.promptYN(failsafe,failsafe,y,n)
 
-    def promptD(self,prompt,failsafe="unsatisfactory answer, retry!"):
+    def promptD(self,prompt,failsafe="Pick a number"):
         print(prompt)
         answer = input(secondaryCommandPrompt).lower()
         result = []
