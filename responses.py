@@ -178,6 +178,20 @@ for i in range(num):
 
 
     # SEARCHING THE WEB
+    # movies
+    {"input": [".*movies near me",".*nearby movies"],
+     "reply": ('''<exec>tmp=self.toolBox.moviesNearMe()
+if tmp is not None: print('Here are some movies at local theaters:'), print('\\n'.join(tmp))
+else: print('Failed to find movies')
+</exec>''')},
+    {"input": [".*(showtimes|show times) for (.+)"],
+     "reply": ('''<exec>tmp=self.toolBox.movieShowTimes(self.match.group(2))
+if tmp is not None:
+    print('Here are the showtimes for "%s":' % tmp[0])
+    printColumns(tmp[1])
+else: print('Failed to find showtimes')
+</exec>''')},
+
     # maps
     {"input": [".*directions from (.+) to (.+)",".*directions (.+) to (.+)",".*directions to (.+)"],
      "reply": (["Opening Google Maps...","Finding directions..."],"<eval>webbrowser.open(self.toolBox.directionsURL(*reversed(self.match.groups())))</eval>")},
@@ -187,17 +201,17 @@ for i in range(num):
      "reply": ("Opening Google Maps...","<eval>webbrowser.open(self.toolBox.locationURL(self.match.group(1)))</eval>")},
 
     # open website
-    {"input": [".*open (.+)\.(.+)"],
-     "reply": ("",'''<eval>webbrowser.open("https://%s.%s" % self.match.groups())</eval>''')},
-    {"input": [".*open (https|http)://(.+)\.(.+)"],
-     "reply": ("",'''<eval>webbrowser.open("%s://%s.%s" % self.match.groups())</eval>''')},
+    {"input": [".*(open|go to) (.+)\.(.+)"],
+     "reply": ("",'''<eval>webbrowser.open("https://%s.%s" % self.match.groups()[1:])</eval>''')},
+    {"input": [".*(open|go to) (https|http)://(.+)\.(.+)"],
+     "reply": ("",'''<eval>webbrowser.open("%s://%s.%s" % self.match.groups()[1:])</eval>''')},
 
     # reddit
     {"input": [".*reddit for (.+)",".*reddit (.+)"],
      "reply": ['''<exec>tmp=self.toolBox.redditLookup(self.match.group(1))
 if tmp is not None: print(tmp)
 else: print('No Reddit posts found')</exec>''']},
-    {"input": ["(find|look up|show me|open) (.+) on reddit"],
+    {"input": ["(find|look up|look for|show me|open) (.+) on reddit"],
      "reply": ['''<exec>tmp=self.toolBox.redditLookup(self.match.group(2))
 if tmp is not None: print(tmp)
 else: print('No Reddit posts found')</exec>''']},
