@@ -16,9 +16,7 @@ from lxml import html
 from enchant.checker import SpellChecker
 
 
-
 SPELL_CHECK = False
-
 
 
 spellchecker = SpellChecker("en_US")
