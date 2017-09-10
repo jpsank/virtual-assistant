@@ -2,6 +2,7 @@ import time
 from datetime import datetime
 from dateutil.parser import parse
 import json
+import math
 import random
 import webbrowser
 import platform
@@ -163,7 +164,8 @@ class toolBox:
             "+":["plus"],
             "-":["minus"],
             "/":["over","divided by"],
-            "*":["times","multiplied by"]
+            "*":["times","multiplied by"],
+            "**": ["to the power of", "to the"]
         }
         for s in signs:
             pattern = re.compile("\d+(\s*(?:%s)\s*)\d+" % '|'.join(signs[s]))
@@ -261,6 +263,25 @@ class toolBox:
             return wiki
 
         return random.choice(["Never heard of them"])
+
+    def openSomething(self,thing):
+        if os.path.exists(thing):
+            if self.promptYN('Open file %s? ' % thing):
+                try:
+                    print("Opening %s..." % thing)
+                    os.startfile(thing)
+                except:
+                    print('Unable to open file')
+        else:
+            if self.promptYN('Open website %s? ' % thing):
+                try:
+                    print("Opening %s..." % thing)
+                    if thing.startswith('http'):
+                        webbrowser.open(thing)
+                    else:
+                        webbrowser.open("https://%s" % thing)
+                except:
+                    print("Unable to open %s" % thing)
 
     def googleIt(self,search):
         webbrowser.open("https://www.google.com/search?q=%s" % search)

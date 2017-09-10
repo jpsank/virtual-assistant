@@ -152,9 +152,10 @@ RESPONSES = [
      "reply": ["You can ask me to search the internet for stuff, tell you the weather, get the time and date, open files, make random numbers, and all sorts of stuff. I suggest you just start talking."]},
 
     # MATH
-    {"input": [".*?(([+-]?(?:\d+(?:\.\d*)?|\d*\.\d+))(?: *(?:\+|plus|\*|times|multiplied by|\-|minus|\/|divided by|over) *([+-]?(?:\d+(?:\.\d*)?|\d*\.\d+)))+)"],
+    {"input": [".*?(([+-]?(?:\d+(?:\.\d*)?|\d*\.\d+))(?: *(?:\+|plus|\*|times|multiplied by|\-|minus|\/|divided by|over|\*\*|to the power of) *([+-]?(?:\d+(?:\.\d*)?|\d*\.\d+)))+)"],
      "reply": ("<eval>print('%s = %s' %self.toolBox.basicMath(self.match.group(1)))</eval>")},
-
+    {"input": ["(?:sqrt|square root)(?: of)? ([+-]?(?:\d+(?:\.\d*)?|\d*\.\d+))"],
+     "reply": ("<eval>print('The square root of %s is %s' %(self.match.group(1),math.sqrt(float(self.match.group(1)))))</eval>")},
 
 
     # RANDOM DECISIONS
@@ -208,11 +209,11 @@ else: print('Failed to find showtimes')
 if self.toolBox.promptYN(random.choice(['Find "%s" on Google Maps? ' % self.match.group(1),'Search for "%s" on Google Maps? ' % self.match.group(1)])):
     webbrowser.open(self.toolBox.locationURL(self.match.group(1)))</exec>''')},
 
-    # open website
-    {"input": [".*(open|go to) (.+)\.(.+)"],
-     "reply": ("",'''<eval>webbrowser.open("https://%s.%s" % self.match.groups()[1:])</eval>''')},
-    {"input": [".*(open|go to) (https|http)://(.+)\.(.+)"],
-     "reply": ("",'''<eval>webbrowser.open("%s://%s.%s" % self.match.groups()[1:])</eval>''')},
+    # open website/file
+    {"input": [".*(?:open|go to) ((?:.+\.)?.+\..+)"],
+     "reply": '''<eval>self.toolBox.openSomething(self.match.group(1))</eval>'''},
+    {"input": [".*(?:open|go to) (https|http)://(.+)\.(.+)"],
+     "reply": '''<eval>self.toolBox.openSomething("%s://%s.%s" % self.match.groups())</eval>'''},
 
     # reddit
     {"input": [".*reddit for (.+)",".*reddit (.+)"],
@@ -297,12 +298,6 @@ else: print('No Wikipedia article found')</exec>''']},
      "reply": (["right now, ",""],["you're at latitude/longitude "],"<eval>'{}, {}'.format(*self.toolBox.locationData('latitude','longitude'))</eval>")},
     {"input": [".*my ip",".*ip address"],
      "reply": ("your ip is ","<eval>self.toolBox.locationData('ip')[0]</eval>",[", NN",""])},
-
-    # OPEN FILE
-    {"input": [".*open (.+)"],
-     "reply": ['''<exec>if self.toolBox.promptYN('Open file %s? ' % self.match.group(1)):
-    try: os.startfile(self.match.group(1))
-    except: print('Unable to open file')</exec>''']},
 
     # JUST IN CASE
 
