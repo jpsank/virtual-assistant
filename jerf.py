@@ -158,6 +158,23 @@ class toolBox:
             return defs
         return random.choice(["Never heard of it", "A %s?" % word])
 
+    def basicMath(self,mathstr):
+        signs = {
+            "+":["plus"],
+            "-":["minus"],
+            "/":["over","divided by"],
+            "*":["times","multiplied by"]
+        }
+        for s in signs:
+            pattern = re.compile("\d+(\s*(?:%s)\s*)\d+" % '|'.join(signs[s]))
+            for m in re.finditer(pattern,mathstr):
+                match = m.group(1)
+                mathstr = mathstr.replace(match,s)
+        try:
+            return mathstr, eval(mathstr)
+        except NameError:
+            return mathstr
+
     def moviesNearMe(self):
         url = 'https://www.google.com/search?q=movies%20near%20me'
         page = requests.get(url)
@@ -282,6 +299,60 @@ class JERF:
         self.text = None
         self.toolBox = toolBox()
 
+    def text2num(self, textnum, numwords={}):
+        if not numwords:
+            units = [
+                "zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
+                "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen",
+                "sixteen", "seventeen", "eighteen", "nineteen",
+            ]
+            tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
+            scales = ["hundred", "thousand", "million", "billion", "trillion", "quadrillion", "quintillion",
+                      "sextillion", "septillion","octillion","nonillion","decillion"]
+
+            numwords["and"] = (1, 0)
+            for idx, word in enumerate(units):   numwords[word] = (1, idx)
+            for idx, word in enumerate(tens):    numwords[word] = (1, idx * 10)
+            for idx, word in enumerate(scales):  numwords[word] = (10 ** (idx * 3 or 2), 0)
+
+        pattern = re.compile("[a-zA-Z]+(\s*-\s*)[a-zA-Z]+")
+        for m in re.finditer(pattern, textnum):
+            textnum = textnum.replace(m.group(1), ' ')
+
+        pattern = re.compile("(?!\s)(-)(?!\s)")
+        textnum = re.sub(pattern,' - ',textnum)
+
+        current = result = 0
+        stringlist = []
+        onnumber = False
+        for word in textnum.split():
+            if word in numwords:
+                scale, increment = numwords[word]
+
+                current = current * scale + increment
+                if scale > 100:
+                    result += current
+                    current = 0
+                onnumber = True
+            elif word.isdigit():
+                scale, increment = 1,int(word)
+                current = current * scale + increment
+                if scale > 100:
+                    result += current
+                    current = 0
+                onnumber = True
+            else:
+                if onnumber:
+                    stringlist.append(repr(result + current))
+                stringlist.append(word)
+                result = current = 0
+                onnumber = False
+
+        if onnumber:
+            stringlist.append(repr(result + current))
+
+        return ' '.join(stringlist)
+
     def spellcheck(self,text):
         spellchecker.set_text(text)
         for err in spellchecker:
@@ -326,7 +397,7 @@ class JERF:
         return text_blueprint
 
     def reply(self,text):
-        text = self.contractify(self.spellcheck(text.lower()) if SPELL_CHECK else text.lower())
+        text = self.text2num(self.contractify(self.spellcheck(text.lower()) if SPELL_CHECK else text.lower()))
         self.text = text
         for r in RESPONSES:
             self.match = None

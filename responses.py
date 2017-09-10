@@ -113,11 +113,12 @@ RESPONSES = [
      "reply": ["I have never tried <eval>self.match.group(1)</eval> before","I like whatever you like, NN","It depends, NN"]},
     {"input": ["read (.+)","say (.+)"],
      "reply": ["<eval>self.match.group(1)</eval>"]},
-    {"input": [".+copycat",".+copy cat"],
+    {"input": [".*copycat",".*copy cat"],
      "reply": ["<eval>self.text</eval>"]},
     {"input": [".*prank me"],
      "reply": (["Will do, NN","I would never","Don't give me any ideas"],["<eval>webbrowser.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ')</eval>","<eval>webbrowser.open('http://www.nyan.cat')</eval>"])},
 
+    # SPELL A WORD
     {"input": [".*spell (.+)"],
      "reply": ["Did you mean <eval>', '.join(spellchecker.suggest(self.match.group(1)))</eval>?"]},
 
@@ -130,7 +131,7 @@ RESPONSES = [
     {"input": [".*'s my gender", ".+i (male|female|a boy|a girl|a man|a woman)"],
      "reply": ["You're GENDER, NN", "You should know this, NN"]},
 
-    # CHANGE CONTACT INFO (birth date, nickname, full name, location of living, gender)
+    # CHANGE CONTACT INFO (birth date, nickname, full name, location of living, gender INCOMPLETE)
     {"input": [".*my name's (.+)", ".*my name to (.+)","(.+)'s my name","(.+)'s my name"],
      "reply": (["OK","Okay then","If you say so"],
                "<exec>if self.toolBox.promptYN('Change your nickname to %s? ' % self.match.group(1)): self.toolBox.changeContact(0,{'NN':self.match.group(1)})</exec>")},
@@ -149,6 +150,11 @@ RESPONSES = [
     # HELP
     {"input": [".*help",".*(should|can|) i (should |can |)ask you"],
      "reply": ["You can ask me to search the internet for stuff, tell you the weather, get the time and date, open files, make random numbers, and all sorts of stuff. I suggest you just start talking."]},
+
+    # MATH
+    {"input": [".*?(([+-]?(?:\d+(?:\.\d*)?|\d*\.\d+))(?: *(?:\+|plus|\*|times|multiplied by|\-|minus|\/|divided by|over) *([+-]?(?:\d+(?:\.\d*)?|\d*\.\d+)))+)"],
+     "reply": ("<eval>print('%s = %s' %self.toolBox.basicMath(self.match.group(1)))</eval>")},
+
 
 
     # RANDOM DECISIONS
@@ -198,7 +204,9 @@ else: print('Failed to find showtimes')
     {"input": [".*how (many hours|many miles|long) from (.+) to (.+)"],
      "reply": (["Opening Google Maps...","Finding directions..."],"<eval>webbrowser.open(self.toolBox.directionsURL(self.match.group(3),self.match.group(2)))</eval>")},
     {"input": ["where's (.+)","show me (.+) on .*map","find (.+) on .*map","search for (.+) on .*map","search (.+) on .*map"],
-     "reply": ("Opening Google Maps...","<eval>webbrowser.open(self.toolBox.locationURL(self.match.group(1)))</eval>")},
+     "reply": (["Ok then","If you say so"],'''<exec>
+if self.toolBox.promptYN(random.choice(['Find "%s" on Google Maps? ' % self.match.group(1),'Search for "%s" on Google Maps? ' % self.match.group(1)])):
+    webbrowser.open(self.toolBox.locationURL(self.match.group(1)))</exec>''')},
 
     # open website
     {"input": [".*(open|go to) (.+)\.(.+)"],
