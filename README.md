@@ -13,6 +13,7 @@ The first time you run it, it will ask for your username. Then you guys can talk
 
 ## Features
 Things you can ask it:
+```
  - How's the weather outside?
  - What time is it?
  - Where am I?
@@ -27,8 +28,9 @@ Things you can ask it:
  - Count down from 10
  - Roll a die
  - Pick a random number between 0 and 27
-
+ - What is ninety two over twenty eight + 12.5343 - sixty four? Answer: -48.17998571428571
  - Why did the chicken cross the road?
+```
 
 And much more!
 
