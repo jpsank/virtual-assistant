@@ -315,12 +315,13 @@ class JERF:
             for idx, word in enumerate(tens):    numwords[word] = (1, idx * 10)
             for idx, word in enumerate(scales):  numwords[word] = (10 ** (idx * 3 or 2), 0)
 
-        pattern = re.compile("[a-zA-Z]+(\s*-\s*)[a-zA-Z]+")
-        for m in re.finditer(pattern, textnum):
-            textnum = textnum.replace(m.group(1), ' ')
+        pattern = re.compile("(?<=[a-zA-Z])+(-)(?=[a-zA-Z])+")
+        textnum = re.sub(pattern, ' ', textnum)
 
         pattern = re.compile("(?!\s)(-)(?!\s)")
         textnum = re.sub(pattern,' - ',textnum)
+
+        print(textnum)
 
         current = result = 0
         stringlist = []
