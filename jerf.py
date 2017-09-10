@@ -4,7 +4,9 @@ from dateutil.parser import parse
 import json
 import random
 import webbrowser
-import winsound
+import platform
+if platform.system() == "Windows":
+    import winsound
 import re
 import os
 from responses import RESPONSES
@@ -70,37 +72,40 @@ class toolBox:
         return
 
     def sing(self):
-        beatlength = 300
-        m = random.randint(3,5)
-        rand = random.randint(0,1)
-        if rand == 0:
-            winsound.Beep(200*m,beatlength)
-            winsound.Beep(300 * m, beatlength)
-            winsound.Beep(400 * m, beatlength)
-            winsound.Beep(500 * m, beatlength)
-            time.sleep(.5)
-            winsound.Beep(300 * m, beatlength)
-            winsound.Beep(400 * m, beatlength)
-            winsound.Beep(500 * m, beatlength)
-            time.sleep(.5)
-            winsound.Beep(400 * m, beatlength)
-            winsound.Beep(500 * m, beatlength)
-            winsound.Beep(600 * m, beatlength)
-            time.sleep(.5)
-            winsound.Beep(400 * m, beatlength)
-            winsound.Beep(300 * m, beatlength)
-            winsound.Beep(100 * m, beatlength*2)
-        elif rand == 1:
-            winsound.Beep(200*m, beatlength)
-            winsound.Beep(300*m, beatlength)
-            winsound.Beep(400*m, beatlength)
-            winsound.Beep(500*m, beatlength)
-            winsound.Beep(400*m, beatlength)
-            winsound.Beep(300*m, beatlength)
-            winsound.Beep(200*m, beatlength)
-            winsound.Beep(200*m, beatlength)
-            winsound.Beep(300*m, beatlength)
-            winsound.Beep(400*m, int(beatlength * 2))
+        if platform.system() == "Windows":
+            beatlength = 300
+            m = random.randint(3,5)
+            rand = random.randint(0,1)
+            if rand == 0:
+                winsound.Beep(200*m,beatlength)
+                winsound.Beep(300 * m, beatlength)
+                winsound.Beep(400 * m, beatlength)
+                winsound.Beep(500 * m, beatlength)
+                time.sleep(.5)
+                winsound.Beep(300 * m, beatlength)
+                winsound.Beep(400 * m, beatlength)
+                winsound.Beep(500 * m, beatlength)
+                time.sleep(.5)
+                winsound.Beep(400 * m, beatlength)
+                winsound.Beep(500 * m, beatlength)
+                winsound.Beep(600 * m, beatlength)
+                time.sleep(.5)
+                winsound.Beep(400 * m, beatlength)
+                winsound.Beep(300 * m, beatlength)
+                winsound.Beep(100 * m, beatlength*2)
+            elif rand == 1:
+                winsound.Beep(200*m, beatlength)
+                winsound.Beep(300*m, beatlength)
+                winsound.Beep(400*m, beatlength)
+                winsound.Beep(500*m, beatlength)
+                winsound.Beep(400*m, beatlength)
+                winsound.Beep(300*m, beatlength)
+                winsound.Beep(200*m, beatlength)
+                winsound.Beep(200*m, beatlength)
+                winsound.Beep(300*m, beatlength)
+                winsound.Beep(400*m, int(beatlength * 2))
+        else:
+            print("Sorry, I can only sing on Windows Computers")
 
     def thesaurus(self,word):
         url = "http://www.thesaurus.com/browse/%s" % word
