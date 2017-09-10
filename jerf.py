@@ -321,8 +321,6 @@ class JERF:
         pattern = re.compile("(?!\s)(-)(?!\s)")
         textnum = re.sub(pattern,' - ',textnum)
 
-        print(textnum)
-
         current = result = 0
         stringlist = []
         onnumber = False
