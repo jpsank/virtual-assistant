@@ -123,24 +123,36 @@ RESPONSES = [
      "reply": ["Did you mean <eval>', '.join(spellchecker.suggest(self.match.group(1)))</eval>?"]},
 
     # CHECK CONTACT INFO
-    {"input": [".*what's my name", ".*whats my name", ".*what my name's"],
+    {"input": [".*what's my name", ".*whats my name", ".*what my name's",".*do you call me"],
      "reply": ["Your name is NN, NN", "I thought you would know your own name, NN",
                "I call you NN, but we all know what people call you behind your back"]},
+    {"input": [".*what's my (full name|fullname)", ".*whats my (full name|fullname)", ".*what my (full name|fullname)'s"],
+     "reply": ["Your full name is FULLNAME, NN", "I thought you would know your own full name, NN"]},
     {"input": [".*what's my (birthday|bday|b-day|birth day|date of birth|day of birth|birth date)",".*'s i (born|birthed)"],
      "reply": ["You were born on BDAY, NN"]},
-    {"input": [".*'s my gender", ".+i (male|female|a boy|a girl|a man|a woman)"],
+    {"input": [".*what's my gender", ".+i (male|female|a boy|a girl|a man|a woman)",".*my gender\?"],
      "reply": ["You're GENDER, NN", "You should know this, NN"]},
+    {"input": [".*what's my email",".*my email\?"],
+     "reply": ["Your email is EMAIL, NN"]},
+    {"input": [".*what's my( phone|) number",".*my phone number\?"],
+     "reply": ["Your phone number is PHONE, NN"]},
 
     # CHANGE CONTACT INFO (birth date, nickname, full name, location of living, gender INCOMPLETE)
-    {"input": [".*my name's (.+)", ".*my name to (.+)","(.+)'s my name","(.+)'s my name"],
-     "reply": (["OK","Okay then","If you say so"],
-               "<exec>if self.toolBox.promptYN('Change your nickname to %s? ' % self.match.group(1)): self.toolBox.changeContact(0,{'NN':self.match.group(1)})</exec>")},
-    {"input": [".*my (birthday|bday|b-day|birth day|date of birth|day of birth|birth date)'s (.+)", ".*my (birthday|bday|b-day|birth day|date of birth|day of birth|birth date) to (.+)","(.+)'s my (birthday|bday|b-day|birth day|date of birth|day of birth|birth date)",".*i's (born on|birthed on|born) (.+)"],
-     "reply": (["OK","Okay then","If you say so"],
-               "<exec>if self.toolBox.promptYN('Change your birth date to %s? ' % self.match.group(2)): self.toolBox.changeContact(0,{'BDAY':parse(self.match.group(2)).strftime('%d/%m/%Y')})</exec>")},
+    {"input": [".*my name's (.+)", ".*my name to (.+)","(.+)'s my name",".*call me (.+)"],
+     "reply": "<eval>self.toolBox.changeContactInfo(0,'NN',self.match.group(1))</eval>"},
+    {"input": [".*my (?:full name|fullname)(?:'s| to) (.+)","(.+)'s my (?:full name|fullname)"],
+     "reply": "<eval>self.toolBox.changeContactInfo(0,'FULLNAME',self.match.group(1))</eval>"},
+
+    {"input": [".*my (?:birthday|bday|b-day|birth day|date of birth|day of birth|birth date)(?:'s| to) (.+)",
+               "(.+)'s my (?:birthday|bday|b-day|birth day|date of birth|day of birth|birth date)",
+               ".*i's (?:born on|birthed on|born) (.+)"],
+     "reply": "<eval>self.toolBox.changeContactInfo(0,'BDAY',parse(self.match.group(1)).strftime('%d/%m/%Y'))</eval>"},
     {"input": [".*i'm (female|male|a boy|a girl|a man|a woman)",".*my gender's (female|male|a boy|a girl|a man|a woman)"],
-     "reply": (["OK","Okay then","If you say so"],
-               "<exec>if self.toolBox.promptYN('Change your gender to %s? ' % self.match.group(1)): self.toolBox.changeContact(0,{'GENDER':self.match.group(1)})</exec>")},
+     "reply": "<eval>self.toolBox.changeContactInfo(0,'GENDER',self.match.group(1))</eval>"},
+    {"input": [".*my email(?:'s| to) (.+@.+)"],
+     "reply": "<eval>self.toolBox.changeContactInfo(0,'EMAIL',self.match.group(1))</eval>"},
+    {"input": [".*my(?: phone|) number(?:'s| to) (.+-.+-.+)"],
+     "reply": "<eval>self.toolBox.changeContactInfo(0,'PHONE',self.match.group(1))</eval>"},
 
 
     # FAVORITE STUFF (to be added)
@@ -234,8 +246,6 @@ else: print('No Wikipedia article found')</exec>''']},
      "reply": ['''<exec>tmp=self.toolBox.wikiLookup(self.match.group(2))
 if tmp is not None: print(tmp)
 else: print('No Wikipedia article found')</exec>''']},
-    {"input": ["who's (.+)","who're (.+)"],
-     "reply": ["<eval>self.toolBox.personLookup(self.match.group(1))</eval>"]},
 
     # news
     {"input": [".*news about (.+)",".*news for (.+)"],
@@ -255,7 +265,7 @@ else: print('No Wikipedia article found')</exec>''']},
 
     # dictionary stuff
     {"input": ["define (.+)",".+definition of (.+)",".+meaning of (.+)",".+ does (.+) mean"],
-     "reply": ("<eval>self.match.group(1)</eval>: ","<eval>self.toolBox.define(re.sub(r'[\W]', ' ', self.match.group(1)),0)</eval>")},
+     "reply": ("<eval>self.match.group(1)</eval>: ","<eval>self.toolBox.getDefinition(re.sub(r'[\W]', ' ', self.match.group(1)))</eval>")},
     {"input": [".*example of (.+) .*in a sentence",".*use (.+) in a sentence"],
      "reply": ("example sentence for <eval>self.match.group(1)</eval>: ","<eval>random.choice(self.toolBox.usedInASentence(re.sub(r'[\W]', ' ', self.match.group(1))))</eval>")},
     {"input": [".*synonyms for (.+)",".*synonyms of (.+)",".*synonym for (.+)",".*synonym of (.+)",".*another word for (.+)",".*other word for (.+)",".*other words for (.+)"],
@@ -280,6 +290,14 @@ else: print('No Wikipedia article found')</exec>''']},
      "reply": ("It's ","<eval>' '.join(time.asctime().split()[:3])</eval>",", NN")},
     {"input": [".+year's it",".+'s the year",".+century's it",".*current year",".*current century"],
      "reply": (["It's ","The year is ","It's the year of "],"<eval>time.asctime().split()[4]</eval>",", NN")},
+
+    # who is ____
+    {"input": ["who's (.+)","who're (.+)"],
+     "reply": ["<eval>self.toolBox.personLookup(self.match.group(1))</eval>"]},
+
+    # what is a ____
+    {"input": ["what's(?: a| an|) (.+)"],
+     "reply": ["<eval>self.toolBox.whatIsLookup(self.match.group(1))</eval>"]},
 
     # LOCATION
     {"input": ["where.+am i","where.*'re we","where's here",".*my location"],

@@ -147,7 +147,13 @@ class toolBox:
                 return defs[index]
             else:
                 return defs
-        return random.choice(["Never heard of it","A %s?" % word])
+
+    def getDefinition(self,word):
+        d = self.define(word,0)
+        if d:
+            return d
+        else:
+            return random.choice(["Never heard of it", "A %s?" % word])
 
     def usedInASentence(self,word):
         url = "http://www.dictionary.com/browse/%s" % word
@@ -210,7 +216,7 @@ class toolBox:
             if showtimes:
                 return name[0].text_content(), showtimes
 
-    def wikiScrape(self,page):
+    def wikiPageScrape(self, page):
         tree = html.fromstring(page.content)
         desc = tree.xpath('//div[@class="mw-parser-output"]/p')
         if desc:
@@ -224,15 +230,46 @@ class toolBox:
             tree = html.fromstring(page.content)
             searches = tree.xpath('//div[@class="mw-search-result-heading"]/a')
             if searches:
-                prompt = self.promptD("Which number post to open?\n%s" % '\n'.join(
+                prompt = self.promptD("Choose the number of the article you want to open:\n%s" % '\n'.join(
                     ["%s. %s" % (i, s.text_content()) for i, s in enumerate(searches)]))
-                p = prompt[0]
-                page = requests.get("https://en.wikipedia.org%s" % searches[p].get('href'))
-                return self.wikiScrape(page)
+                while prompt[0] >= len(searches):
+                    prompt = self.promptD("Choose a number between 0 and %s" % str(len(searches)-1))
+                page = requests.get("https://en.wikipedia.org%s" % searches[prompt[0]].get('href'))
+                return self.wikiPageScrape(page)
             else:
                 return
         else:
-            return self.wikiScrape(requests.get(page.url))
+            return self.wikiPageScrape(requests.get(page.url))
+
+    def personLookup(self,name):
+        splitname = name.split()
+        for contact in CONTACTS:
+            if (contact["NN"] is not None and contact["NN"].lower() == splitname[0].lower()) or (contact["FULLNAME"] is not None and contact["FULLNAME"].split()[0].lower() == splitname[0].lower()):
+                print("%s is in your contacts" % name)
+                if self.promptYN("Show %s's contact info?" % name):
+                    for c in contact:
+                        print("%s: %s" % (c,contact[c]))
+                else:
+                    print("Okay.")
+                return
+
+        wiki = self.wikiLookup(name)
+        if wiki is not None:
+            return wiki
+
+        return random.choice(["Never heard of them"])
+
+    def whatIsLookup(self,what):
+        if self.promptYN("Check my sources for %s?" %what):
+            d = self.define(what)
+            if d:
+                return "%s: %s" %(what,d[0])
+
+            wiki = self.wikiLookup(what)
+            if wiki:
+                return wiki
+        else:
+            return "If you say so"
 
     def redditSearchScrape(self, topic):
         url = "https://www.reddit.com/search?q=%s" % topic
@@ -251,18 +288,6 @@ class toolBox:
             return random.choice(["Opening reddit post","Opening '%s'" % searches[p].text_content()])
         else:
             return
-
-    def personLookup(self,name):
-        splitname = name.split()
-        for contact in CONTACTS:
-            if (contact["NN"] is not None and contact["NN"].lower() == splitname[0].lower()) or (contact["FULLNAME"] is not None and contact["FULLNAME"].split()[0].lower() == splitname[0].lower()):
-                return "%s is in your contacts" % name
-
-        wiki = self.wikiLookup(name)
-        if wiki is not None:
-            return wiki
-
-        return random.choice(["Never heard of them"])
 
     def openSomething(self,thing):
         if os.path.exists(thing):
@@ -287,13 +312,55 @@ class toolBox:
         webbrowser.open("https://www.google.com/search?q=%s" % search)
         return random.choice(["googling %s" % search,"searching for %s" % search, "accessing interwebs", "okay, NN, I'll google that"])
 
+    def changeContactInfo(self,contactNum,key,newValue):
+        if key in CONTACTS[contactNum]:
+            original = "UNKNOWN" if CONTACTS[contactNum][key] is None else CONTACTS[contactNum][key]
+            name = "you" if contactNum == 0 else CONTACTS[contactNum]["NN"]
+            possessive = "your" if contactNum == 0 else "%s's" % CONTACTS[contactNum]["NN"].capitalize()
+            if key == "BDAY":
+                if self.promptYN('Change %s birth date to %s? ' % (possessive,newValue)):
+                    self.changeContact(contactNum,{key: parse(newValue).strftime('%d/%m/%Y')})
+                    return "%s birthday is now %s" % (possessive.capitalize(),CONTACTS[contactNum][key])
+                else:
+                    return "Leaving %s birthday as %s" % (possessive,original)
+            elif key == "NN":
+                if self.promptYN('Change %s nickname to %s? ' % (possessive,newValue)):
+                    self.changeContact(contactNum,{key: newValue})
+                    return "I will call %s '%s' from now on" % (name,CONTACTS[contactNum][key])
+                else:
+                    return "%s name will be left as '%s'" % (possessive.capitalize(),original)
+            elif key == "FULLNAME":
+                if self.promptYN('Change %s full name to %s? ' % (possessive,newValue)):
+                    self.changeContact(contactNum,{key: newValue})
+                    return "%s full name is now %s" % (possessive.capitalize(),CONTACTS[contactNum][key])
+                else:
+                    return "%s full name will be left as '%s'" % (possessive.capitalize(),original)
+            elif key == "GENDER":
+                if self.promptYN('Change %s gender to %s? ' % (possessive,newValue)):
+                    self.changeContact(contactNum,{key: newValue})
+                    return "%s gender has been changed to %s" % (possessive.capitalize(),CONTACTS[contactNum][key])
+                else:
+                    return "%s gender will be left as '%s'" % (possessive.capitalize(),original)
+            elif key == "EMAIL":
+                if self.promptYN('Change %s email to %s? ' % (possessive,newValue)):
+                    self.changeContact(contactNum,{key: newValue})
+                    return "%s email is now %s" % (possessive.capitalize(),CONTACTS[contactNum][key])
+                else:
+                    return "%s email will be left as '%s'" % (possessive.capitalize(),original)
+            elif key == "PHONE":
+                if self.promptYN('Change %s phone number to %s? ' % (possessive,newValue)):
+                    self.changeContact(contactNum,{key: newValue})
+                    return '%s phone number is now %s' % (possessive.capitalize(),CONTACTS[contactNum][key])
+                else:
+                    return "%s phone number will be left as '%s'" % (possessive.capitalize(),original)
+
     def changeContact(self,contactNum,update):
         CONTACTS[contactNum].update(update)
         with open('contacts.json', 'w') as f:
             json.dump(CONTACTS,f)
 
     def promptYN(self,prompt,failsafe="Yes or no?",y="y",n="n"):
-        print(prompt)
+        print(random.choice(prompt) if isinstance(prompt,list) else prompt)
         answer = input(secondaryCommandPrompt).lower()
         if re.match(y,answer):
             return True
@@ -303,10 +370,10 @@ class toolBox:
             return self.promptYN(failsafe,failsafe,y,n)
 
     def promptD(self,prompt,failsafe="Pick a number"):
-        print(prompt)
+        print(random.choice(prompt) if isinstance(prompt,list) else prompt)
         answer = input(secondaryCommandPrompt).lower()
         result = []
-        for m in re.findall("\d+",answer):
+        for m in re.findall("[+-]?\d+",answer):
             result.append(int(m))
         if result:
             return result
