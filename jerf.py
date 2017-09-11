@@ -242,20 +242,20 @@ class toolBox:
             return self.wikiPageScrape(requests.get(page.url))
 
     def personLookup(self,name):
-        splitname = name.split()
+        name2 = re.sub('\W','',name)
         for contact in CONTACTS:
-            if (contact["NN"] is not None and contact["NN"].lower() == splitname[0].lower()) or (contact["FULLNAME"] is not None and contact["FULLNAME"].split()[0].lower() == splitname[0].lower()):
-                print("%s is in your contacts" % name)
-                if self.promptYN("Show %s's contact info?" % name):
-                    for c in contact:
-                        print("%s: %s" % (c,contact[c]))
-                else:
-                    print("Okay.")
-                return
+            if name2 in contact["NN"].lower() or contact["NN"].lower() in name2 or (contact["FULLNAME"] is not None and contact["FULLNAME"].lower() == name2.lower()):
+                if self.promptYN("Are you referring to %s in your contacts?" % contact["NN"]):
+                    if self.promptYN("Show %s's contact info?" % name):
+                        self.showContactInfo(name2)
+                    else:
+                        print("Okay then")
+                    return
 
-        wiki = self.wikiLookup(name)
-        if wiki is not None:
-            return wiki
+        if self.promptYN("Search Wikipedia for %s?" %name):
+            wiki = self.wikiLookup(name)
+            if wiki is not None:
+                return wiki
 
         return random.choice(["Never heard of them"])
 
@@ -312,7 +312,70 @@ class toolBox:
         webbrowser.open("https://www.google.com/search?q=%s" % search)
         return random.choice(["googling %s" % search,"searching for %s" % search, "accessing interwebs", "okay, NN, I'll google that"])
 
-    def changeContactInfo(self,contactNum,key,newValue):
+    def addContact(self,name=None):
+        if name is None:
+            name = self.promptANY("What is the contact's name?")
+        if self.promptYN("Add contact '%s'?" % name):
+            CONTACTS.append({"BDAY": None, "GENDER": None, "NN": name, "FULLNAME": None, "EMAIL": None, "PHONE": None})
+            with open('contacts.json', 'w') as f:
+                json.dump(CONTACTS, f)
+            return "Added %s as a contact" % name
+        else:
+            return "Cancelling..."
+
+    def parseContactString(self,contact):
+        contactNum = contact
+        if isinstance(contact, str):
+            if contact in ['my', 'me', 'i']:
+                contactNum = 0
+            else:
+                if contact.endswith("'s"):
+                    contact = contact[:-2]
+                for i, c in enumerate(CONTACTS):
+                    if c['NN'].lower() == contact.lower():
+                        contactNum = i
+                        break
+        return contactNum
+
+    def showContactInfo(self, contact):
+        contactNum = self.parseContactString(contact)
+        for k in CONTACTS[contactNum]:
+            print("%s: %s" % (k,CONTACTS[contactNum][k]))
+
+    def checkContactInfo(self,contact,key):
+        contactNum = self.parseContactString(contact)
+        fail = ["I don't know who '%s' is" %contact, "Who's '%s'?" %contact]
+        if key in CONTACTS[contactNum]:
+            if contactNum == 0:
+                responses = {
+                    "NN": ["Your name is NN, NN", "I thought you would know your own name, NN",
+                           "I call you NN, but we all know what people call you behind your back"],
+                    "BDAY": ["You were born on BDAY, NN"],
+                    "FULLNAME": ["Your full name is FULLNAME, NN", "I thought you would know your own full name, NN"],
+                    "GENDER": ["You're GENDER, NN", "You should know this, NN"],
+                    "EMAIL": ["Your email is EMAIL, NN"],
+                    "PHONE": ["Your phone number is PHONE, NN"]
+                }
+            else:
+                responses = {
+                    "NN": ["NN's name is NN", "I have a feeling you already know it",
+                           "NN's name is - you guessed it - NN"],
+                    "BDAY": ["NN was born on BDAY","NN's birthday is BDAY"],
+                    "FULLNAME": ["NN's full name is FULLNAME"],
+                    "GENDER": ["NN is GENDER", "Apparently, NN is GENDER"],
+                    "EMAIL": ["NN's email is EMAIL"],
+                    "PHONE": ["NN's phone number is PHONE"]
+                }
+                if key in responses:
+                    choice = random.choice(responses[key])
+                    for r in responses:
+                        if CONTACTS[contactNum][r] is not None:
+                            choice = choice.replace(r,CONTACTS[contactNum][r])
+                    return choice
+        return fail
+
+    def changeContactInfo(self,contact,key,newValue):
+        contactNum = self.parseContactString(contact)
         if key in CONTACTS[contactNum]:
             original = "UNKNOWN" if CONTACTS[contactNum][key] is None else CONTACTS[contactNum][key]
             name = "you" if contactNum == 0 else CONTACTS[contactNum]["NN"]
@@ -358,6 +421,11 @@ class toolBox:
         CONTACTS[contactNum].update(update)
         with open('contacts.json', 'w') as f:
             json.dump(CONTACTS,f)
+
+    def promptANY(self,prompt):
+        print(random.choice(prompt) if isinstance(prompt, list) else prompt)
+        answer = input(secondaryCommandPrompt)
+        return answer
 
     def promptYN(self,prompt,failsafe="Yes or no?",y="y",n="n"):
         print(random.choice(prompt) if isinstance(prompt,list) else prompt)
