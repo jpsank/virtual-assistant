@@ -132,11 +132,12 @@ RESPONSES = [
                ".*whats (?P<who>my|.+'s) (full name|fullname)",
                ".*what (?P<who>my|.+'s) (full name|fullname)'s"],
      "reply": "<eval>self.toolBox.checkContactInfo(self.match.group('who'),'FULLNAME')</eval>"},
-    {"input": [".*what's (?P<who>my|.+'s) (birthday|bday|b-day|birth day|date of birth|day of birth|birth date)",
+    {"input": [".*(?:what's|when's) (?P<who>my|.+'s) (birthday|bday|b-day|birth day|date of birth|day of birth|birth date)",
                ".*'s (?P<who>i|.+) (born|birthed)"],
      "reply": "<eval>self.toolBox.checkContactInfo(self.match.group('who'),'BDAY')</eval>"},
     {"input": [".*what's (?P<who>my|.+'s) gender",
-               ".+(?P<who>i|.+) (male|female|a boy|a girl|a man|a woman)",
+               ".*(?:'s|is|am|was) (?P<who>i|.+) (male|female|a boy|a girl|a man|a woman)",
+               ".+(?P<who>i|.+'s)(?: am|'s) (male|female|a boy|a girl|a man|a woman)",
                ".*(?P<who>my|.+'s) gender\?"],
      "reply": "<eval>self.toolBox.checkContactInfo(self.match.group('who'),'GENDER')</eval>"},
     {"input": [".*what's (?P<who>my|.+'s) email",
@@ -158,13 +159,18 @@ RESPONSES = [
                "(?P<val>.+)'s (?P<who>my|\w+'s) (?:full name|fullname)"],
      "reply": "<eval>self.toolBox.changeContactInfo(self.match.group('who'),'FULLNAME',self.match.group('val'))</eval>"},
 
-    {"input": [".*?(?P<who>my|\w+'s) (?:birthday|bday|b-day|birth day|date of birth|day of birth|birth date)(?:'s| to) (?P<val>.+)",
-               "(?P<val>.+)'s (?P<who>my|.+'s) (?:birthday|bday|b-day|birth day|date of birth|day of birth|birth date)",
-               ".*?(?P<who>i|.+)'s (?:born on|birthed on|born) (?P<val>.+)"],
+    {"input": [".*?(?P<who>my|\w+'s) (?:birthday|bday|b-day|birth day|date of birth|day of birth|birth date)(?:'s| to) (?P<val>(?:.+(?:\/|-|\s)){3})",
+               "(?P<val>(?:.+(?:\/|-|\s)){3})'s (?P<who>my|.+'s) (?:birthday|bday|b-day|birth day|date of birth|day of birth|birth date)",
+               ".*?(?P<who>i|.+)'s (?:born on|birthed on|born) (?P<val>(?:.+(?:\/|-|\s)){3})"],
      "reply": "<eval>self.toolBox.changeContactInfo(self.match.group('who'),'BDAY',parse(self.match.group('val')).strftime('%d/%m/%Y'))</eval>"},
-    {"input": [".*?(?P<who>i'm|.+'s) (?P<val>female|male|a boy|a girl|a man|a woman)",
-               ".*?(?P<who>my|.+'s) gender's (?P<val>female|male|a boy|a girl|a man|a woman)"],
-     "reply": "<eval>self.toolBox.changeContactInfo(self.match.group('who'),'GENDER',self.match.group('val'))</eval>"},
+
+    {"input": [".*?(?P<who>i'm|.+'s) (?:female|a girl|a woman)",
+               ".*?(?P<who>my|.+'s) gender's female"],
+     "reply": "<eval>self.toolBox.changeContactInfo(self.match.group('who'),'GENDER','female')</eval>"},
+    {"input": [".*?(?P<who>i'm|.+'s) (?:male|a boy|a man)",
+               ".*?(?P<who>my|.+'s) gender's male"],
+     "reply": "<eval>self.toolBox.changeContactInfo(self.match.group('who'),'GENDER','male')</eval>"},
+
     {"input": [".*?(?P<who>my|.+'s) email(?:'s| to) (?P<val>.+@.+)"],
      "reply": "<eval>self.toolBox.changeContactInfo(self.match.group('who'),'EMAIL',self.match.group('val'))</eval>"},
     {"input": [".*?(?P<who>my|.+'s)(?: phone|) number(?:'s| to) (?P<val>.+-.+-.+)"],
@@ -176,6 +182,17 @@ RESPONSES = [
     {"input": [".*(make|add) .*contact"],
      "reply": "<eval>self.toolBox.addContact()</eval>"},
 
+    # REMOVE CONTACT
+    {"input": [".*(?:remove|delete) contact (.+)",
+               ".*(?:remove|delete) (.+) as (?:a contact|contact)",
+               ".*(?:remove|delete) (.+) from .*contacts"],
+     "reply": "<eval>self.toolBox.removeContact(self.match.group(1))</eval>"},
+    {"input": [".*(?:remove|delete) .*contact"],
+     "reply": "<eval>self.toolBox.removeContact()</eval>"},
+
+    # OTHER CONTACT STUFF
+    {"input": [".*list .*contacts",".*(?:what're|give me|show me|display) my .*contacts"],
+     "reply": "<eval>'Here are all your contacts: \\n'+'\\n'.join(self.toolBox.contactList())</eval>"},
 
     # FAVORITE STUFF (to be added)
     {"input": [".*your favorite (.+)"],

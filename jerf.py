@@ -241,24 +241,6 @@ class toolBox:
         else:
             return self.wikiPageScrape(requests.get(page.url))
 
-    def personLookup(self,name):
-        name2 = re.sub('\W','',name)
-        for contact in CONTACTS:
-            if name2 in contact["NN"].lower() or contact["NN"].lower() in name2 or (contact["FULLNAME"] is not None and contact["FULLNAME"].lower() == name2.lower()):
-                if self.promptYN("Are you referring to %s in your contacts?" % contact["NN"]):
-                    if self.promptYN("Show %s's contact info?" % name):
-                        self.showContactInfo(name2)
-                    else:
-                        print("Okay then")
-                    return
-
-        if self.promptYN("Search Wikipedia for %s?" %name):
-            wiki = self.wikiLookup(name)
-            if wiki is not None:
-                return wiki
-
-        return random.choice(["Never heard of them"])
-
     def whatIsLookup(self,what):
         if self.promptYN("Check my sources for %s?" %what):
             d = self.define(what)
@@ -323,29 +305,66 @@ class toolBox:
         else:
             return "Cancelling..."
 
-    def parseContactString(self,contact):
-        contactNum = contact
-        if isinstance(contact, str):
-            if contact in ['my', 'me', 'i']:
-                contactNum = 0
+    def removeContact(self, tag=None):
+        if tag is None:
+            tag = self.promptANY("Which contact to remove?")
+        contactIndex = self.parseContactString(tag)
+        if self.promptYN("Are you sure you want to remove contact '%s'?" % CONTACTS[contactIndex]["NN"]):
+            del CONTACTS[contactIndex]
+            with open('contacts.json', 'w') as f:
+                json.dump(CONTACTS, f)
+            return "Removed %s from your contacts" % tag
+        else:
+            return "Cancelling..."
+
+    def personLookup(self,name):
+        index = self.parseContactString(name)
+        if isinstance(index,int):
+            if self.promptYN("Show %s's contact info?" % CONTACTS[index]["NN"]):
+                self.showContactInfo(index)
             else:
-                if contact.endswith("'s"):
-                    contact = contact[:-2]
+                print("Okay then")
+            return
+
+        if self.promptYN("Search Wikipedia for %s?" %name):
+            wiki = self.wikiLookup(name)
+            if wiki is not None:
+                return wiki
+
+        return random.choice(["Never heard of them"])
+
+    def parseContactString(self, tag):
+        if isinstance(tag, str):
+            tag = tag.lower()
+            if tag in ['my', 'me', 'i']:
+                return 0
+            else:
+                if tag.endswith("'s"):
+                    tag = tag[:-2]
                 for i, c in enumerate(CONTACTS):
-                    if c['NN'].lower() == contact.lower():
-                        contactNum = i
-                        break
-        return contactNum
+                    if tag in c["NN"].lower() \
+                            or c["NN"].lower() in tag \
+                            or (c["FULLNAME"] is not None and any(n.lower() in c["FULLNAME"].split() for n in tag.split())):
+                        if self.promptYN("Are you referring to your contact %s?" % c["NN"]):
+                            return i
+        elif isinstance(tag, int):
+            return tag
 
     def showContactInfo(self, contact):
         contactNum = self.parseContactString(contact)
-        for k in CONTACTS[contactNum]:
-            print("%s: %s" % (k,CONTACTS[contactNum][k]))
+        if isinstance(contactNum,int):
+            for k in CONTACTS[contactNum]:
+                print("%s: %s" % (k,CONTACTS[contactNum][k]))
+        else:
+            print("Failed to find contact")
+
+    def contactList(self):
+        return [c["NN"] for c in CONTACTS]
 
     def checkContactInfo(self,contact,key):
         contactNum = self.parseContactString(contact)
-        fail = ["I don't know who '%s' is" %contact, "Who's '%s'?" %contact]
-        if key in CONTACTS[contactNum]:
+        if isinstance(contactNum,int) and key in CONTACTS[contactNum]:
+            print(contactNum)
             if contactNum == 0:
                 responses = {
                     "NN": ["Your name is NN, NN", "I thought you would know your own name, NN",
@@ -366,17 +385,19 @@ class toolBox:
                     "EMAIL": ["NN's email is EMAIL"],
                     "PHONE": ["NN's phone number is PHONE"]
                 }
-                if key in responses:
-                    choice = random.choice(responses[key])
-                    for r in responses:
-                        if CONTACTS[contactNum][r] is not None:
-                            choice = choice.replace(r,CONTACTS[contactNum][r])
-                    return choice
-        return fail
+            if key in responses:
+                choice = random.choice(responses[key])
+                for r in responses:
+                    if CONTACTS[contactNum][r] is not None:
+                        choice = choice.replace(r,CONTACTS[contactNum][r])
+                return choice
+        fail = ["I don't know who that is", "Who's that?"]
+        return random.choice(fail)
 
     def changeContactInfo(self,contact,key,newValue):
         contactNum = self.parseContactString(contact)
-        if key in CONTACTS[contactNum]:
+        fail = ["Unable to find contact %s" % contact]
+        if isinstance(contactNum,int) and key in CONTACTS[contactNum]:
             original = "UNKNOWN" if CONTACTS[contactNum][key] is None else CONTACTS[contactNum][key]
             name = "you" if contactNum == 0 else CONTACTS[contactNum]["NN"]
             possessive = "your" if contactNum == 0 else "%s's" % CONTACTS[contactNum]["NN"].capitalize()
@@ -416,6 +437,7 @@ class toolBox:
                     return '%s phone number is now %s' % (possessive.capitalize(),CONTACTS[contactNum][key])
                 else:
                     return "%s phone number will be left as '%s'" % (possessive.capitalize(),original)
+        return random.choice(fail)
 
     def changeContact(self,contactNum,update):
         CONTACTS[contactNum].update(update)
