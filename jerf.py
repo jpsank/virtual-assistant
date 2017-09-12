@@ -41,8 +41,6 @@ else:
     time.sleep(2)
     print(" - At any time, you can tell me more about yourself and change your contact info")
     time.sleep(2)
-    print(" - You can tell me your birthday, gender, full name, where you live, and you can also add other contacts")
-    time.sleep(2)
     print(" - You can also ask me for help if you get hopelessly lost")
     with open('contacts.json', 'w') as f:
         json.dump(CONTACTS, f)
@@ -364,7 +362,6 @@ class toolBox:
     def checkContactInfo(self,contact,key):
         contactNum = self.parseContactString(contact)
         if isinstance(contactNum,int) and key in CONTACTS[contactNum]:
-            print(contactNum)
             if contactNum == 0:
                 responses = {
                     "NN": ["Your name is NN, NN", "I thought you would know your own name, NN",
