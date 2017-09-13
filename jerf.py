@@ -490,6 +490,8 @@ class JERF:
             for idx, word in enumerate(tens):    numwords[word] = (1, idx * 10)
             for idx, word in enumerate(scales):  numwords[word] = (10 ** (idx * 3 or 2), 0)
 
+        noAnd = ['between','from']
+
         pattern = re.compile("(?<=[a-zA-Z])+(-)(?=[a-zA-Z])+")
         textnum = re.sub(pattern, ' ', textnum)
 
@@ -500,9 +502,8 @@ class JERF:
         stringlist = []
         onnumber = False
         for word in textnum.split():
-            if word in numwords:
+            if word in numwords and not (word == 'and' and stringlist[-1] in noAnd):
                 scale, increment = numwords[word]
-
                 current = current * scale + increment
                 if scale > 100:
                     result += current
