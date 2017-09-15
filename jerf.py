@@ -119,6 +119,26 @@ class toolBox:
         j = r.json()
         return [eval("%s[%s]" % (j,"][".join(["'%s'" % i if isinstance(i,str) else str(i) for i in k]))) for k in keys]
 
+    def weatherPrint(self):
+        return 'location: {}\ndescription: {}\ntemperature: {}°F\nhumidity: {}%\natmospheric pressure: {}'.format(
+            *self.weather(['name'], ['weather', 0, 'description'], ['main', 'temp'], ['main', 'humidity'],['main', 'pressure']))
+
+    # Working on new weather scrape
+    # def weather(self,*keys):
+    #     r = requests.get("https://www.wunderground.com/weather/{}/{}/{}".format(*self.locationData("region_code","city","zip_code")))
+    #     page = html.fromstring(r.content)
+    #     print(r.content)
+    #     rows = page.xpath("/table[@id='hourly-forecast-table']//tbody//tr")
+    #     print(rows)
+    #     if rows:
+    #         headers = ["Time","Conditions","Temp.","Feels Like","Precip","Amount","Cloud Cover","Dew Point","Humidity","Wind","Pressure"]
+    #         row = rows[0]
+    #         data = row.xpath('./td')
+    #         print(data)
+    #         if data:
+    #             data = {headers[i]:d.text_content() for i,d in enumerate(data) if d.text_content() is not None and (keys and headers[i] in keys)}
+    #             printColumns(data)
+
     def locationData(self,*keys):
         url = 'http://freegeoip.net/json'
         r = requests.get(url)

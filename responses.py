@@ -313,7 +313,7 @@ else: print('No Wikipedia article found')</exec>''']},
 
     # weather
     {"input": [".*weather","how's it outside","what's it like outside"],
-     "reply": ["<eval>'location: {}\\ndescription: {}\\ntemperature: {}°F\\nhumidity: {}%\\natmospheric pressure: {}'.format(*self.toolBox.weather(['name'],['weather',0,'description'],['main','temp'],['main','humidity'],['main','pressure']))</eval>"]},
+     "reply": ["<eval>self.toolBox.weatherPrint()</eval>"]},
     {"input": [".*humidity", "is it humid", ".+humid .*today", ".+humid out"],
      "reply": (["right now, ", ""], "the humidity is ", "<eval>str(self.toolBox.weather(['main','humidity'])[0])</eval>", " percent",[", NN", ""])},
     {"input": [".*temperature"]+list(itertools.chain.from_iterable([".+%s .*today" % s,".+%s out" % s] for s in syn('hot')))+list(itertools.chain.from_iterable([".+%s .*today" % s,".+%s out" % s] for s in syn('cold'))),
@@ -340,7 +340,7 @@ else: print('No Wikipedia article found')</exec>''']},
      "reply": ["<eval>self.toolBox.whatIsLookup(self.match.group(1))</eval>"]},
 
     # LOCATION
-    {"input": ["where.+am i","where.*'re we","where's here",".*my location"],
+    {"input": ["where.+am i",".*where i am","where.*'re we","where's here",".*where here's",".*my location"],
      "reply": (["you're in ","your location is "],"<eval>'{}, {}'.format(*self.toolBox.locationData('city','region_code'))</eval>",[", NN",""])},
     {"input": [".*zipcode"],
      "reply": (["your zipcode is "],"<eval>'{}'.format(*self.toolBox.locationData('zip_code'))</eval>")},
