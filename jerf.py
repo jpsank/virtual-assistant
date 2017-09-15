@@ -113,31 +113,49 @@ class toolBox:
             return ', '.join([d.text_content() for d in syns])
         return random.choice(["Never heard of it", "A %s?" % word])
 
-    def weather(self,*keys):
-        appid = 'a98689d8418b0ca737434c67064bb29d'
-        r = requests.get('http://api.openweathermap.org/data/2.5/weather?lat={}&lon={}&appid={}&units=imperial'.format(*self.locationData("latitude","longitude"), appid))
-        j = r.json()
-        return [eval("%s[%s]" % (j,"][".join(["'%s'" % i if isinstance(i,str) else str(i) for i in k]))) for k in keys]
+    def weatherHourly(self,*keys):
+        r = requests.get("https://www.wunderground.com/hourly/{}/{}/{}".format(*self.locationData("region_code","city","zip_code")))
+        page = html.fromstring(r.content)
+        rows = page.xpath("//table[@id='hourly-forecast-table']/tbody/tr")
+        if rows:
+            headers = ["Time","Conditions","Temp.","Feels Like","Precip","Amount","Cloud Cover","Dew Point","Humidity","Wind","Pressure"]
+            result = [[h for h in headers if not (keys and h not in keys)]]
+            for row in rows:
+                data = row.xpath('./td')
+                if data:
+                    for i,d in enumerate(data):
+                        if not (keys and headers[i] not in keys):
+                            text = data[i].xpath('.//span//text()[not(ancestor::*[contains(@class,"show-for-small-only")])]')
+                            data[i] = ' '.join(''.join(text).split())
+                    result.append(data)
+            return result
 
-    def weatherPrint(self):
-        return 'location: {}\ndescription: {}\ntemperature: {}°F\nhumidity: {}%\natmospheric pressure: {}'.format(
-            *self.weather(['name'], ['weather', 0, 'description'], ['main', 'temp'], ['main', 'humidity'],['main', 'pressure']))
+    def weatherCurrent(self,*keys):
+        r = requests.get("https://www.wunderground.com/hourly/{}/{}/{}".format(*self.locationData("region_code", "city", "zip_code")))
+        page = html.fromstring(r.content)
+        rows = page.xpath("//table[@id='hourly-forecast-table']/tbody/tr")
+        if rows:
+            headers = ["Time", "Conditions", "Temp.", "Feels Like", "Precip", "Amount", "Cloud Cover", "Dew Point",
+                       "Humidity", "Wind", "Pressure"]
+            row = rows[0]
+            result = {}
+            cells = row.xpath('./td')
+            if cells:
+                for i, d in enumerate(cells):
+                    if not (keys and headers[i] not in keys):
+                        text = cells[i].xpath('.//span//text()[not(ancestor::*[contains(@class,"show-for-small-only")])]')
+                        cells[i] = ' '.join(''.join(text).split())
+                        result[headers[i]] = cells[i]
+            return result
 
-    # Working on new weather scrape
-    # def weather(self,*keys):
-    #     r = requests.get("https://www.wunderground.com/weather/{}/{}/{}".format(*self.locationData("region_code","city","zip_code")))
-    #     page = html.fromstring(r.content)
-    #     print(r.content)
-    #     rows = page.xpath("/table[@id='hourly-forecast-table']//tbody//tr")
-    #     print(rows)
-    #     if rows:
-    #         headers = ["Time","Conditions","Temp.","Feels Like","Precip","Amount","Cloud Cover","Dew Point","Humidity","Wind","Pressure"]
-    #         row = rows[0]
-    #         data = row.xpath('./td')
-    #         print(data)
-    #         if data:
-    #             data = {headers[i]:d.text_content() for i,d in enumerate(data) if d.text_content() is not None and (keys and headers[i] in keys)}
-    #             printColumns(data)
+    def weatherPrint(self,key=None):
+        if key is not None:
+            weather = self.weatherCurrent("Time",key)
+            weather = [weather["Time"],weather[key]]
+            print("The {} for {} is {}".format(key,*weather))
+        else:
+            print("Here's today's hourly forecast:")
+            printColumns(self.weatherHourly())
 
     def locationData(self,*keys):
         url = 'http://freegeoip.net/json'
