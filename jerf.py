@@ -214,6 +214,9 @@ class toolBox:
             if showtimes:
                 return name[0].text_content(), showtimes
 
+    def runTerminal(self, command):
+        os.system(command)
+
     def wikiPageScrape(self, page):
         tree = html.fromstring(page.content)
         desc = tree.xpath('//div[@class="mw-parser-output"]/p')
