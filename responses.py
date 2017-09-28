@@ -235,6 +235,12 @@ for i in range(num):
     print(num-i)
     </exec>''')},
 
+    #TERMINAL COMMANDS
+    {"input":["run (.+)"],
+     "reply":('''<exec>self.toolBox.runTerminal(self.match.group(1))</exec>
+     ''')
+     },
+
 
     # SEARCHING THE WEB
     # movies
