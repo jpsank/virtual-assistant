@@ -199,6 +199,10 @@ RESPONSES = [
     {"input": [".*your favorite (.+)"],
      "reply": ['I have no favorite <eval>self.match.group(1)</eval>',"I don't like to play favorites, NN"]},
 
+    # POTTY WORD DETECTION
+    {"input":["(fuck|shit|damn|asshole|bitch)"],
+     "reply":["No fucking cursing"]},
+
     # HELP
     {"input": [".*help",".*(should|can|) i (should |can |)ask you"],
      "reply": ["You can ask me to search the internet for stuff, tell you the weather, get the time and date, open files, make random numbers, and all sorts of stuff. I suggest you just start talking."]},
