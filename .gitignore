@@ -204,3 +204,5 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+contacts.json
