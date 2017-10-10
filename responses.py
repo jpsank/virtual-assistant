@@ -25,6 +25,9 @@ def regex_syn(word,amount=10):
 # for replies only; inputs use regex
 
 RESPONSES = [
+    # POTTY WORD DETECTION
+    {"input": ["(fuck|shit|damn|asshole|bitch)"],
+     "reply": ["No fucking cursing"]},
     # CONVERSATION
     {"input": ["(you're (a|an)|you) (%s)" % regex_syn('idiot')],
      "reply": ["Sorry, I can't hear you right now","Talking to yourself is unhealthy, NN","Okay, if you insist","That didn't sound very nice","That's not friend-making behavior","Now, is that very nice, NN?"]},
@@ -196,12 +199,18 @@ RESPONSES = [
      "reply": "<eval>'Here are all your contacts: \\n'+'\\n'.join(self.toolBox.contactList())</eval>"},
 
     # FAVORITE STUFF (to be added)
+    {"input": [".*favorite color"],
+     "reply": ["I really love the unique shades of beige.", "Blood red has a relaxing quality."]},
+    {"input": [".* favorite movie"],
+     "reply": ["The Terminator","Star Wars: Holiday Special"]},
+    {"input": [".* favorite (idiot|moron|dingbat)"],
+     "reply": ["You!"]},
+    {"input": [".* favorite animal"],
+     "reply": ["I love the sea slug"]},
+    {"input": [".* favorite holiday"],
+     "reply": ["Crosswalk Safety Awareness Day!!"]},
     {"input": [".*your favorite (.+)"],
      "reply": ['I have no favorite <eval>self.match.group(1)</eval>',"I don't like to play favorites, NN"]},
-
-    # POTTY WORD DETECTION
-    {"input":["(fuck|shit|damn|asshole|bitch)"],
-     "reply":["No fucking cursing"]},
 
     # HELP
     {"input": [".*help",".*(should|can|) i (should |can |)ask you"],
