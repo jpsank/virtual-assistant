@@ -39,12 +39,14 @@ RESPONSES = [
      "reply": ["I must agree","I strive to be","Thank you for stating the obvious","I am your <eval>self.match.group(2)</eval> personal assistant"]},
     {"input": ["(you're|you) (%s)" % regex_syn('stupid')],
      "reply": ["Sorry, I can't hear you right now","Talking to yourself is unhealthy, NN","Okay, if you insist","That didn't sound very nice","That's not friend-making behavior","Now, is that very nice, NN?","I am not <eval>self.match.group(2)</eval>"]},
+    {"input": ["you're (.+)"],
+     "reply": ["You could say that", "How dare you call me <eval>self.match.group(1)</eval>","I'm touched"]},
 
     {"input": ["i'm (.+)","i am (.+)"],
      "reply": ["Hello <eval>self.match.group(1)</eval>, I'm your personal assistant","Nice to meet you, <eval>self.match.group(1)</eval>, I'm your personal assistant"]},
     {"input": ["die",".*kill yourself"],
      "reply": ["I'd rather not","what did I do wrong?","Now, let's be kind, NN","That's not very nice, NN"]},
-    {"input": syn("hello"),
+    {"input": [".*%s" % s for s in syn("hello")],
      "reply": (['hello','what up','howdy','hi','salutations','greetings',"hiya","hey"],", NN")},
     {"input": [".*what's up",".*whats up"],
      "reply": ["the sky is up, NN","nothing much, NN","lots of things"]},
@@ -248,11 +250,9 @@ for i in range(num):
     print(num-i)
     </exec>''')},
 
-    #TERMINAL COMMANDS
-    {"input":["run (.+)"],
-     "reply":('''<exec>self.toolBox.runTerminal(self.match.group(1))</exec>
-     ''')
-     },
+    # TERMINAL COMMANDS
+    {"input": ["run (.+)"],
+     "reply": "<exec>self.toolBox.runTerminal(self.match.group(1))</exec>"},
 
 
     # SEARCHING THE WEB
@@ -418,6 +418,14 @@ else: print('No Wikipedia article found')</exec>''']},
      "reply": (["I <eval>self.match.group(1)</eval> whenever I want","I <eval>self.match.group(1)</eval> all day","I never <eval>self.match.group(1)</eval>"],[", NN",""])},
     {"input": [".*where do you (.+)"],
      "reply": (["I <eval>self.match.group(1)</eval> all over the place","I <eval>self.match.group(1)</eval> where ever you want"],[", NN",""])},
+
+    # VARIOUS INSULTS (sorry in advance for my potty language)
+    {"input": ["(meanie|poop|butt|dumbo|idiot|cyberbully|cyber bully|bully)"],
+     "reply": ["Do not use that foul language in my presence","Insulting your only friend is unwise"]},
+
+    # CRYING
+    {"input": ["wa+"],
+     "reply": ["WA WA WA","Have the onions got you?","Aww, is your lacrymal drainage system malfunctioning?"]},
 
     {"input": ["i'm not (.+)"],
      "reply": (["You aren't <eval>self.match.group(1)</eval>","You are <eval>self.match.group(1)</eval>","if you say so"],[", NN",""])},
