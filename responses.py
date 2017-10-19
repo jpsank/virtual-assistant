@@ -25,9 +25,6 @@ def regex_syn(word,amount=10):
 # for replies only; inputs use regex
 
 RESPONSES = [
-    # POTTY WORD DETECTION
-    {"input": ["(fuck|shit|damn|asshole|bitch)"],
-     "reply": ["No fucking cursing"]},
     # CONVERSATION
     {"input": ["(you're (a|an)|you) (%s)" % regex_syn('idiot')],
      "reply": ["Sorry, I can't hear you right now","Talking to yourself is unhealthy, NN","Okay, if you insist","That didn't sound very nice","That's not friend-making behavior","Now, is that very nice, NN?"]},
@@ -46,7 +43,7 @@ RESPONSES = [
      "reply": ["Hello <eval>self.match.group(1)</eval>, I'm your personal assistant","Nice to meet you, <eval>self.match.group(1)</eval>, I'm your personal assistant"]},
     {"input": ["die",".*kill yourself"],
      "reply": ["I'd rather not","what did I do wrong?","Now, let's be kind, NN","That's not very nice, NN"]},
-    {"input": [".*%s" % s for s in syn("hello")],
+    {"input": ["(.* %s\Z|%s)" % (s,s) for s in syn("hello")],
      "reply": (['hello','what up','howdy','hi','salutations','greetings',"hiya","hey"],", NN")},
     {"input": [".*what's up",".*whats up"],
      "reply": ["the sky is up, NN","nothing much, NN","lots of things"]},
@@ -101,7 +98,7 @@ RESPONSES = [
     {"input": ["knock knock"],
      "reply": ["just stop right there, NN, I know it's you"]},
     {"input": [".*why'd the chicken cross the road"],
-     "reply": ["How am I supposed to know? Ask the chicken","which chicken?","it just happened to","it probably just wanted to make a difference in the world"]},
+     "reply": ["How am I supposed to know? Ask the chicken","which chicken?","it just happened to","it probably just wanted to make a difference in the world","To truly know the chicken's motives, you must first understand the chicken itself. Instead, ask 'what does a chicken desire so much as to risk their life for it?'"]},
     {"input": ["where're you"],
      "reply": ["I'm with you, NN", "Where do you think I am?"]},
     {"input": [".*i lost the game"],
@@ -419,6 +416,10 @@ else: print('No Wikipedia article found')</exec>''']},
     {"input": [".*where do you (.+)"],
      "reply": (["I <eval>self.match.group(1)</eval> all over the place","I <eval>self.match.group(1)</eval> where ever you want"],[", NN",""])},
 
+    # POTTY WORD DETECTION
+    {"input": ["(fuck|shit|damn|asshole|bitch)"],
+     "reply": ["No fucking cursing"]},
+
     # VARIOUS INSULTS (sorry in advance for my potty language)
     {"input": ["(meanie|poop|butt|dumbo|idiot|cyberbully|cyber bully|bully)"],
      "reply": ["Do not use that foul language in my presence","Insulting your only friend is unwise"]},
@@ -454,7 +455,7 @@ else: print('No Wikipedia article found')</exec>''']},
 
     # Should I search the web for...
 
-    {"input": [".*((how|where|when|what)( to| do|'s|'re) .+)",".*(why( do|'re|'s) .+)"],
+    {"input": [".*((how|where|when|what)( to| do|'s|'re| does) .+)",".*(why( do|'re|'s) .+)"],
      "reply": (["Ok then","If you say so"],'''<exec>tmp=self.match.group(1)
 if self.toolBox.promptYN(random.choice(['Should I search the web for %s? ' % tmp,'Do web search for %s? ' % tmp])):
     webbrowser.open('https://www.google.com/search?q=%s' % tmp)</exec>''')},
