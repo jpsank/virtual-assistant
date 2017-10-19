@@ -7,7 +7,7 @@ You'll need the modules [lxml](http://lxml.de/installation.html) and [requests](
 ## Usage
 To run type
 
-    python jerf.py
+    python main.py
 
 The first time you run it, it will ask for your username. Then you guys can talk and get to know each other.
 
