@@ -353,7 +353,7 @@ class toolBox:
                 print(":(")
                 return False
         elif opSys == "Darwin":
-            if os.path.exists("/Applications/{}".format(thing.title())) or os.path.exists("/Applications/{}".format(thing)):
+            if os.path.exists("/Applications/{}.app".format(thing.title())) or os.path.exists("/Applications/{}.app".format(thing)):
                 return True
             else:
                 return False
@@ -374,10 +374,10 @@ class toolBox:
                 else:
                     subprocess.call("/usr/bin/{}".format(thing), stdout=subprocess.DEVNULL)
             elif opSys == "Darwin":
-                if os.path.exists("/Applications/{}".format(thing.title())):
-                    subprocess.call("/Applications/{}".format(thing.title()), stdout=subprocess.DEVNULL)
-                elif os.path.exists("/Applications/{}".format(thing)):
-                    subprocess.call("/Applications{}".format(thing), stdout=subprocess.DEVNULL)
+                if os.path.exists("/Applications/{}.app".format(thing.title())):
+                    subprocess.call(["/usr/bin/open","-W","-n","-a","/Applications/{}.app".format(thing.title())])
+                elif os.path.exists("/Applications/{}.app".format(thing)):
+                    subprocess.call(["/usr/bin/open","-W","-n","-a","/Applications{}.app".format(thing)])
         else:
             if self.promptYN('Open website %s? ' % thing):
                 try:
