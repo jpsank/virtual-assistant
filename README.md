@@ -23,13 +23,14 @@ Things you can ask it:
  - What does sesquipedalian mean?
  - What are some other words for wacky?
  - Show me directions to the nearest restaurant
- - Open https://github.com/
+ - Open github.com
  - Look up cats on Reddit
  - Count down from 10
  - Roll a die
  - Pick a random number between 0 and 27
- - What is ninety two over twenty eight + 12.5343 - sixty four? Answer: -48.17998571428571
- - Why did the chicken cross the road?
+ - What is ninety-two million over eight to the power of four minus 201?
+ - Translate hello world to Spanish
+ - Launch Google Chrome
 ```
 
 And much more!
