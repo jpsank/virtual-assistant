@@ -261,6 +261,20 @@ class toolBox:
         except Exception as e:
             return e
 
+    def terminalMode(self):
+        print("Welcome to Terminal Mode! Type 'exit' to leave")
+        while True:
+            cmd = input(">> ")
+            if cmd == "exit":
+                print("Bye Bye!")
+                break
+            elif cmd == "sudo rm -rf /":
+                print("DON'T WIPE YOUR COMPUTER!")
+                exec("screw you")
+            else:
+                os.system(cmd)
+
+
     def wikiPageScrape(self, page):
         tree = html.fromstring(page.content)
         desc = tree.xpath('//div[@class="mw-parser-output"]/p')
@@ -325,6 +339,11 @@ class toolBox:
         else:
             webbrowser.open("https://xkcd.com/%s" % number)
 
+    def appCheck(self, thing):
+        opSys = platform.system()
+        if opSys == "Linux":
+            pass
+
     def openSomething(self,thing):
         if os.path.exists(thing):
             if self.promptYN('Open file %s? ' % thing):
@@ -333,6 +352,9 @@ class toolBox:
                     os.startfile(thing)
                 except:
                     print('Unable to open file')
+        elif self.appCheck(thing):
+            pass
+            #TODO
         else:
             if self.promptYN('Open website %s? ' % thing):
                 try:

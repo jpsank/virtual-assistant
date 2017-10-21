@@ -202,7 +202,7 @@ RESPONSES = [
     {"input": [".*favorite color"],
      "reply": ["I really love the unique shades of beige.", "Blood red has a relaxing quality.","I enjoy the color #F5F5DC"]},
     {"input": [".* favorite movie"],
-     "reply": ["The Terminator","Star Wars: Holiday Special"]},
+     "reply": ["The Terminator","Star Wars: Holiday Special", "Kidz Bop: The Movie"]},
     {"input": [".* favorite (idiot|moron|dingbat)"],
      "reply": ["You!"]},
     {"input": [".* favorite animal"],
@@ -251,6 +251,10 @@ for i in range(num):
     {"input": ["run (.+)"],
      "reply": "<exec>self.toolBox.runTerminal(self.match.group(1))</exec>"},
 
+    # TERMINAL MODE
+    {"input": ["(activate |)terminal mode"],
+     "reply": "<exec>self.toolBox.terminalMode()</exec>"},
+
 
     # SEARCHING THE WEB
     # movies
@@ -282,6 +286,8 @@ if self.toolBox.promptYN(random.choice(['Find "%s" on Google Maps? ' % self.matc
      "reply": '''<eval>self.toolBox.openSomething(self.match.group(1))</eval>'''},
     {"input": [".*(?:open|go to) (https|http)://(.+)\.(.+)"],
      "reply": '''<eval>self.toolBox.openSomething("%s://%s.%s" % self.match.groups())</eval>'''},
+    {"input": [".*open (.+)"],
+     "reply": '''<eval>self.toolBox.openSomething(self.match.group(1))</eval>'''},
 
     # reddit
     {"input": [".*reddit for (.+)",".*reddit (.+)"],
@@ -465,5 +471,4 @@ else: print('No Wikipedia article found')</exec>''']},
      "reply": (["Ok then","If you say so"],'''<exec>tmp=self.match.group(1)
 if self.toolBox.promptYN(random.choice(['Should I search the web for "%s"?' % tmp,'Do web search for "%s"? ' % tmp])):
     webbrowser.open('https://www.google.com/search?q=%s' % tmp)</exec>''')},
-
 ]
