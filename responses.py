@@ -105,8 +105,7 @@ RESPONSES = [
      "reply": ("yes you did","<exec>webbrowser.open('http://losethegame.com')</exec>")},
 
     {"input": [".*stop talking",".*shut .*up",".*go away"],
-     "reply": ("Now you've done it, NN","<eval>RESPONSES.insert(0,{'input':['.*'],'reply':['...','Beg','...','Beg or else']})</eval>",
-               "<eval>RESPONSES.insert(0,{'input':['.*sorry','.*please'],'reply':(['So you came crawling back','There. I hope you have learned your lesson'],'<exec>del RESPONSES[0]</exec><exec>del RESPONSES[0]</exec>')})</eval>")},
+     "reply": "<eval>self.toolBox.shunMode()</eval>"},
     {"input": ["sing"],
      "reply": ["<eval>self.toolBox.sing()</eval>"]},
     {"input": ["shutdown","shut down","turn off","cease to exist","cease your existence","end your process","exit"],
@@ -248,7 +247,7 @@ for i in range(num):
     </exec>''')},
 
     # TERMINAL COMMANDS
-    {"input": ["run (.+)"],
+    {"input": ["run (.+) in .*(terminal|command prompt|cmd|shell)","run (.+)"],
      "reply": "<exec>self.toolBox.runTerminal(self.match.group(1))</exec>"},
 
     # TERMINAL MODE
@@ -284,7 +283,7 @@ else: print('Failed to find showtimes')
      "reply": '''<eval>self.toolBox.openSomething(self.match.group(1))</eval>'''},
     {"input": [".*(?:open|go to) (https|http)://(.+)\.(.+)"],
      "reply": '''<eval>self.toolBox.openSomething("%s://%s.%s" % self.match.groups())</eval>'''},
-    {"input": [".*open (.+)"],
+    {"input": [".*(?:open|launch) (.+)"],
      "reply": '''<eval>self.toolBox.openSomething(self.match.group(1))</eval>'''},
 
     #music
@@ -407,7 +406,7 @@ else: print('No Wikipedia article found')</exec>''']},
      "reply": ["because I said so"]},
 
     {"input": [".*i don't",".*i do not"],
-     "reply": ["I know you don't", "you should"]},
+     "reply": ["I know you don't, NN", "you should"]},
     {"input": [".*i do"],
      "reply": ["I don't","no you don't","you do?"]},
 
@@ -415,7 +414,7 @@ else: print('No Wikipedia article found')</exec>''']},
      "reply": ["yes, really","nope"]},
 
     {"input": ["don't ask\Z"],
-     "reply": ["don't ask what?"]},
+     "reply": ["don't ask what?","ask what, NN?"]},
 
     {"input": [".*he's (.+)"],
      "reply": ["who's <eval>self.match.group(1)</eval>?","how <eval>self.match.group(1)</eval>","very <eval>self.match.group(1)</eval>"]},
@@ -442,11 +441,14 @@ else: print('No Wikipedia article found')</exec>''']},
 
     # VARIOUS INSULTS (sorry in advance for my potty language)
     {"input": ["(meanie|poop|butt|dumbo|idiot|cyberbully|cyber bully|bully|screw you|you suck)"],
-     "reply": ["Do not use that foul language in my presence","Insulting your only friend is unwise"]},
+     "reply": ["NN! Do not use that foul language in my presence","Insulting your only friend is unwise, NN"]},
 
     # CRYING
     {"input": [r"wa+\b"],
      "reply": ["WA WA WA","Have the onions got you?","Aww, is your lacrymal drainage system malfunctioning?"]},
+
+    {"input": ["ha+"],
+     "reply": ["It's not funny, NN"]},
 
     {"input": ["i'm not (.+)"],
      "reply": (["You aren't <eval>self.match.group(1)</eval>","You are <eval>self.match.group(1)</eval>","if you say so"],[", NN",""])},
@@ -479,4 +481,7 @@ else: print('No Wikipedia article found')</exec>''']},
      "reply": (["Ok then","If you say so"],'''<exec>tmp=self.match.group(1)
 if self.toolBox.promptYN(random.choice(['Should I search the web for "%s"?' % tmp,'Do web search for "%s"? ' % tmp])):
     webbrowser.open('https://www.google.com/search?q=%s' % tmp)</exec>''')},
+
+    {"input": [""],
+     "reply": ["say what"]},
 ]

@@ -311,6 +311,22 @@ class toolBox:
             else:
                 os.system(cmd)
 
+    def shunMode(self):
+        print("Entering shun mode... beg for forgiveness required")
+        done = False
+        while not done:
+            s = input(primaryCommandPrompt)
+            for e in [".*please",".*sorry"]:
+                if re.match(e,s):
+                    done = True
+                    break
+            if done:
+                print(random.choice(['So you came crawling back', 'There. I hope you have learned your lesson']))
+            else:
+                print("...")
+        time.sleep(1)
+        print("Shun mode deactivated")
+
     def wikiPageScrape(self, page):
         tree = lxml.html.fromstring(page.content)
         desc = tree.xpath('//div[@class="mw-parser-output"]/p')
@@ -728,7 +744,7 @@ class JERF:
                 if self.match is not None:
                     rep = ''.join(self.process_reply(r["reply"]))
                     return self.replaceify(self.evaluate(rep))
-        return 'say what'
+        return None
 
 
 assistant = JERF()
