@@ -339,6 +339,11 @@ class toolBox:
         else:
             webbrowser.open("https://xkcd.com/%s" % number)
 
+    def appCheck(self, thing):
+        opSys = platform.system()
+        if opSys == "Linux":
+            pass
+
     def openSomething(self,thing):
         if os.path.exists(thing):
             if self.promptYN('Open file %s? ' % thing):
@@ -347,6 +352,9 @@ class toolBox:
                     os.startfile(thing)
                 except:
                     print('Unable to open file')
+        elif self.appCheck(thing):
+            pass
+            #TODO
         else:
             if self.promptYN('Open website %s? ' % thing):
                 try:

@@ -286,6 +286,8 @@ if self.toolBox.promptYN(random.choice(['Find "%s" on Google Maps? ' % self.matc
      "reply": '''<eval>self.toolBox.openSomething(self.match.group(1))</eval>'''},
     {"input": [".*(?:open|go to) (https|http)://(.+)\.(.+)"],
      "reply": '''<eval>self.toolBox.openSomething("%s://%s.%s" % self.match.groups())</eval>'''},
+    {"input": [".*open (.+)"],
+     "reply": '''<eval>self.toolBox.openSomething(self.match.group(1))</eval>'''},
 
     # reddit
     {"input": [".*reddit for (.+)",".*reddit (.+)"],
