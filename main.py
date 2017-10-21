@@ -342,7 +342,6 @@ class toolBox:
             webbrowser.open("https://xkcd.com/%s" % number)
 
     def appCheck(self, thing):
-        print(thing)
         opSys = platform.system()
         if opSys == "Linux":
             print(home)
