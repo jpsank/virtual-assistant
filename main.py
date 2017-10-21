@@ -346,17 +346,22 @@ class toolBox:
         opSys = platform.system()
         if opSys == "Linux":
             if os.path.exists("/usr/bin/{}".format(thing.lower())):
-                return True
+                return "/usr/bin/{}".format(thing.lower())
             elif os.path.exists("{}/.steam/steam.sh".format(home)) and thing.lower() == "steam":
-                return True
-            else:
-                print(":(")
-                return False
+                return "{}/.steam/steam.sh".format(home)
         elif opSys == "Darwin":
             if os.path.exists("/Applications/{}.app".format(thing.title())) or os.path.exists("/Applications/{}.app".format(thing)):
-                return True
-            else:
-                return False
+                return "/Applications/{}.app".format(thing.title())
+        elif opSys == "Windows":
+            for app in os.listdir(r"C:\ProgramData\Microsoft\Windows\Start Menu\Programs"):
+                fullpath = os.path.join("C:\ProgramData\Microsoft\Windows\Start Menu\Programs",app)
+                if os.path.isdir(fullpath):
+                    for app2 in os.listdir(fullpath):
+                        if thing == os.path.splitext(app2)[0].lower():
+                            return os.path.join(fullpath,app2)
+                else:
+                    if thing in os.path.splitext(app)[0].lower():
+                        return fullpath
 
     def openSomething(self,thing):
         if os.path.exists(thing):
@@ -366,28 +371,27 @@ class toolBox:
                     os.startfile(thing)
                 except:
                     print('Unable to open file')
-        elif self.appCheck(thing):
-            opSys = platform.system()
-            if opSys == "Linux":
-                if thing == "steam":
-                    subprocess.call("{}/.steam/steam.sh".format(home), stdout=subprocess.DEVNULL)
-                else:
-                    subprocess.call("/usr/bin/{}".format(thing), stdout=subprocess.DEVNULL)
-            elif opSys == "Darwin":
-                if os.path.exists("/Applications/{}.app".format(thing.title())):
-                    subprocess.call(["/usr/bin/open","-W","-n","-a","/Applications/{}.app".format(thing.title())])
-                elif os.path.exists("/Applications/{}.app".format(thing)):
-                    subprocess.call(["/usr/bin/open","-W","-n","-a","/Applications{}.app".format(thing)])
         else:
-            if self.promptYN('Open website %s? ' % thing):
-                try:
-                    print("Opening %s..." % thing)
-                    if thing.startswith('http'):
-                        webbrowser.open(thing)
-                    else:
-                        webbrowser.open("https://%s" % thing)
-                except:
-                    print("Unable to open %s" % thing)
+            appcheck = self.appCheck(thing)
+            if appcheck is not None:
+                opSys = platform.system()
+                if opSys == "Linux":
+                    subprocess.call(appcheck, stdout=subprocess.DEVNULL)
+                elif opSys == "Darwin":
+                    subprocess.call(["/usr/bin/open","-W","-n","-a",appcheck])
+                elif opSys == "Windows":
+                    subprocess.Popen('"%s"' % appcheck,shell=True)
+                print("Attempting to open %s" % appcheck)
+            else:
+                if self.promptYN('Open website %s? ' % thing):
+                    try:
+                        print("Opening %s..." % thing)
+                        if thing.startswith('http'):
+                            webbrowser.open(thing)
+                        else:
+                            webbrowser.open("https://%s" % thing)
+                    except:
+                        print("Unable to open %s" % thing)
 
     def googleIt(self,search):
         webbrowser.open("https://www.google.com/search?q=%s" % search)
