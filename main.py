@@ -344,7 +344,6 @@ class toolBox:
     def appCheck(self, thing):
         opSys = platform.system()
         if opSys == "Linux":
-            print(home)
             if os.path.exists("/usr/bin/{}".format(thing.lower())):
                 return True
             elif os.path.exists("{}/.steam/steam.sh".format(home)) and thing.lower() == "steam":
@@ -353,7 +352,7 @@ class toolBox:
                 print(":(")
                 return False
         elif opSys == "Darwin":
-            if os.path.exists("/Applications/{}.app".format(thing.title())) or os.path.exists("/Applications/{}.app".format(thing)):
+            if os.path.exists("/Applications/{}".format(thing.title())) or os.path.exists("/Applications/{}".format(thing)):
                 return True
             else:
                 return False
@@ -374,10 +373,10 @@ class toolBox:
                 else:
                     subprocess.call("/usr/bin/{}".format(thing), stdout=subprocess.DEVNULL)
             elif opSys == "Darwin":
-                if os.path.exists("/Applications/{}.app".format(thing.title())):
-                    subprocess.call(["/usr/bin/open","-W","-n","-a","/Applications/{}.app".format(thing.title())])
-                elif os.path.exists("/Applications/{}.app".format(thing)):
-                    subprocess.call(["/usr/bin/open","-W","-n","-a","/Applications{}.app".format(thing)])
+                if os.path.exists("/Applications/{}".format(thing.title())):
+                    subprocess.call("/Applications/{}".format(thing.title()), stdout=subprocess.DEVNULL)
+                elif os.path.exists("/Applications/{}".format(thing)):
+                    subprocess.call("/Applications{}".format(thing), stdout=subprocess.DEVNULL)
         else:
             if self.promptYN('Open website %s? ' % thing):
                 try:
