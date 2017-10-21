@@ -336,8 +336,10 @@ class toolBox:
     def xkcdComic(self,number=None):
         if number is None:
             webbrowser.open("https://c.xkcd.com/random/comic/")
+            return random.choice(["Here's a random xkcd comic","Here you go"])
         else:
             webbrowser.open("https://xkcd.com/%s" % number)
+            return random.choice(["Here's comic number %s" % number,"Opening comic number %s..." % number])
 
     def appCheck(self, thing):
         opSys = platform.system()
