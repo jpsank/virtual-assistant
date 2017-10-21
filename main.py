@@ -257,6 +257,12 @@ class toolBox:
             if showtimes:
                 return name[0].text_content(), showtimes
 
+    def musicControl(self, cmd):
+        if platform.system() == "Linux":
+            os.system("rhythmbox-client --{}".format(cmd))
+        else:
+            return "Sorry, music control isn't supported for you yet."
+
     def runTerminal(self, command):
         try:
             os.system(command)

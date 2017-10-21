@@ -289,6 +289,10 @@ if self.toolBox.promptYN(random.choice(['Find "%s" on Google Maps? ' % self.matc
     {"input": [".*open (.+)"],
      "reply": '''<eval>self.toolBox.openSomething(self.match.group(1))</eval>'''},
 
+    #music
+    {"input": ["(play|pause|next|previous)"],
+     "reply": "<eval>self.toolBox.musicControl(self.match.group(1))</eval>"},
+
     # reddit
     {"input": [".*reddit for (.+)",".*reddit (.+)"],
      "reply": ['''<exec>tmp=self.toolBox.redditLookup(self.match.group(1))
