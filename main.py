@@ -276,7 +276,6 @@ class toolBox:
             else:
                 os.system(cmd)
 
-
     def wikiPageScrape(self, page):
         tree = html.fromstring(page.content)
         desc = tree.xpath('//div[@class="mw-parser-output"]/p')
