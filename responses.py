@@ -3,7 +3,6 @@ from lxml import html
 import random
 import itertools
 
-
 def syn(word,amount=10,return_original=True):
     url = "http://www.thesaurus.com/browse/%s" % word
     page = requests.get(url)
@@ -254,6 +253,9 @@ for i in range(num):
     {"input": [".*(terminal mode|cmd|command prompt|powershell)"],
      "reply": "<exec>self.toolBox.terminalMode()</exec>"},
 
+    # sleep/shutdown etc
+    {"input": ["\\b(sleep|shutdown|suspend|reboot)\\b"],
+     "reply": ["<exec>self.toolBox.sleep(self.match.group(1))</exec>"]},
 
     # SEARCHING THE WEB
     # movies
