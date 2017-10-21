@@ -11,6 +11,7 @@ if platform.system() == "Windows":
 import re
 import os
 from responses import RESPONSES
+import subprocess
 
 import requests
 from lxml import html
@@ -22,6 +23,7 @@ SPELL_CHECK = False
 
 spellchecker = SpellChecker("en_US")
 
+home = os.path.expanduser("~")
 
 primaryCommandPrompt = '>> '
 secondaryCommandPrompt = '> '
@@ -344,7 +346,18 @@ class toolBox:
     def appCheck(self, thing):
         opSys = platform.system()
         if opSys == "Linux":
-            pass
+            if os.path.exists("/usr/bin/{}".format(thing.lower())):
+                return True
+            elif os.path.exists("{}/.steam/steam.sh".format(home)) and thing.lower() == "steam":
+                return True
+            else:
+                print(":(")
+                return False
+        elif opSys == "Darwin":
+            if os.path.exists("/Applications/{}.app".format(thing.title())) or os.path.exists("/Applications/{}.app".format(thing)):
+                return True
+            else:
+                return False
 
     def openSomething(self,thing):
         if os.path.exists(thing):
@@ -355,8 +368,17 @@ class toolBox:
                 except:
                     print('Unable to open file')
         elif self.appCheck(thing):
-            pass
-            #TODO
+            opSys = platform.system()
+            if opSys == "Linux":
+                if thing == "steam":
+                    subprocess.call("{}/.steam/steam.sh".format(home), stdout=subprocess.DEVNULL)
+                else:
+                    subprocess.call("/usr/bin/{}".format(thing), stdout=subprocess.DEVNULL)
+            elif opSys == "Darwin":
+                if os.path.exists("/Applications/{}.app".format(thing.title())):
+                    subprocess.call(["/usr/bin/open","-W","-n","-a","/Applications/{}.app".format(thing.title())])
+                elif os.path.exists("/Applications/{}.app".format(thing)):
+                    subprocess.call(["/usr/bin/open","-W","-n","-a","/Applications{}.app".format(thing)])
         else:
             if self.promptYN('Open website %s? ' % thing):
                 try:
