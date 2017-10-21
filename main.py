@@ -12,9 +12,10 @@ import re
 import os
 from responses import RESPONSES
 import subprocess
+import html
 
 import requests
-from lxml import html
+import lxml.html
 from enchant.checker import SpellChecker
 
 
@@ -27,6 +28,8 @@ home = os.path.expanduser("~")
 
 primaryCommandPrompt = '>> '
 secondaryCommandPrompt = '> '
+
+LANGUAGES = {'malayalam': 'ml', 'telugu': 'te', 'armenian': 'hy', 'finnish': 'fi', 'urdu': 'ur', 'thai': 'th', 'georgian': 'ka', 'lao': 'lo', 'scots gaelic': 'gd', 'lithuanian': 'lt', 'italian': 'it', 'hmong daw': 'mww', 'auto detect': 'auto_detect', 'belarusian': 'be', 'hebrew': 'iw', 'sesotho': 'st', 'estonian': 'et', 'czech': 'cs', 'basque': 'eu', 'russian': 'ru', 'luxembourgish': 'lb', 'filipino': 'tl', 'welsh': 'cy', 'korean': 'ko', 'sindhi': 'sd', 'persian': 'fa', 'german': 'de', 'samoan': 'sm', 'icelandic': 'is', 'maltese': 'mt', 'somali': 'so', 'malay': 'ms', 'indonesian': 'id', 'spanish': 'es', 'latin': 'la', 'hindi': 'hi', 'hungarian': 'hu', 'danish': 'da', 'xhosa': 'xh', 'sundanese': 'su', 'uzbek': 'uz', 'ukrainian': 'uk', 'slovak': 'sk', 'kannada': 'kn', 'hmong': 'hmn', 'yucatec maya': 'yua', 'afrikaans': 'af', 'albanian': 'sq', 'vietnamese': 'vi', 'croatian': 'hr', 'galician': 'gl', 'bengali': 'bn', 'zulu': 'zu', 'nepali': 'ne', 'slovenian': 'sl', 'cebuano': 'ceb', 'shona': 'sn', 'tamil': 'ta', 'portuguese': 'pt', 'chichewa': 'ny', 'french': 'fr', 'greek': 'el', 'kazakh': 'kk', 'mongolian': 'mn', 'sinhala': 'si', 'tajik': 'tg', 'polish': 'pl', 'malagasy': 'mg', 'chinese (simplified)': 'zh', 'pashto': 'ps', 'marathi': 'mr', 'kyrgyz': 'ky', 'arabic': 'ar', 'hawaiian': 'haw', 'latvian': 'lv', 'igbo': 'ig', 'yiddish': 'yi', 'kurdish': 'ku', 'khmer': 'km', 'punjabi': 'pa', 'esperanto': 'eo', 'javanese': 'jw', 'serbian (latin)': 'sr-La', 'hausa': 'ha', 'amharic': 'am', 'bosnian (latin)': 'bs', 'japanese': 'ja', 'burmese': 'my', 'bulgarian': 'bg', 'turkish': 'tr', 'klingon': 'tlh', 'irish': 'ga', 'catalan': 'ca', 'gujarati': 'gu', 'macedonian': 'mk', 'chinese (traditional)': 'zh-TW', 'maori': 'mi', 'dutch': 'nl', 'frisian': 'fy', 'swedish': 'sv', 'norwegian': 'no', 'english': 'en', 'haitian creole': 'ht', 'swahili': 'sw', 'yoruba': 'yo', 'romanian': 'ro', 'azerbaijani': 'az', 'serbian (cyrillic)': 'sr'}
 
 if os.path.exists('contacts.json'):
     with open('contacts.json','r') as f:
@@ -109,7 +112,7 @@ class toolBox:
     def thesaurus(self,word):
         url = "http://www.thesaurus.com/browse/%s" % word
         page = requests.get(url)
-        tree = html.fromstring(page.content)
+        tree = lxml.html.fromstring(page.content)
         syns = tree.xpath('//div[@class="relevancy-list"]/ul/li/a/span[@class="text"]')
         if syns:
             return ', '.join([d.text_content() for d in syns])
@@ -117,7 +120,7 @@ class toolBox:
 
     def weatherHourly(self,*keys):
         r = requests.get("https://www.wunderground.com/hourly/{}/{}/{}".format(*self.locationData("region_code","city","zip_code")))
-        page = html.fromstring(r.content)
+        page = lxml.html.fromstring(r.content)
         rows = page.xpath("//table[@id='hourly-forecast-table']/tbody/tr")
         if rows:
             headers = ["Time","Conditions","Temp.","Feels Like","Precip","Amount","Cloud Cover","Dew Point","Humidity","Wind","Pressure"]
@@ -134,7 +137,7 @@ class toolBox:
 
     def weatherCurrent(self,*keys):
         r = requests.get("https://www.wunderground.com/hourly/{}/{}/{}".format(*self.locationData("region_code", "city", "zip_code")))
-        page = html.fromstring(r.content)
+        page = lxml.html.fromstring(r.content)
         rows = page.xpath("//table[@id='hourly-forecast-table']/tbody/tr")
         if rows:
             headers = ["Time", "Conditions", "Temp.", "Feels Like", "Precip", "Amount", "Cloud Cover", "Dew Point",
@@ -165,6 +168,14 @@ class toolBox:
         j = json.loads(r.text)
         return [j[k] if k in j else None for k in keys]
 
+    def googleMapSearch(self,search):
+        search = re.sub(r"\?+\Z", "", search)
+        if self.promptYN(random.choice(['Find "%s" on Google Maps? ' % search, 'Search for "%s" on Google Maps? ' % search])):
+            webbrowser.open(self.locationURL(search))
+            return random.choice(["Searching %s on Google Maps..." % search, "Exploring the world in search of %s..." % search])
+        else:
+            return random.choice(["Ok then","If you say so"])
+
     def directionsURL(self,to,fro=None):
         if fro is None:
             return 'https://www.google.com/maps/dir/?api=1&destination=%s' % to
@@ -177,7 +188,7 @@ class toolBox:
     def define(self,word,index=None):
         url = "http://www.dictionary.com/browse/%s" % word
         page = requests.get(url)
-        tree = html.fromstring(page.content)
+        tree = lxml.html.fromstring(page.content)
         defsets = tree.xpath('//div[@class="def-content"]')
         if defsets:
             defs = [' '.join(d.text_content().replace('\n','').replace('\r','').split()) for d in defsets]
@@ -193,13 +204,31 @@ class toolBox:
         else:
             return "%s (did you mean %s?)" % (random.choice(["Never heard of it", "A %s?" % word]),self.spellcheckSuggest(word))
 
+    def translate(self, text, src="en", dest="zh-TW"):
+        session = requests.session()
+        url = "https://www.translate.com/translator/ajax_translate"
+        headers = {
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (Klxml.html, like Gecko) Chrome/61.0.3163.100 Safari/537.36 OPR/48.0.2685.39"}
+        data = {"text_to_translate": text,
+                "source_lang": src,
+                "translated_lang": dest,
+                "use_cache_only": "false"}
+        page = session.post(url, data=data, headers=headers)
+        j = json.loads(page.text)
+        if j["translation_id"] != 0:
+            return html.unescape(j["translated_text"]).encode('utf-8')
+
+    def translateTo(self,text,dest,src="auto detect"):
+        if src in LANGUAGES and dest in LANGUAGES:
+            return '"%s" in %s: "%s"' % (text, dest, self.translate(text,LANGUAGES[src],LANGUAGES[dest]).decode())
+
     def spellcheckSuggest(self,word):
         return ', '.join(spellchecker.suggest(word))
 
     def usedInASentence(self,word):
         url = "http://www.dictionary.com/browse/%s" % word
         page = requests.get(url)
-        tree = html.fromstring(page.content)
+        tree = lxml.html.fromstring(page.content)
         defsets = tree.xpath('//p[@class="partner-example-text"]')
         if defsets:
             defs = [' '.join(d.text_content().split()) for d in defsets]
@@ -227,7 +256,7 @@ class toolBox:
     def moviesNearMe(self):
         url = 'https://www.google.com/search?q=movies%20near%20me'
         page = requests.get(url)
-        tree = html.fromstring(page.content)
+        tree = lxml.html.fromstring(page.content)
         movies = tree.xpath('//div[@class="_Nxj"]')
         if movies:
             result = []
@@ -244,7 +273,7 @@ class toolBox:
     def movieShowTimes(self,movie):
         url = "https://www.google.com/search?q=showtimes+for+%s" % movie
         page = requests.get(url)
-        tree = html.fromstring(page.content)
+        tree = lxml.html.fromstring(page.content)
         name = tree.xpath('//div[@class="_Kxj"]/span/span')
         if name:
             rows = tree.xpath('//table[@class="_W5j _Axj"]/tbody/tr')
@@ -272,18 +301,18 @@ class toolBox:
     def terminalMode(self):
         print("Welcome to Terminal Mode! Type 'exit' to leave")
         while True:
-            cmd = input(">> ")
+            cmd = input(">>> ")
             if cmd == "exit":
                 print("Bye Bye!")
                 break
-            elif cmd == "sudo rm -rf /":
+            elif platform.system() != "Windows" and cmd == "sudo rm -rf /":
                 print("DON'T WIPE YOUR COMPUTER!")
                 exec("screw you")
             else:
                 os.system(cmd)
 
     def wikiPageScrape(self, page):
-        tree = html.fromstring(page.content)
+        tree = lxml.html.fromstring(page.content)
         desc = tree.xpath('//div[@class="mw-parser-output"]/p')
         if desc:
             result = desc[0].text_content()
@@ -293,7 +322,7 @@ class toolBox:
         url = "https://en.wikipedia.org/wiki/?search=%s" % topic
         page = requests.get(url)
         if '?search' in page.url:
-            tree = html.fromstring(page.content)
+            tree = lxml.html.fromstring(page.content)
             searches = tree.xpath('//div[@class="mw-search-result-heading"]/a')
             if searches:
                 prompt = self.promptD("Choose the number of the article you want to open:\n%s" % '\n'.join(
@@ -308,6 +337,7 @@ class toolBox:
             return self.wikiPageScrape(requests.get(page.url))
 
     def whatIsLookup(self,what):
+        what = re.sub(r"\?+\Z", "", what)
         if self.promptYN("Check my sources for %s?" %what):
             d = self.define(what)
             if d:
@@ -322,10 +352,10 @@ class toolBox:
     def redditSearchScrape(self, topic):
         url = "https://www.reddit.com/search?q=%s" % topic
         try:
-            page = requests.get(url,headers={'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.78 Safari/537.36 OPR/47.0.2631.55'})
+            page = requests.get(url,headers={'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (Klxml.html, like Gecko) Chrome/60.0.3112.78 Safari/537.36 OPR/47.0.2631.55'})
         except ConnectionError:
             return
-        tree = html.fromstring(page.content)
+        tree = lxml.html.fromstring(page.content)
         results = tree.xpath('//div[contains(@class, "search-result-link")]//a[contains(@class, "search-title")]')
         if results:
             return results
@@ -370,7 +400,7 @@ class toolBox:
                         return fullpath
 
     def openSomething(self,thing):
-        if os.path.exists(thing):
+        if os.path.exists(r'"%s"' % thing):
             if self.promptYN('Open file %s? ' % thing):
                 try:
                     print("Opening %s..." % thing)
@@ -427,6 +457,7 @@ class toolBox:
             return "Cancelling..."
 
     def personLookup(self,name):
+        name = re.sub(r"\?+\Z","",name)
         index = self.parseContactString(name)
         if isinstance(index,int):
             if self.promptYN("Show %s's contact info?" % CONTACTS[index]["NN"]):

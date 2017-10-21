@@ -252,7 +252,7 @@ for i in range(num):
      "reply": "<exec>self.toolBox.runTerminal(self.match.group(1))</exec>"},
 
     # TERMINAL MODE
-    {"input": ["(activate |)terminal mode"],
+    {"input": [".*(terminal mode|cmd|command prompt|powershell)"],
      "reply": "<exec>self.toolBox.terminalMode()</exec>"},
 
 
@@ -277,9 +277,7 @@ else: print('Failed to find showtimes')
     {"input": [".*how (many hours|many miles|long) from (.+) to (.+)"],
      "reply": (["Opening Google Maps...","Finding directions..."],"<eval>webbrowser.open(self.toolBox.directionsURL(self.match.group(3),self.match.group(2)))</eval>")},
     {"input": ["where's (.+)","show me (.+) on .*map","find (.+) on .*map","search for (.+) on .*map","search (.+) on .*map"],
-     "reply": (["Ok then","If you say so"],'''<exec>
-if self.toolBox.promptYN(random.choice(['Find "%s" on Google Maps? ' % self.match.group(1),'Search for "%s" on Google Maps? ' % self.match.group(1)])):
-    webbrowser.open(self.toolBox.locationURL(self.match.group(1)))</exec>''')},
+     "reply": '''<eval>self.toolBox.googleMapSearch(self.match.group(1))</eval>'''},
 
     # open website/file
     {"input": [".*(?:open|go to) ((?:.+\.)?.+\..+)"],
@@ -290,7 +288,7 @@ if self.toolBox.promptYN(random.choice(['Find "%s" on Google Maps? ' % self.matc
      "reply": '''<eval>self.toolBox.openSomething(self.match.group(1))</eval>'''},
 
     #music
-    {"input": ["(play|pause|next|previous)"],
+    {"input": ["(play|pause|next|previous)\Z"],
      "reply": "<eval>self.toolBox.musicControl(self.match.group(1))</eval>"},
 
     # reddit
@@ -343,6 +341,12 @@ else: print('No Wikipedia article found')</exec>''']},
     {"input": [".*synonyms for (.+)",".*synonyms of (.+)",".*synonym for (.+)",".*synonym of (.+)",".*another word for (.+)",".*other word for (.+)",".*other words for (.+)"],
      "reply": (["Here's some synonyms for <eval>self.match.group(1)</eval>: ","Other words for <eval>self.match.group(1)</eval>: "],"<eval>self.toolBox.thesaurus(self.match.group(1))</eval>")},
 
+    # translate
+    {"input": ["translate (.+) from (.+) to (.+)"],
+     "reply": "<eval>self.toolBox.translateTo(self.match.group(1),self.match.group(3),self.match.group(2))</eval>"},
+    {"input": ["translate (.+) to (.+)"],
+     "reply": "<eval>self.toolBox.translateTo(self.match.group(1),self.match.group(2))</eval>"},
+
     # weather
     {"input": [".*weather","how's it outside","what's it like outside",".*hourly forecast"],
      "reply": ["<eval>self.toolBox.weatherPrint()</eval>"]},
@@ -370,7 +374,7 @@ else: print('No Wikipedia article found')</exec>''']},
      "reply": (["It's ","The year is ","It's the year of "],"<eval>time.asctime().split()[4]</eval>",", NN")},
 
     # who is ____
-    {"input": ["who's (.+)","who're (.+)"],
+    {"input": ["(?:who's|who're) (.+)"],
      "reply": ["<eval>self.toolBox.personLookup(self.match.group(1))</eval>"]},
 
     # what is a ____
@@ -417,8 +421,8 @@ else: print('No Wikipedia article found')</exec>''']},
      "reply": ["who's <eval>self.match.group(1)</eval>?","how <eval>self.match.group(1)</eval>","very <eval>self.match.group(1)</eval>"]},
     {"input": [".*it's (.+)"],
      "reply": ["what's <eval>self.match.group(1)</eval>?","very <eval>self.match.group(1)</eval>","that's <eval>self.match.group(1)</eval>"]},
-    {"input": [".*that's (.+)"],
-     "reply": ["it is <eval>self.match.group(1)</eval>","it was very <eval>self.match.group(1)</eval>"]},
+    {"input": ["that's (.+)"],
+     "reply": ["no way is that <eval>self.match.group(1)</eval>","it was very <eval>self.match.group(1)</eval>"]},
 
     {"input": [".*are you (.+)"],
      "reply": ["I am <eval>self.match.group(1)</eval>","I am not <eval>self.match.group(1)</eval>"]},
@@ -441,7 +445,7 @@ else: print('No Wikipedia article found')</exec>''']},
      "reply": ["Do not use that foul language in my presence","Insulting your only friend is unwise"]},
 
     # CRYING
-    {"input": ["wa+\b"],
+    {"input": [r"wa+\b"],
      "reply": ["WA WA WA","Have the onions got you?","Aww, is your lacrymal drainage system malfunctioning?"]},
 
     {"input": ["i'm not (.+)"],
@@ -471,7 +475,7 @@ else: print('No Wikipedia article found')</exec>''']},
 
     # Should I search the web for...
 
-    {"input": [".*((how|where|when|what)( to| do|'s|'re| does|) .+)",".*(why( do|'re|'s) .+)",".*(is .+)"],
+    {"input": [".*((how|where|when|what)( to| do|'s|'re| does|) .+)",".*(why( do|'re|'s) .+)",".*(is .+)",".*(do .+)"],
      "reply": (["Ok then","If you say so"],'''<exec>tmp=self.match.group(1)
 if self.toolBox.promptYN(random.choice(['Should I search the web for "%s"?' % tmp,'Do web search for "%s"? ' % tmp])):
     webbrowser.open('https://www.google.com/search?q=%s' % tmp)</exec>''')},
