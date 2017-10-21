@@ -11,6 +11,7 @@ if platform.system() == "Windows":
 import re
 import os
 from responses import RESPONSES
+import subprocess
 
 import requests
 from lxml import html
@@ -22,6 +23,7 @@ SPELL_CHECK = False
 
 spellchecker = SpellChecker("en_US")
 
+home = os.path.expanduser("~")
 
 primaryCommandPrompt = '>> '
 secondaryCommandPrompt = '> '
@@ -340,9 +342,22 @@ class toolBox:
             webbrowser.open("https://xkcd.com/%s" % number)
 
     def appCheck(self, thing):
+        print(thing)
         opSys = platform.system()
         if opSys == "Linux":
-            pass
+            print(home)
+            if os.path.exists("/usr/bin/{}".format(thing.lower())):
+                return True
+            elif os.path.exists("{}/.steam/steam.sh".format(home)) and thing.lower() == "steam":
+                return True
+            else:
+                print(":(")
+                return False
+        elif opSys == "Darwin":
+            if os.path.exists("/Applications/{}".format(thing.title())) or os.path.exists("/Applications/{}".format(thing)):
+                return True
+            else:
+                return False
 
     def openSomething(self,thing):
         if os.path.exists(thing):
@@ -353,8 +368,17 @@ class toolBox:
                 except:
                     print('Unable to open file')
         elif self.appCheck(thing):
-            pass
-            #TODO
+            opSys = platform.system()
+            if opSys == "Linux":
+                if thing == "steam":
+                    subprocess.call("{}/.steam/steam.sh".format(home), stdout=subprocess.DEVNULL)
+                else:
+                    subprocess.call("/usr/bin/{}".format(thing), stdout=subprocess.DEVNULL)
+            elif opSys == "Darwin":
+                if os.path.exists("/Applications/{}".format(thing.title())):
+                    subprocess.call("/Applications/{}".format(thing.title()), stdout=subprocess.DEVNULL)
+                elif os.path.exists("/Applications/{}".format(thing)):
+                    subprocess.call("/Applications{}".format(thing), stdout=subprocess.DEVNULL)
         else:
             if self.promptYN('Open website %s? ' % thing):
                 try:
