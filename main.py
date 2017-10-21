@@ -187,9 +187,12 @@ class toolBox:
     def getDefinition(self,word):
         d = self.define(word,0)
         if d:
-            return d
+            return "%s: %s" % (word,d)
         else:
-            return random.choice(["Never heard of it", "A %s?" % word])
+            return "%s (did you mean %s?)" % (random.choice(["Never heard of it", "A %s?" % word]),self.spellcheckSuggest(word))
+
+    def spellcheckSuggest(self,word):
+        return ', '.join(spellchecker.suggest(word))
 
     def usedInASentence(self,word):
         url = "http://www.dictionary.com/browse/%s" % word
@@ -207,7 +210,7 @@ class toolBox:
             "-":["minus"],
             "/":["over","divided by"],
             "*":["times","multiplied by"],
-            "**": ["to the power of", "to the"]
+            "**": ["to the power of", "to the", "\^"]
         }
         for s in signs:
             pattern = re.compile("\d+(\s*(?:%s)\s*)\d+" % '|'.join(signs[s]))
@@ -253,7 +256,10 @@ class toolBox:
                 return name[0].text_content(), showtimes
 
     def runTerminal(self, command):
-        os.system(command)
+        try:
+            os.system(command)
+        except Exception as e:
+            return e
 
     def wikiPageScrape(self, page):
         tree = html.fromstring(page.content)
@@ -294,7 +300,10 @@ class toolBox:
 
     def redditSearchScrape(self, topic):
         url = "https://www.reddit.com/search?q=%s" % topic
-        page = requests.get(url,headers={'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.78 Safari/537.36 OPR/47.0.2631.55'})
+        try:
+            page = requests.get(url,headers={'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.78 Safari/537.36 OPR/47.0.2631.55'})
+        except ConnectionError:
+            return
         tree = html.fromstring(page.content)
         results = tree.xpath('//div[contains(@class, "search-result-link")]//a[contains(@class, "search-title")]')
         if results:
@@ -309,6 +318,12 @@ class toolBox:
             return random.choice(["Opening reddit post","Opening '%s'" % searches[p].text_content()])
         else:
             return
+
+    def xkcdComic(self,number=None):
+        if number is None:
+            webbrowser.open("https://c.xkcd.com/random/comic/")
+        else:
+            webbrowser.open("https://xkcd.com/%s" % number)
 
     def openSomething(self,thing):
         if os.path.exists(thing):
@@ -384,7 +399,8 @@ class toolBox:
                     if tag in c["NN"].lower() \
                             or c["NN"].lower() in tag \
                             or (c["FULLNAME"] is not None and any(n.lower() in c["FULLNAME"].split() for n in tag.split())):
-                        if self.promptYN("Are you referring to your contact %s?" % c["NN"]):
+                        prompts = ["Are you referring to your contact NN?","You mean your contact NN?","Are you talking about your contact NN?"]
+                        if self.promptYN(random.choice(prompts).replace("NN",c["NN"])):
                             return i
         elif isinstance(tag, int):
             return tag
@@ -440,8 +456,12 @@ class toolBox:
             name = "you" if contactNum == 0 else CONTACTS[contactNum]["NN"]
             possessive = "your" if contactNum == 0 else "%s's" % CONTACTS[contactNum]["NN"].capitalize()
             if key == "BDAY":
+                try:
+                    newValue = parse(newValue).strftime('%m/%d/%Y')
+                except ValueError:
+                    return "Could not parse the date of birth entered"
                 if self.promptYN('Change %s birth date to %s? ' % (possessive,newValue)):
-                    self.changeContact(contactNum,{key: parse(newValue).strftime('%d/%m/%Y')})
+                    self.changeContact(contactNum,{key: newValue})
                     return "%s birthday is now %s" % (possessive.capitalize(),CONTACTS[contactNum][key])
                 else:
                     return "Leaving %s birthday as %s" % (possessive,original)

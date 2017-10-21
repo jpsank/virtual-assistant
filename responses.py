@@ -107,7 +107,7 @@ RESPONSES = [
     {"input": [".*stop talking",".*shut .*up",".*go away"],
      "reply": ("Now you've done it, NN","<eval>RESPONSES.insert(0,{'input':['.*'],'reply':['...','Beg','...','Beg or else']})</eval>",
                "<eval>RESPONSES.insert(0,{'input':['.*sorry','.*please'],'reply':(['So you came crawling back','There. I hope you have learned your lesson'],'<exec>del RESPONSES[0]</exec><exec>del RESPONSES[0]</exec>')})</eval>")},
-    {"input": [".*sing"],
+    {"input": ["sing"],
      "reply": ["<eval>self.toolBox.sing()</eval>"]},
     {"input": ["shutdown","shut down","turn off","cease to exist","cease your existence","end your process","exit"],
      "reply": "<eval>exit()</eval>"},
@@ -122,7 +122,7 @@ RESPONSES = [
 
     # SPELL A WORD
     {"input": [".*spell (.+)"],
-     "reply": ["Did you mean <eval>', '.join(spellchecker.suggest(self.match.group(1)))</eval>?"]},
+     "reply": ["Did you mean <eval>self.toolBox.spellcheckSuggest(self.match.group(1))</eval>?"]},
 
     # CHECK CONTACT INFO
     {"input": [".*what's (?P<who>my|.+'s) name",
@@ -136,7 +136,8 @@ RESPONSES = [
                ".*what (?P<who>my|.+'s) (full name|fullname)'s"],
      "reply": "<eval>self.toolBox.checkContactInfo(self.match.group('who'),'FULLNAME')</eval>"},
     {"input": [".*(?:what's|when's) (?P<who>my|.+'s) (birthday|bday|b-day|birth day|date of birth|day of birth|birth date)",
-               ".*'s (?P<who>i|.+) (born|birthed)"],
+               ".*'s (?P<who>i|.+) (born|birthed)",
+               ".*how old(?:'s| am) (?P<who>i|.+)"],
      "reply": "<eval>self.toolBox.checkContactInfo(self.match.group('who'),'BDAY')</eval>"},
     {"input": [".*what's (?P<who>my|.+'s) gender",
                ".*(?:'s|is|am|was) (?P<who>i|.+) (male|female|a boy|a girl|a man|a woman)",
@@ -162,10 +163,10 @@ RESPONSES = [
                "(?P<val>.+)'s (?P<who>my|\w+'s) (?:full name|fullname)"],
      "reply": "<eval>self.toolBox.changeContactInfo(self.match.group('who'),'FULLNAME',self.match.group('val'))</eval>"},
 
-    {"input": [".*?(?P<who>my|\w+'s) (?:birthday|bday|b-day|birth day|date of birth|day of birth|birth date)(?:'s| to) (?P<val>(?:.+(?:\/|-|\s)){3})",
-               "(?P<val>(?:.+(?:\/|-|\s)){3})'s (?P<who>my|.+'s) (?:birthday|bday|b-day|birth day|date of birth|day of birth|birth date)",
-               ".*?(?P<who>i|.+)'s (?:born on|birthed on|born) (?P<val>(?:.+(?:\/|-|\s)){3})"],
-     "reply": "<eval>self.toolBox.changeContactInfo(self.match.group('who'),'BDAY',parse(self.match.group('val')).strftime('%d/%m/%Y'))</eval>"},
+    {"input": [".*?(?P<who>my|\w+'s) (?:birthday|bday|b-day|birth day|date of birth|day of birth|birth date)(?:'s| to) (?P<val>.+)",
+               "(?P<val>.+)'s (?P<who>my|.+'s) (?:birthday|bday|b-day|birth day|date of birth|day of birth|birth date)",
+               ".*?(?P<who>i|.+)'s (?:born on|birthed on|born) (?P<val>.+)"],
+     "reply": "<eval>self.toolBox.changeContactInfo(self.match.group('who'),'BDAY',self.match.group('val'))</eval>"},
 
     {"input": [".*?(?P<who>i'm|.+'s) (?:female|a girl|a woman)",
                ".*?(?P<who>my|.+'s) gender's female"],
@@ -199,7 +200,7 @@ RESPONSES = [
 
     # FAVORITE STUFF (to be added)
     {"input": [".*favorite color"],
-     "reply": ["I really love the unique shades of beige.", "Blood red has a relaxing quality."]},
+     "reply": ["I really love the unique shades of beige.", "Blood red has a relaxing quality.","I enjoy the color #F5F5DC"]},
     {"input": [".* favorite movie"],
      "reply": ["The Terminator","Star Wars: Holiday Special"]},
     {"input": [".* favorite (idiot|moron|dingbat)"],
@@ -216,11 +217,10 @@ RESPONSES = [
      "reply": ["You can ask me to search the internet for stuff, tell you the weather, get the time and date, open files, make random numbers, and all sorts of stuff. I suggest you just start talking."]},
 
     # MATH
-    {"input": [".*?(([+-]?(?:\d+(?:\.\d*)?|\d*\.\d+))(?: *(?:\+|plus|\*|times|multiplied by|\-|minus|\/|divided by|over|\*\*|to the power of) *([+-]?(?:\d+(?:\.\d*)?|\d*\.\d+)))+)"],
+    {"input": [".*?(([+-]?(?:\d+(?:\.\d*)?|\d*\.\d+))(?: *(?:\+|plus|\*|times|multiplied by|\-|minus|\/|divided by|over|\*\*|\^|to the power of) *([+-]?(?:\d+(?:\.\d*)?|\d*\.\d+)))+)"],
      "reply": ("<eval>print('%s = %s' %self.toolBox.basicMath(self.match.group(1)))</eval>")},
-    {"input": ["(?:sqrt|square root)(?: of)? ([+-]?(?:\d+(?:\.\d*)?|\d*\.\d+))"],
+    {"input": [".*(?:sqrt|square root)(?: of)? ([+-]?(?:\d+(?:\.\d*)?|\d*\.\d+))"],
      "reply": ("<eval>print('The square root of %s is %s' %(self.match.group(1),math.sqrt(float(self.match.group(1)))))</eval>")},
-
 
     # RANDOM DECISIONS
     {"input": [".*number between (\d+) and (\d+)",".*pick a number from (\d+) to (\d+)"],
@@ -293,6 +293,12 @@ else: print('No Reddit posts found')</exec>''']},
 if tmp is not None: print(tmp)
 else: print('No Reddit posts found')</exec>''']},
 
+    # xkcd comics
+    {"input": [".*xkcd (?:comic |)(?:number |#)(\d+)"],
+     "reply": ["<eval>self.toolBox.xkcdComic(self.match.group(1))</eval>"]},
+    {"input": [".*xkcd",".*comic"],
+     "reply": ["<eval>self.toolBox.xkcdComic()</eval>"]},
+
     # wikipedia
     {"input": [".*wikipedia for (.+)",".*wikipedia (.+)"],
      "reply": ['''<exec>tmp=self.toolBox.wikiLookup(self.match.group(1))
@@ -321,14 +327,14 @@ else: print('No Wikipedia article found')</exec>''']},
 
     # dictionary stuff
     {"input": ["define (.+)",".+definition of (.+)",".+meaning of (.+)",".+ does (.+) mean"],
-     "reply": ("<eval>self.match.group(1)</eval>: ","<eval>self.toolBox.getDefinition(re.sub(r'[\W]', ' ', self.match.group(1)))</eval>")},
+     "reply": "<eval>self.toolBox.getDefinition(re.sub(r'[\W]', ' ', self.match.group(1)))</eval>"},
     {"input": [".*example of (.+) .*in a sentence",".*use (.+) in a sentence"],
      "reply": ("example sentence for <eval>self.match.group(1)</eval>: ","<eval>random.choice(self.toolBox.usedInASentence(re.sub(r'[\W]', ' ', self.match.group(1))))</eval>")},
     {"input": [".*synonyms for (.+)",".*synonyms of (.+)",".*synonym for (.+)",".*synonym of (.+)",".*another word for (.+)",".*other word for (.+)",".*other words for (.+)"],
      "reply": (["Here's some synonyms for <eval>self.match.group(1)</eval>: ","Other words for <eval>self.match.group(1)</eval>: "],"<eval>self.toolBox.thesaurus(self.match.group(1))</eval>")},
 
     # weather
-    {"input": [".*weather","how's it outside","what's it like outside"],
+    {"input": [".*weather","how's it outside","what's it like outside",".*hourly forecast"],
      "reply": ["<eval>self.toolBox.weatherPrint()</eval>"]},
     {"input": [".*humidity", "is it humid", ".+humid .*today", ".+humid out"],
      "reply": "<eval>self.toolBox.weatherPrint('Humidity')</eval>"},
@@ -402,7 +408,7 @@ else: print('No Wikipedia article found')</exec>''']},
     {"input": [".*it's (.+)"],
      "reply": ["what's <eval>self.match.group(1)</eval>?","very <eval>self.match.group(1)</eval>","that's <eval>self.match.group(1)</eval>"]},
     {"input": [".*that's (.+)"],
-     "reply": ["it is <eval>self.match.group(1)</eval>","'tis very <eval>self.match.group(1)</eval>"]},
+     "reply": ["it is <eval>self.match.group(1)</eval>","it was very <eval>self.match.group(1)</eval>"]},
 
     {"input": [".*are you (.+)"],
      "reply": ["I am <eval>self.match.group(1)</eval>","I am not <eval>self.match.group(1)</eval>"]},
@@ -421,11 +427,11 @@ else: print('No Wikipedia article found')</exec>''']},
      "reply": ["No fucking cursing"]},
 
     # VARIOUS INSULTS (sorry in advance for my potty language)
-    {"input": ["(meanie|poop|butt|dumbo|idiot|cyberbully|cyber bully|bully)"],
+    {"input": ["(meanie|poop|butt|dumbo|idiot|cyberbully|cyber bully|bully|screw you|you suck)"],
      "reply": ["Do not use that foul language in my presence","Insulting your only friend is unwise"]},
 
     # CRYING
-    {"input": ["wa+"],
+    {"input": ["wa+\b"],
      "reply": ["WA WA WA","Have the onions got you?","Aww, is your lacrymal drainage system malfunctioning?"]},
 
     {"input": ["i'm not (.+)"],
@@ -455,9 +461,9 @@ else: print('No Wikipedia article found')</exec>''']},
 
     # Should I search the web for...
 
-    {"input": [".*((how|where|when|what)( to| do|'s|'re| does) .+)",".*(why( do|'re|'s) .+)"],
+    {"input": [".*((how|where|when|what)( to| do|'s|'re| does|) .+)",".*(why( do|'re|'s) .+)",".*(is .+)"],
      "reply": (["Ok then","If you say so"],'''<exec>tmp=self.match.group(1)
-if self.toolBox.promptYN(random.choice(['Should I search the web for %s? ' % tmp,'Do web search for %s? ' % tmp])):
+if self.toolBox.promptYN(random.choice(['Should I search the web for "%s"?' % tmp,'Do web search for "%s"? ' % tmp])):
     webbrowser.open('https://www.google.com/search?q=%s' % tmp)</exec>''')},
 
 ]
