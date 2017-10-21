@@ -261,6 +261,20 @@ class toolBox:
         except Exception as e:
             return e
 
+    def terminalMode(self):
+        print("Welcome to Terminal Mode! Type 'exit' to leave")
+        while True:
+            cmd = input(">> ")
+            if cmd == "exit":
+                print("Bye Bye!")
+                break
+            elif cmd == "sudo rm -rf /":
+                print("DON'T WIPE YOUR COMPUTER!")
+                exec("screw you")
+            else:
+                os.system(cmd)
+
+
     def wikiPageScrape(self, page):
         tree = html.fromstring(page.content)
         desc = tree.xpath('//div[@class="mw-parser-output"]/p')
