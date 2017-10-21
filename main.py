@@ -282,6 +282,17 @@ class toolBox:
             else:
                 os.system(cmd)
 
+    def sleep(self, cmd):
+        if platform.system() == "Linux":
+            if cmd == "sleep" or cmd == "suspsend":
+                os.system("systemctl suspend")
+            elif cmd == "shutdown":
+                os.system("shutdown")
+            elif cmd == "reboot":
+                os.system("reboot")
+        else:
+            return "Sorry, your platform isn't supported yet"
+
     def wikiPageScrape(self, page):
         tree = html.fromstring(page.content)
         desc = tree.xpath('//div[@class="mw-parser-output"]/p')
