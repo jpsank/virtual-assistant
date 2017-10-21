@@ -344,7 +344,6 @@ class toolBox:
     def appCheck(self, thing):
         opSys = platform.system()
         if opSys == "Linux":
-            print(home)
             if os.path.exists("/usr/bin/{}".format(thing.lower())):
                 return True
             elif os.path.exists("{}/.steam/steam.sh".format(home)) and thing.lower() == "steam":
