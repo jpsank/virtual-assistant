@@ -284,7 +284,7 @@ class toolBox:
 
     def sleep(self, cmd):
         if platform.system() == "Linux":
-            if cmd == "sleep" or cmd == "suspsend":
+            if cmd == "sleep" or cmd == "suspend":
                 os.system("systemctl suspend")
             elif cmd == "shutdown":
                 os.system("shutdown")
