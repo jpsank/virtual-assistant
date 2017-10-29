@@ -162,12 +162,6 @@ class toolBox:
             print("Here's today's hourly forecast:")
             printColumns(self.weatherHourly())
 
-    # def locationData2(self,*keys):
-    #     url = 'http://freegeoip.net/json'
-    #     r = requests.get(url)
-    #     j = json.loads(r.text)
-    #     return [j[k] if k in j else None for k in keys]
-
     def locationData(self, *keys):
         url = 'http://ip-api.com/json'
         r = requests.get(url,headers={"user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36 OPR/48.0.2685.50"})
