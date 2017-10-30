@@ -286,9 +286,21 @@ class toolBox:
             if showtimes:
                 return name[0].text_content(), showtimes
 
+    def musicControlMac(self, cmd):
+        if cmd == "play":
+            os.system("osascript -e 'tell Application \"iTunes\" to play'")
+        elif cmd == "pause":
+            os.system("osascript -e 'tell Application \"iTunes\" to pause'")
+        elif cmd == "next":
+            os.system("osascript -e 'tell Application \"iTunes\" to play next track'")
+        elif cmd == "previous":
+            os.system("osascript -e 'tell Application \"iTunes\" to play previous track'")
+
     def musicControl(self, cmd):
         if platform.system() == "Linux":
             os.system("rhythmbox-client --{}".format(cmd))
+        elif platform.system() == "Darwin":
+            self.musicControlMac(cmd)
         else:
             return "Sorry, music control isn't supported for you yet."
 
