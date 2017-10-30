@@ -427,6 +427,8 @@ class toolBox:
         elif opSys == "Darwin":
             if os.path.exists("/Applications/{}.app".format(thing.title())) or os.path.exists("/Applications/{}.app".format(thing)):
                 return "/Applications/{}.app".format(thing.title())
+            elif os.path.exists("/Applications/Utilities/{}.app".format(thing)) or os.path.exists("/Applications/Utilities/{}.app".format(thing.title())):
+                return "/Applications/Utilities/{}.app".format(thing.title())
         elif opSys == "Windows":
             for app in os.listdir(r"C:\ProgramData\Microsoft\Windows\Start Menu\Programs"):
                 fullpath = os.path.join("C:\ProgramData\Microsoft\Windows\Start Menu\Programs",app)
@@ -451,12 +453,14 @@ class toolBox:
             if appcheck is not None:
                 opSys = platform.system()
                 if opSys == "Linux":
+                    print("Attempting to open %s" % appcheck)
                     subprocess.call(appcheck, stdout=subprocess.DEVNULL)
                 elif opSys == "Darwin":
+                    print("Attempting to open %s" % appcheck)
                     subprocess.call(["/usr/bin/open","-W","-n","-a",appcheck])
                 elif opSys == "Windows":
+                    print("Attempting to open %s" % appcheck)
                     subprocess.Popen('"%s"' % appcheck,shell=True)
-                print("Attempting to open %s" % appcheck)
             else:
                 if self.promptYN('Open website %s? ' % thing):
                     try:
