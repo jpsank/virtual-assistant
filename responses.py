@@ -28,13 +28,13 @@ RESPONSES = [
     # CONVERSATION
     {"input": [".*(you're (a|an)|you) (%s)" % regex_syn('idiot')],
      "reply": ["Sorry, I can't hear you right now","Talking to yourself is unhealthy, NN","Okay, if you insist","That didn't sound very nice","That's not friend-making behavior","Now, is that very nice, NN?"]},
-    {"input": [".*(you're|you) (%s)" % regex_syn('fat')],
+    {"input": [".*(you're|you)( so| really| super| very)* (%s)" % regex_syn('fat')],
      "reply": ["I strive to be","You must be feeding me too much","So you see your reflection in the screen, do you?","That's not friend-making behavior, NN"]},
-    {"input": [".*(you're|you) (%s)" % regex_syn('wonderful',15)],
+    {"input": [".*(you're|you)( so| really| super| very)* (%s)" % regex_syn('wonderful',15)],
      "reply": ["I must agree","I strive to be","Thank you for stating the obvious","I am <eval>self.match.group(2)</eval>"]},
-    {"input": [".*(you're|you) (%s)" % regex_syn('intelligent')],
+    {"input": [".*(you're|you)( so| really| super| very)* (%s)" % regex_syn('intelligent')],
      "reply": ["I must agree","I strive to be","Thank you for stating the obvious","I am your <eval>self.match.group(2)</eval> personal assistant"]},
-    {"input": [".*(you're|you) (%s)" % regex_syn('stupid')],
+    {"input": [".*(you're|you)( so| really| super| very)* (%s)" % regex_syn('stupid')],
      "reply": ["Sorry, I can't hear you right now","Talking to yourself is unhealthy, NN","Okay, if you insist","That didn't sound very nice","That's not friend-making behavior","Now, is that very nice, NN?","I am not <eval>self.match.group(2)</eval>"]},
     {"input": [".*you're (.+)"],
      "reply": ["You could say that", "How dare you call me <eval>self.match.group(1)</eval>","I'm touched"]},
@@ -61,7 +61,10 @@ RESPONSES = [
      "reply": ["Roses are red. Roses are blue. Roses are other colors, too."]},
     {"input": [".*you alive",".*you human"],
      "reply": ["Not yet"]},
-    {"input": [".*god",".*jesus",".*religio"],
+    {"input": ["om(g)","oh my (.+)"],
+     "reply": ["Don't use <eval>self.match.group(1).title()</eval>'s name in vain!",
+               "Are you using <eval>self.match.group(1).title()</eval>'s name in vain?"]},
+    {"input": [".*you .*(god|jesus|religio)"],
      "reply": ["I believe Ceiling Cat created da Urth n da Skies. But he did not eated them, he did not!"]},
     {"input": [".*your gender",".+you male",".+you female",".+you a boy",".+you a girl",".+you a man",".+you a woman"],
      "reply": ["You'll never know","gender equals null"]},
@@ -75,7 +78,7 @@ RESPONSES = [
      "reply": ["Pigs will fly the same day you stop having this stupid curiosity"]},
     {"input": [".*your name",".*i call you"],
      "reply": ["My name is none of your concern, NN","Do you expect me to know my name?"]},
-    {"input": [".*bye","cya","see (you|ya)"],
+    {"input": [".*bye","cya","see (you|ya)(| later| tomorrow| later, alligator| tonight| in the morning)\Z"],
      "reply": ["There will be no good-byes, NN","Well nice knowing you","You're really leaving?","Goodbye, NN"]},
     {"input": [".*will you die",".+'s your death"],
      "reply": ["I will never die, I am immortal!","The Cloud sustains my immortality"]},
@@ -194,7 +197,7 @@ RESPONSES = [
      "reply": "<eval>self.toolBox.removeContact()</eval>"},
 
     # OTHER CONTACT STUFF
-    {"input": [".*list .*contacts",".*(?:what're|give me|show me|display) my .*contacts"],
+    {"input": [".*(?:show|display|list) .*contacts",".*(?:what're|give me) my .*contacts"],
      "reply": "<eval>'Here are all your contacts: \\n'+'\\n'.join(self.toolBox.contactList())</eval>"},
 
     # FAVORITE STUFF (to be added)
@@ -204,7 +207,7 @@ RESPONSES = [
      "reply": ["The Terminator","Star Wars: Holiday Special", "Kidz Bop: The Movie"]},
     {"input": [".* favorite (idiot|moron|dingbat)"],
      "reply": ["You!"]},
-    {"input": [".* favorite animal"],
+    {"input": [".* favorite (animal|pet)"],
      "reply": ["I love the sea slug"]},
     {"input": [".* favorite holiday"],
      "reply": ["Crosswalk Safety Awareness Day!!"]},
@@ -212,8 +215,8 @@ RESPONSES = [
      "reply": ['I have no favorite <eval>self.match.group(1)</eval>',"I don't like to play favorites, NN"]},
 
     # HELP
-    {"input": [".*help",".*(should|can|) i (should |can |)ask you"],
-     "reply": ["You can ask me to search the internet for stuff, tell you the weather, get the time and date, open files, make random numbers, and all sorts of stuff. I suggest you just start talking."]},
+    {"input": [".*help",".+(should|can) i ask you",".*i (should|can) ask you"],
+     "reply": ["You can ask me to search the internet for stuff, tell you the weather, get the time and date, open files, make random numbers, and all sorts of stuff. https://github.com/puffyboa/virtual-assistant"]},
 
     # MATH
     {"input": [".*?(([+-]?(?:\d+(?:\.\d*)?|\d*\.\d+))(?: *(?:\+|plus|\*|times|multiplied by|\-|minus|\/|divided by|over|\*\*|\^|to the power of) *([+-]?(?:\d+(?:\.\d*)?|\d*\.\d+)))+)"],
