@@ -480,7 +480,7 @@ else: print('No Wikipedia article found')</exec>''']},
 
     # Should I search the web for...
 
-    {"input": [".*((how|where|when|what)( to| do|'s|'re| does|) .+)",".*(why( do|'re|'s) .+)",".*(is .+)",".*(do .+)"],
+    {"input": ["\b((how|where|when|what)( to| do|'s|'re| does|) .+)",".*(why( do|'re|'s) .+)",".*(is .+)",".*(do .+)"],
      "reply": (["Ok then","If you say so"],'''<exec>tmp=self.match.group(1)
 if self.toolBox.promptYN(random.choice(['Should I search the web for "%s"?' % tmp,'Do web search for "%s"? ' % tmp])):
     webbrowser.open('https://www.google.com/search?q=%s' % tmp)</exec>''')},
