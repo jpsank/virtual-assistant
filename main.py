@@ -455,9 +455,9 @@ class toolBox:
             if appcheck is not None:
                 opSys = platform.system()
                 if opSys == "Linux":
-                    threading._start_new_thread(self.executeTheCommand, ('''subprocess.call(appcheck, stdout=subprocess.DEVNULL''',))
+                    threading.Thread(target=lambda: subprocess.call(appcheck, stdout=subprocess.DEVNULL)).start()
                 elif opSys == "Darwin":
-                    threading._start_new_thread(self.executeTheCommand, ('''subprocess.call(["/usr/bin/open","-W","-n","-a",appcheck])''',))
+                    threading.Thread(target=lambda: subprocess.call(["/usr/bin/open","-W","-n","-a",appcheck])).start()
                 elif opSys == "Windows":
                     subprocess.Popen('"%s"' % appcheck,shell=True)
 
