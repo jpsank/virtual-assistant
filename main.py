@@ -13,6 +13,7 @@ import os
 from responses import RESPONSES
 import subprocess
 import html
+import threading
 
 import requests
 import lxml.html
@@ -286,9 +287,21 @@ class toolBox:
             if showtimes:
                 return name[0].text_content(), showtimes
 
+    def musicControlMac(self, cmd):
+        if cmd == "play":
+            os.system("osascript -e 'tell Application \"iTunes\" to play'")
+        elif cmd == "pause":
+            os.system("osascript -e 'tell Application \"iTunes\" to pause'")
+        elif cmd == "next":
+            os.system("osascript -e 'tell Application \"iTunes\" to play next track'")
+        elif cmd == "previous":
+            os.system("osascript -e 'tell Application \"iTunes\" to play previous track'")
+
     def musicControl(self, cmd):
         if platform.system() == "Linux":
             os.system("rhythmbox-client --{}".format(cmd))
+        elif platform.system() == "Darwin":
+            self.musicControlMac(cmd)
         else:
             return "Sorry, music control isn't supported for you yet."
 
@@ -415,6 +428,8 @@ class toolBox:
         elif opSys == "Darwin":
             if os.path.exists("/Applications/{}.app".format(thing.title())) or os.path.exists("/Applications/{}.app".format(thing)):
                 return "/Applications/{}.app".format(thing.title())
+            elif os.path.exists("/Applications/Utilities/{}.app".format(thing)) or os.path.exists("/Applications/Utilities/{}.app".format(thing.title())):
+                return "/Applications/Utilities/{}.app".format(thing.title())
         elif opSys == "Windows":
             for app in os.listdir(r"C:\ProgramData\Microsoft\Windows\Start Menu\Programs"):
                 fullpath = os.path.join("C:\ProgramData\Microsoft\Windows\Start Menu\Programs",app)
@@ -435,16 +450,18 @@ class toolBox:
                 except:
                     print('Unable to open file')
         else:
+            global appcheck
             appcheck = self.appCheck(thing)
             if appcheck is not None:
                 opSys = platform.system()
                 if opSys == "Linux":
-                    subprocess.call(appcheck, stdout=subprocess.DEVNULL)
+                    threading._start_new_thread(self.executeTheCommand, ('''subprocess.call(appcheck, stdout=subprocess.DEVNULL)''',))
                 elif opSys == "Darwin":
-                    subprocess.call(["/usr/bin/open","-W","-n","-a",appcheck])
+                    threading._start_new_thread(self.executeTheCommand, ('''subprocess.call(["/usr/bin/open","-W","-n","-a",appcheck])''',))
                 elif opSys == "Windows":
                     subprocess.Popen('"%s"' % appcheck,shell=True)
-                print("Attempting to open %s" % appcheck)
+
+                print("Attempting to open {}".format(appcheck))
             else:
                 if self.promptYN('Open website %s? ' % thing):
                     try:
@@ -455,6 +472,10 @@ class toolBox:
                             webbrowser.open("https://%s" % thing)
                     except:
                         print("Unable to open %s" % thing)
+
+    def executeTheCommand(self, cmd):
+        global appcheck
+        exec(cmd)
 
     def googleIt(self,search):
         webbrowser.open("https://www.google.com/search?q=%s" % search)
