@@ -120,7 +120,7 @@ class toolBox:
         return random.choice(["Never heard of it", "A %s?" % word])
 
     def weatherHourly(self,*keys):
-        r = requests.get("https://www.wunderground.com/hourly/{}/{}/{}".format(*self.locationData("region_code","city","zip_code")))
+        r = requests.get("https://www.wunderground.com/hourly/{}/{}/{}".format(*self.locationData("region","city","zip")))
         page = lxml.html.fromstring(r.content)
         rows = page.xpath("//table[@id='hourly-forecast-table']/tbody/tr")
         if rows:
@@ -137,7 +137,7 @@ class toolBox:
             return result
 
     def weatherCurrent(self,*keys):
-        r = requests.get("https://www.wunderground.com/hourly/{}/{}/{}".format(*self.locationData("region_code", "city", "zip_code")))
+        r = requests.get("https://www.wunderground.com/hourly/{}/{}/{}".format(*self.locationData("region", "city", "zip")))
         page = lxml.html.fromstring(r.content)
         rows = page.xpath("//table[@id='hourly-forecast-table']/tbody/tr")
         if rows:
@@ -163,9 +163,9 @@ class toolBox:
             print("Here's today's hourly forecast:")
             printColumns(self.weatherHourly())
 
-    def locationData(self,*keys):
-        url = 'http://freegeoip.net/json'
-        r = requests.get(url)
+    def locationData(self, *keys):
+        url = 'http://ip-api.com/json'
+        r = requests.get(url,headers={"user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36 OPR/48.0.2685.50"})
         j = json.loads(r.text)
         return [j[k] if k in j else None for k in keys]
 
@@ -455,9 +455,9 @@ class toolBox:
             if appcheck is not None:
                 opSys = platform.system()
                 if opSys == "Linux":
-                    threading.Thread(target=lambda: subprocess.call(appcheck, stdout=subprocess.DEVNULL)).start()
+                    threading._start_new_thread(self.executeTheCommand, ('''subprocess.call(appcheck, stdout=subprocess.DEVNULL)''',))
                 elif opSys == "Darwin":
-                    threading.Thread(target=lambda: subprocess.call(["/usr/bin/open","-W","-n","-a",appcheck])).start()
+                    threading._start_new_thread(self.executeTheCommand, ('''subprocess.call(["/usr/bin/open","-W","-n","-a",appcheck])''',))
                 elif opSys == "Windows":
                     subprocess.Popen('"%s"' % appcheck,shell=True)
 
@@ -776,7 +776,7 @@ class JERF:
                 if self.match is not None:
                     rep = ''.join(self.process_reply(r["reply"]))
                     return self.replaceify(self.evaluate(rep))
-        return 'say what'
+        return None
 
 
 assistant = JERF()

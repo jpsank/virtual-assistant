@@ -3,6 +3,7 @@ from lxml import html
 import random
 import itertools
 
+
 def syn(word,amount=10,return_original=True):
     url = "http://www.thesaurus.com/browse/%s" % word
     page = requests.get(url)
@@ -25,17 +26,17 @@ def regex_syn(word,amount=10):
 
 RESPONSES = [
     # CONVERSATION
-    {"input": ["(you're (a|an)|you) (%s)" % regex_syn('idiot')],
+    {"input": [".*(you're (a|an)|you) (%s)" % regex_syn('idiot')],
      "reply": ["Sorry, I can't hear you right now","Talking to yourself is unhealthy, NN","Okay, if you insist","That didn't sound very nice","That's not friend-making behavior","Now, is that very nice, NN?"]},
-    {"input": ["(you're|you) (%s)" % regex_syn('fat')],
+    {"input": [".*(you're|you) (%s)" % regex_syn('fat')],
      "reply": ["I strive to be","You must be feeding me too much","So you see your reflection in the screen, do you?","That's not friend-making behavior, NN"]},
-    {"input": ["(you're|you) (%s)" % regex_syn('wonderful',15)],
+    {"input": [".*(you're|you) (%s)" % regex_syn('wonderful',15)],
      "reply": ["I must agree","I strive to be","Thank you for stating the obvious","I am <eval>self.match.group(2)</eval>"]},
-    {"input": ["(you're|you) (%s)" % regex_syn('intelligent')],
+    {"input": [".*(you're|you) (%s)" % regex_syn('intelligent')],
      "reply": ["I must agree","I strive to be","Thank you for stating the obvious","I am your <eval>self.match.group(2)</eval> personal assistant"]},
-    {"input": ["(you're|you) (%s)" % regex_syn('stupid')],
+    {"input": [".*(you're|you) (%s)" % regex_syn('stupid')],
      "reply": ["Sorry, I can't hear you right now","Talking to yourself is unhealthy, NN","Okay, if you insist","That didn't sound very nice","That's not friend-making behavior","Now, is that very nice, NN?","I am not <eval>self.match.group(2)</eval>"]},
-    {"input": ["you're (.+)"],
+    {"input": [".*you're (.+)"],
      "reply": ["You could say that", "How dare you call me <eval>self.match.group(1)</eval>","I'm touched"]},
 
     {"input": ["i'm (.+)","i am (.+)"],
@@ -374,6 +375,24 @@ else: print('No Wikipedia article found')</exec>''']},
     {"input": [".+year's it",".+'s the year",".+century's it",".*current year",".*current century"],
      "reply": (["It's ","The year is ","It's the year of "],"<eval>time.asctime().split()[4]</eval>",", NN")},
 
+    # LOCATION
+    {"input": ["where.+am i",".*where i am","where.*'re we","where's here",".*where here's",".*my location"],
+     "reply": (["you're in ","your location is "],"<eval>'{}, {}'.format(*self.toolBox.locationData('city','region'))</eval>",[", NN",""])},
+    {"input": [".*zipcode"],
+     "reply": (["your zipcode is "],"<eval>'{}'.format(*self.toolBox.locationData('zip'))</eval>")},
+    {"input": [".+state am i in",".+region am i in",".+state i am in",".+region i am in",".+my state",".+my region"],
+     "reply": (["right now, ",""],["you're in "],"<eval>self.toolBox.locationData('regionName')[0]</eval>",[", NN",""])},
+    {"input": [".+city am i in",".+city i am in",".+city that i am in",".+my city"],
+     "reply": (["right now, ",""],["you're in ","your city is "],"<eval>self.toolBox.locationData('city')[0]</eval>",[", NN",""])},
+    {"input": [".+country am i in",".+country i am in",".+country that i am in",".+my country"],
+     "reply": (["right now, ",""],["you're in ","your country is ","you're standing in the country of "],"<eval>self.toolBox.locationData('country')[0]</eval>",[", NN",""])},
+    {"input": [".*time zone",".*timezone"],
+     "reply": (["right now, ",""],["you're in the "],"<eval>self.toolBox.locationData('timezone')[0]</eval>"," timezone")},
+    {"input": [".*longitude",".*latitude",".*coordinates"],
+     "reply": (["right now, ",""],["you're at latitude/longitude "],"<eval>'{}, {}'.format(*self.toolBox.locationData('lat','lon'))</eval>")},
+    {"input": [".*my ip",".*ip address"],
+     "reply": ("your ip address is ","<eval>self.toolBox.locationData('query')[0]</eval>",[", NN",""])},
+
     # who is ____
     {"input": ["(?:who's|who're) (.+)"],
      "reply": ["<eval>self.toolBox.personLookup(self.match.group(1))</eval>"]},
@@ -381,24 +400,6 @@ else: print('No Wikipedia article found')</exec>''']},
     # what is a ____
     {"input": ["what's(?: a| an|) (.+)"],
      "reply": ["<eval>self.toolBox.whatIsLookup(self.match.group(1))</eval>"]},
-
-    # LOCATION
-    {"input": ["where.+am i",".*where i am","where.*'re we","where's here",".*where here's",".*my location"],
-     "reply": (["you're in ","your location is "],"<eval>'{}, {}'.format(*self.toolBox.locationData('city','region_code'))</eval>",[", NN",""])},
-    {"input": [".*zipcode"],
-     "reply": (["your zipcode is "],"<eval>'{}'.format(*self.toolBox.locationData('zip_code'))</eval>")},
-    {"input": [".+state am i in",".+region am i in",".+state i am in",".+region i am in",".+my state",".+my region"],
-     "reply": (["right now, ",""],["you're in "],"<eval>self.toolBox.locationData('region_name')[0]</eval>",[", NN",""])},
-    {"input": [".+city am i in",".+city i am in",".+city that i am in",".+my city"],
-     "reply": (["right now, ",""],["you're in ","your city is "],"<eval>self.toolBox.locationData('city')[0]</eval>",[", NN",""])},
-    {"input": [".+country am i in",".+country i am in",".+country that i am in",".+my country"],
-     "reply": (["right now, ",""],["you're in ","your country is ","you're standing in the country of "],"<eval>self.toolBox.locationData('country_name')[0]</eval>",[", NN",""])},
-    {"input": [".*time zone",".*timezone"],
-     "reply": (["right now, ",""],["you're in the "],"<eval>self.toolBox.locationData('time_zone')[0]</eval>"," timezone")},
-    {"input": [".*longitude",".*latitude",".*coordinates"],
-     "reply": (["right now, ",""],["you're at latitude/longitude "],"<eval>'{}, {}'.format(*self.toolBox.locationData('latitude','longitude'))</eval>")},
-    {"input": [".*my ip",".*ip address"],
-     "reply": ("your ip is ","<eval>self.toolBox.locationData('ip')[0]</eval>",[", NN",""])},
 
     # JUST IN CASE
 
@@ -449,7 +450,7 @@ else: print('No Wikipedia article found')</exec>''']},
     {"input": [r"wa+\b"],
      "reply": ["WA WA WA","Have the onions got you?","Aww, is your lacrymal drainage system malfunctioning?"]},
 
-    {"input": ["ha+"],
+    {"input": ["ha+","xd\Z","funny","lol"],
      "reply": ["It's not funny, NN"]},
 
     {"input": ["i'm not (.+)"],
@@ -479,7 +480,7 @@ else: print('No Wikipedia article found')</exec>''']},
 
     # Should I search the web for...
 
-    {"input": [".*((how|where|when|what)( to| do|'s|'re| does|) .+)",".*(why( do|'re|'s) .+)",".*(is .+)",".*(do .+)"],
+    {"input": ["\b((how|where|when|what)( to| do|'s|'re| does|) .+)",".*(why( do|'re|'s) .+)",".*(is .+)",".*(do .+)"],
      "reply": (["Ok then","If you say so"],'''<exec>tmp=self.match.group(1)
 if self.toolBox.promptYN(random.choice(['Should I search the web for "%s"?' % tmp,'Do web search for "%s"? ' % tmp])):
     webbrowser.open('https://www.google.com/search?q=%s' % tmp)</exec>''')},
