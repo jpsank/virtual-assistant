@@ -13,6 +13,7 @@ import os
 from responses import RESPONSES
 import subprocess
 import html
+import threading
 
 import requests
 import lxml.html
@@ -449,18 +450,18 @@ class toolBox:
                 except:
                     print('Unable to open file')
         else:
+            global appcheck
             appcheck = self.appCheck(thing)
             if appcheck is not None:
                 opSys = platform.system()
                 if opSys == "Linux":
-                    print("Attempting to open %s" % appcheck)
-                    subprocess.call(appcheck, stdout=subprocess.DEVNULL)
+                    threading._start_new_thread(self.executeTheCommand, ('''subprocess.call(appcheck, stdout=subprocess.DEVNULL''',))
                 elif opSys == "Darwin":
-                    print("Attempting to open %s" % appcheck)
-                    subprocess.call(["/usr/bin/open","-W","-n","-a",appcheck])
+                    threading._start_new_thread(self.executeTheCommand, ('''subprocess.call(["/usr/bin/open","-W","-n","-a",appcheck])''',))
                 elif opSys == "Windows":
-                    print("Attempting to open %s" % appcheck)
                     subprocess.Popen('"%s"' % appcheck,shell=True)
+
+                print("Attempting to open {}".format(appcheck))
             else:
                 if self.promptYN('Open website %s? ' % thing):
                     try:
@@ -471,6 +472,10 @@ class toolBox:
                             webbrowser.open("https://%s" % thing)
                     except:
                         print("Unable to open %s" % thing)
+
+    def executeTheCommand(self, cmd):
+        global appcheck
+        exec(cmd)
 
     def googleIt(self,search):
         webbrowser.open("https://www.google.com/search?q=%s" % search)
