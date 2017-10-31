@@ -465,6 +465,8 @@ class toolBox:
             else:
                 if self.promptYN('Open website %s? ' % thing):
                     try:
+                        if not '.' in thing:
+                            thing = "%s.com" % thing
                         print("Opening %s..." % thing)
                         if thing.startswith('http'):
                             webbrowser.open(thing)
