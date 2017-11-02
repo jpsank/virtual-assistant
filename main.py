@@ -393,22 +393,29 @@ class toolBox:
         url = "https://www.reddit.com/search?q=%s" % topic
         try:
             page = requests.get(url,headers={'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (Klxml.html, like Gecko) Chrome/60.0.3112.78 Safari/537.36 OPR/47.0.2631.55'})
-        except ConnectionError:
-            return
+        except Exception:
+            return False
         tree = lxml.html.fromstring(page.content)
         results = tree.xpath('//div[contains(@class, "search-result-link")]//a[contains(@class, "search-title")]')
         if results:
             return results
 
-    def redditLookup(self,topic):
+    def redditLookup(self,topic=None):
+        if topic is None:
+            topic = self.promptANY(["Search Reddit for what?","What do I search for?"])
         searches = self.redditSearchScrape(topic)
         if searches:
-            prompt = self.promptD("Which number post to open?\n%s" % '\n'.join(["%s. %s" % (i,s.text_content()) for i,s in enumerate(searches)]))
-            p = prompt[0]
-            webbrowser.open(searches[p].get('href'))
-            return random.choice(["Opening reddit post","Opening '%s'" % searches[p].text_content()])
+            prompt = self.promptD("Which number post to open? (or type 'cancel' to return)\n%s" % '\n'.join(["%s. %s" % (i,s.text_content()) for i,s in enumerate(searches)]),cancel="cancel")
+            if prompt:
+                p = prompt[0]
+                webbrowser.open(searches[p].get('href'))
+                return random.choice(["Opening reddit post","Opening '%s'" % searches[p].text_content()])
+            else:
+                return "Cancelled"
+        elif searches is False:
+            return random.choice(["Error searching for reddit posts","I could not open reddit, NN"])
         else:
-            return
+            return random.choice(["No Reddit posts found!","I could not find any reddit posts, NN"])
 
     def xkcdComic(self,number=None):
         if number is None:
@@ -661,9 +668,11 @@ class toolBox:
         else:
             return self.promptYN(failsafe,failsafe,y,n)
 
-    def promptD(self,prompt,failsafe="Pick a number"):
+    def promptD(self,prompt,failsafe="Pick a number",cancel=None):
         print(random.choice(prompt) if isinstance(prompt,list) else prompt)
         answer = input(secondaryCommandPrompt).lower()
+        if cancel is not None and re.match(cancel,answer):
+            return False
         result = []
         for m in re.findall("[+-]?\d+",answer):
             result.append(int(m))

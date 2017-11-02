@@ -113,7 +113,7 @@ RESPONSES = [
      "reply": ["<eval>self.toolBox.sing()</eval>"]},
     {"input": ["shutdown","shut down","turn off","cease to exist","cease your existence","end your process","exit"],
      "reply": "<eval>exit()</eval>"},
-    {"input": ["do you like (.+)"],
+    {"input": ["do you (?:like|enjoy|) ((?:\w| )+)"],
      "reply": ["I have never tried <eval>self.match.group(1)</eval> before","I like whatever you like, NN","It depends, NN"]},
     {"input": ["read (.+)","say (.+)"],
      "reply": ["<eval>self.match.group(1)</eval>"]},
@@ -298,13 +298,11 @@ else: print('Failed to find showtimes')
 
     # reddit
     {"input": [".*reddit for (.+)",".*reddit (.+)"],
-     "reply": ['''<exec>tmp=self.toolBox.redditLookup(self.match.group(1))
-if tmp is not None: print(tmp)
-else: print('No Reddit posts found')</exec>''']},
+     "reply": ['''<eval>self.toolBox.redditLookup(self.match.group(1))</eval>''']},
     {"input": ["(find|look up|look for|show me|open) (.+) on reddit"],
-     "reply": ['''<exec>tmp=self.toolBox.redditLookup(self.match.group(2))
-if tmp is not None: print(tmp)
-else: print('No Reddit posts found')</exec>''']},
+     "reply": ['''<eval>self.toolBox.redditLookup(self.match.group(2))</eval>''']},
+    {"input": [".*(search|browse) reddit"],
+     "reply": ['''<eval>self.toolBox.redditLookup()</eval>''']},
 
     # xkcd comics
     {"input": [".*xkcd (?:comic |)(?:number |#)(\d+)"],
