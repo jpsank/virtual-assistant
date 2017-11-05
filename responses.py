@@ -258,8 +258,8 @@ for i in range(num):
      "reply": "<exec>self.toolBox.terminalMode()</exec>"},
 
     # sleep/shutdown etc
-    {"input": ["\\b(sleep|shutdown|suspend|reboot)\\b"],
-     "reply": ["<exec>self.toolBox.sleep(self.match.group(1))</exec>"]},
+    {"input": [r"\b(sleep|shutdown|suspend|reboot)\b"],
+     "reply": ["<eval>self.toolBox.sleep(self.match.group(1))</eval>"]},
 
     # SEARCHING THE WEB
     # movies
