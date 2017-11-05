@@ -354,6 +354,13 @@ class toolBox:
                     os.system("pmset sleepnow")
                 else:
                     return "Sorry, your platform isn't supported yet"
+            elif platform.system() == "Windows":
+                if cmd == 'sleep' or cmd == 'suspend':
+                    os.system(r"%windir%\System32\rundll32.exe powrprof.dll,SetSuspendState 0,1,0")
+                elif cmd == 'shutdown':
+                    os.system(r"%windir%\System32\shutdown.exe -s")
+                elif cmd == 'reboot':
+                    os.system(r"%windir%\System32\shutdown.exe -r")
             else:
                 return "Sorry, your platform isn't supported yet"
         else:
