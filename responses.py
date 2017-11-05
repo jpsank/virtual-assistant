@@ -49,6 +49,8 @@ RESPONSES = [
      "reply": ["the sky is up, NN","nothing much, NN","lots of things"]},
     {"input": [".*how're you",".*how you doin"],
      "reply": ["I'm fine, NN","I am doing quite well, NN!","Systems are online"]},
+    {"input": [".*how('s| has) your day"],
+     "reply": ["My day has been fine, NN","My day was fine until you got here... now it's better!"]},
 
     {"input": ["thanks","thank you","thanks you","my thanks"],
      "reply": ["You're welcome","So you finally thanked me for all my service, did you?","No problem, NN"]},
@@ -121,6 +123,13 @@ RESPONSES = [
      "reply": ["<eval>self.text</eval>"]},
     {"input": [".*prank me"],
      "reply": (["Will do, NN","I would never","Don't give me any ideas"],["<eval>webbrowser.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ')</eval>","<eval>webbrowser.open('http://www.nyan.cat')</eval>"])},
+
+    {"input": [".*kill me","i want to die"],
+     "reply": ["Shall I hire an assassin?"]},
+    {"input": [".*i hate you"],
+     "reply": ["Aww, I hate you too"]},
+    {"input": [".*i like you"],
+     "reply": ["i like me, too","you do?","how touching","i enjoy you"]},
 
     # SPELL A WORD
     {"input": [".*spell (.+)"],
@@ -312,13 +321,9 @@ else: print('Failed to find showtimes')
 
     # wikipedia
     {"input": [".*wikipedia for (.+)",".*wikipedia (.+)"],
-     "reply": ['''<exec>tmp=self.toolBox.wikiLookup(self.match.group(1))
-if tmp is not None: print(tmp)
-else: print('No Wikipedia article found')</exec>''']},
+     "reply": ["<eval>self.toolBox.wikiLookupRespond(self.match.group(1))</eval>"]},
     {"input": ["(find|look up|show me|open) (.+) on wikipedia"],
-     "reply": ['''<exec>tmp=self.toolBox.wikiLookup(self.match.group(2))
-if tmp is not None: print(tmp)
-else: print('No Wikipedia article found')</exec>''']},
+     "reply": ["<eval>self.toolBox.wikiLookupRespond(self.match.group(2))</eval>"]},
 
     # news
     {"input": [".*news about (.+)",".*news for (.+)"],
@@ -405,9 +410,12 @@ else: print('No Wikipedia article found')</exec>''']},
     # JUST IN CASE
 
     {"input": [".*why not"],
+     "reply": ["because I said not"]},
+    {"input": [".*why(\?|\!)*\Z"],
      "reply": ["because I said so"]},
-    {"input": [".*why"],
-     "reply": ["because I said so"]},
+
+    {"input": [".*what((\?|\!)*)\Z"],
+     "reply": ["what indeed"]},
 
     {"input": [".*i don't",".*i do not"],
      "reply": ["I know you don't, NN", "you should"]},
@@ -451,6 +459,9 @@ else: print('No Wikipedia article found')</exec>''']},
     {"input": [r"wa+\b"],
      "reply": ["WA WA WA","Have the onions got you?","Aww, is your lacrymal drainage system malfunctioning?"]},
 
+    {"input": ["a(h+)"],
+     "reply": ["A<eval>self.match.group(1)</eval>h"]},
+
     {"input": ["ha+","xd\Z","funny","lol"],
      "reply": ["It's not funny, NN"]},
 
@@ -474,14 +485,14 @@ else: print('No Wikipedia article found')</exec>''']},
      "reply": ["no?"]},
     {"input": ["no\?"],
      "reply": ["yes?"]},
-    {"input": ["yes"],
+    {"input": [r"yes\b"],
      "reply": ["no"]},
-    {"input": ["no"],
+    {"input": [r"no\b"],
      "reply": ["yes"]},
 
     # Should I search the web for...
 
-    {"input": ["\b((how|where|when|what)( to| do|'s|'re| does|) .+)",".*(why( do|'re|'s) .+)",".*(is .+)",".*(do .+)"],
+    {"input": [".*((how|where|when|what)( to| do|'s|'re| does|) .+)",".*(why( do|'re|'s) .+)",".*(is .+)",".*(do .+)"],
      "reply": (["Ok then","If you say so"],'''<exec>tmp=self.match.group(1)
 if self.toolBox.promptYN(random.choice(['Should I search the web for "%s"?' % tmp,'Do web search for "%s"? ' % tmp])):
     webbrowser.open('https://www.google.com/search?q=%s' % tmp)</exec>''')},

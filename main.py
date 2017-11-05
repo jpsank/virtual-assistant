@@ -325,7 +325,7 @@ class toolBox:
                 os.system(cmd)
 
     def shunMode(self):
-        print("Entering shun mode... beg for forgiveness required")
+        print("<Entering shun mode... beg for forgiveness required>")
         done = False
         while not done:
             s = input(primaryCommandPrompt)
@@ -338,23 +338,26 @@ class toolBox:
             else:
                 print("...")
         time.sleep(1)
-        print("Shun mode deactivated")
+        print("<Shun mode deactivated>")
 
     def sleep(self, cmd):
-        if platform.system() == "Linux":
-            if cmd == "sleep" or cmd == "suspend":
-                os.system("systemctl suspend")
-            elif cmd == "shutdown":
-                os.system("shutdown")
-            elif cmd == "reboot":
-                os.system("reboot")
-        elif platform.system() == "Darwin":
-            if cmd == "sleep" or cmd == "suspend":
-                os.system("pmset sleepnow")
+        if self.promptYN("Are you sure you would like to %s your system? (y/n)" % cmd):
+            if platform.system() == "Linux":
+                if cmd == "sleep" or cmd == "suspend":
+                    os.system("systemctl suspend")
+                elif cmd == "shutdown":
+                    os.system("shutdown")
+                elif cmd == "reboot":
+                    os.system("reboot")
+            elif platform.system() == "Darwin":
+                if cmd == "sleep" or cmd == "suspend":
+                    os.system("pmset sleepnow")
+                else:
+                    return "Sorry, your platform isn't supported yet"
             else:
                 return "Sorry, your platform isn't supported yet"
         else:
-            return "Sorry, your platform isn't supported yet"
+            return "Canceled"
 
     def wikiPageScrape(self, page):
         tree = lxml.html.fromstring(page.content)
@@ -370,16 +373,29 @@ class toolBox:
             tree = lxml.html.fromstring(page.content)
             searches = tree.xpath('//div[@class="mw-search-result-heading"]/a')
             if searches:
-                prompt = self.promptD("Choose the number of the article you want to open:\n%s" % '\n'.join(
-                    ["%s. %s" % (i, s.text_content()) for i, s in enumerate(searches)]))
+                prompt = self.promptD("Choose the number of the article you want to open: (or type 'cancel' to return)\n%s" % '\n'.join(
+                    ["%s. %s" % (i, s.text_content()) for i, s in enumerate(searches)]),cancel='cancel')
+                if prompt is False:
+                    return False
                 while prompt[0] >= len(searches):
-                    prompt = self.promptD("Choose a number between 0 and %s" % str(len(searches)-1))
+                    prompt = self.promptD("Choose a number between 0 and %s (or 'cancel' to return)" % str(len(searches)-1),cancel='cancel')
+                    if prompt is False:
+                        return False
                 page = requests.get("https://en.wikipedia.org%s" % searches[prompt[0]].get('href'))
                 return self.wikiPageScrape(page)
             else:
-                return
+                return None
         else:
             return self.wikiPageScrape(requests.get(page.url))
+
+    def wikiLookupRespond(self,topic):
+        wiki = self.wikiLookup(topic)
+        if wiki is None:
+            return "No Wikipedia articles found"
+        elif wiki is False:
+            return "Canceled"
+        else:
+            return wiki
 
     def whatIsLookup(self,what):
         what = re.sub(r"\?+\Z", "", what)
@@ -388,9 +404,8 @@ class toolBox:
             if d:
                 return "%s: %s" %(what,d[0])
 
-            wiki = self.wikiLookup(what)
-            if wiki:
-                return wiki
+            wiki = self.wikiLookupRespond(what)
+            return wiki
         else:
             return "If you say so"
 
@@ -532,9 +547,8 @@ class toolBox:
             return
 
         if self.promptYN("Search Wikipedia for %s?" %name):
-            wiki = self.wikiLookup(name)
-            if wiki is not None:
-                return wiki
+            wiki = self.wikiLookupRespond(name)
+            return wiki
 
         return random.choice(["Never heard of them"])
 
