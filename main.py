@@ -398,22 +398,29 @@ class toolBox:
         url = "https://www.reddit.com/search?q=%s" % topic
         try:
             page = requests.get(url,headers={'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (Klxml.html, like Gecko) Chrome/60.0.3112.78 Safari/537.36 OPR/47.0.2631.55'})
-        except ConnectionError:
-            return
+        except Exception:
+            return False
         tree = lxml.html.fromstring(page.content)
         results = tree.xpath('//div[contains(@class, "search-result-link")]//a[contains(@class, "search-title")]')
         if results:
             return results
 
-    def redditLookup(self,topic):
+    def redditLookup(self,topic=None):
+        if topic is None:
+            topic = self.promptANY(["Search Reddit for what?","What do I search for?"])
         searches = self.redditSearchScrape(topic)
         if searches:
-            prompt = self.promptD("Which number post to open?\n%s" % '\n'.join(["%s. %s" % (i,s.text_content()) for i,s in enumerate(searches)]))
-            p = prompt[0]
-            webbrowser.open(searches[p].get('href'))
-            return random.choice(["Opening reddit post","Opening '%s'" % searches[p].text_content()])
+            prompt = self.promptD("Which number post to open? (or type 'cancel' to return)\n%s" % '\n'.join(["%s. %s" % (i,s.text_content()) for i,s in enumerate(searches)]),cancel="cancel")
+            if prompt:
+                p = prompt[0]
+                webbrowser.open(searches[p].get('href'))
+                return random.choice(["Opening reddit post","Opening '%s'" % searches[p].text_content()])
+            else:
+                return "Cancelled"
+        elif searches is False:
+            return random.choice(["Error searching for reddit posts","I could not open reddit, NN"])
         else:
-            return
+            return random.choice(["No Reddit posts found!","I could not find any reddit posts, NN"])
 
     def xkcdComic(self,number=None):
         if number is None:
@@ -428,7 +435,7 @@ class toolBox:
         if opSys == "Linux":
             if os.path.exists("/usr/bin/{}".format(thing.lower())):
                 return "/usr/bin/{}".format(thing.lower())
-            elif os.path.exists("{}/.steam/steam.sh".format(home)) and thing.lower() == "steam":
+            elif thing.lower() == "steam" and os.path.exists("{}/.steam/steam.sh".format(home)):
                 return "{}/.steam/steam.sh".format(home)
         elif opSys == "Darwin":
             if os.path.exists("/Applications/{}.app".format(thing.title())) or os.path.exists("/Applications/{}.app".format(thing)):
@@ -455,14 +462,13 @@ class toolBox:
                 except:
                     print('Unable to open file')
         else:
-            global appcheck
             appcheck = self.appCheck(thing)
             if appcheck is not None:
                 opSys = platform.system()
                 if opSys == "Linux":
-                    threading._start_new_thread(self.executeTheCommand, ('''subprocess.call(appcheck, stdout=subprocess.DEVNULL)''',))
+                    threading.Thread(target=lambda: subprocess.call(appcheck, stdout=subprocess.DEVNULL)).start()
                 elif opSys == "Darwin":
-                    threading._start_new_thread(self.executeTheCommand, ('''subprocess.call(["/usr/bin/open","-W","-n","-a",appcheck])''',))
+                    threading.Thread(target=lambda: subprocess.call(["/usr/bin/open","-W","-n","-a",appcheck])).start()
                 elif opSys == "Windows":
                     subprocess.Popen('"%s"' % appcheck,shell=True)
 
@@ -470,19 +476,14 @@ class toolBox:
             else:
                 if self.promptYN('Open website %s? ' % thing):
                     try:
-                        if not '.' in thing:
+                        if '.' not in thing:
                             thing = "%s.com" % thing
+                        if not thing.startswith('http'):
+                            thing = "https://%s" % thing
                         print("Opening %s..." % thing)
-                        if thing.startswith('http'):
-                            webbrowser.open(thing)
-                        else:
-                            webbrowser.open("https://%s" % thing)
+                        webbrowser.open(thing)
                     except:
                         print("Unable to open %s" % thing)
-
-    def executeTheCommand(self, cmd):
-        global appcheck
-        exec(cmd)
 
     def googleIt(self,search):
         webbrowser.open("https://www.google.com/search?q=%s" % search)
@@ -495,21 +496,30 @@ class toolBox:
             CONTACTS.append({"BDAY": None, "GENDER": None, "NN": name, "FULLNAME": None, "EMAIL": None, "PHONE": None})
             with open('contacts.json', 'w') as f:
                 json.dump(CONTACTS, f)
-            return "Added %s as a contact" % name
+            return random.choice(["Added %s as a contact" % name, "I've added your contact %s" % name,
+                                  "%s has been added as a contact" % name])
         else:
-            return "Cancelling..."
+            return "Cancelled"
 
-    def removeContact(self, tag=None):
-        if tag is None:
-            tag = self.promptANY("Which contact to remove?")
-        contactIndex = self.parseContactString(tag)
-        if self.promptYN("Are you sure you want to remove contact '%s'?" % CONTACTS[contactIndex]["NN"]):
-            del CONTACTS[contactIndex]
-            with open('contacts.json', 'w') as f:
-                json.dump(CONTACTS, f)
-            return "Removed %s from your contacts" % tag
+    def removeContact(self, name=None):
+        if name is None:
+            name = self.promptANY("Which contact to remove?")
+        contactIndex = self.parseContactString(name)
+        name = CONTACTS[contactIndex]["NN"]
+        if contactIndex is False:
+            return random.choice(["No other contacts named '%s'" % name,"Cancelled"])
+        elif contactIndex is None:
+            return random.choice(["No contact named '%s'" % name,"I could not find any contact named '%s'" % name,
+                                  "I couldn't find the contact you were looking for, NN"])
         else:
-            return "Cancelling..."
+            if self.promptYN("Are you sure you want to remove contact '%s'?" % CONTACTS[contactIndex]["NN"]):
+                del CONTACTS[contactIndex]
+                with open('contacts.json', 'w') as f:
+                    json.dump(CONTACTS, f)
+                return random.choice(["Removed %s from your contacts, NN" % name,"Your contact %s has been removed, NN" % name,
+                                      "Contact %s has been deleted, NN" % name])
+            else:
+                return "Cancelled"
 
     def personLookup(self,name):
         name = re.sub(r"\?+\Z","",name)
@@ -530,19 +540,24 @@ class toolBox:
 
     def parseContactString(self, tag):
         if isinstance(tag, str):
-            tag = tag.lower()
-            if tag in ['my', 'me', 'i']:
+            name = tag.lower()
+            if name in ['my', 'me', 'i']:
                 return 0
             else:
-                if tag.endswith("'s"):
-                    tag = tag[:-2]
+                if name.endswith("'s"):
+                    name = name[:-2]
+                result = None
                 for i, c in enumerate(CONTACTS):
-                    if tag in c["NN"].lower() \
-                            or c["NN"].lower() in tag \
-                            or (c["FULLNAME"] is not None and any(n.lower() in c["FULLNAME"].split() for n in tag.split())):
-                        prompts = ["Are you referring to your contact NN?","You mean your contact NN?","Are you talking about your contact NN?"]
+                    if name in c["NN"].lower() \
+                            or c["NN"].lower() in name \
+                            or (c["FULLNAME"] is not None and any(n.lower() in c["FULLNAME"].split() for n in name.split())):
+                        prompts = ["Are you referring to your contact NN?","You mean your contact NN?",
+                                   "Are you talking about your contact NN?"]
                         if self.promptYN(random.choice(prompts).replace("NN",c["NN"])):
                             return i
+                        else:
+                            result = False
+                return result
         elif isinstance(tag, int):
             return tag
 
@@ -658,9 +673,11 @@ class toolBox:
         else:
             return self.promptYN(failsafe,failsafe,y,n)
 
-    def promptD(self,prompt,failsafe="Pick a number"):
+    def promptD(self,prompt,failsafe="Pick a number",cancel=None):
         print(random.choice(prompt) if isinstance(prompt,list) else prompt)
         answer = input(secondaryCommandPrompt).lower()
+        if cancel is not None and re.match(cancel,answer):
+            return False
         result = []
         for m in re.findall("[+-]?\d+",answer):
             result.append(int(m))
