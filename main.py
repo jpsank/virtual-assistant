@@ -348,6 +348,11 @@ class toolBox:
                 os.system("shutdown")
             elif cmd == "reboot":
                 os.system("reboot")
+        elif platform.system() == "Darwin":
+            if cmd == "sleep" or cmd == "suspend":
+                os.system("pmset sleepnow")
+            else:
+                return "Sorry, your platform isn't supported yet"
         else:
             return "Sorry, your platform isn't supported yet"
 
