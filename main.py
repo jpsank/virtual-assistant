@@ -120,7 +120,7 @@ class toolBox:
         return random.choice(["Never heard of it", "A %s?" % word])
 
     def weatherHourly(self,*keys):
-        r = requests.get("https://www.wunderground.com/hourly/{}/{}/{}".format(*self.locationData("region","city","zip")))
+        r = requests.get("https://www.wunderground.com/hourly/{}/{}/{}".format(*self.locationData("region_code","city","zip_code")))
         page = lxml.html.fromstring(r.content)
         rows = page.xpath("//table[@id='hourly-forecast-table']/tbody/tr")
         if rows:
@@ -137,7 +137,7 @@ class toolBox:
             return result
 
     def weatherCurrent(self,*keys):
-        r = requests.get("https://www.wunderground.com/hourly/{}/{}/{}".format(*self.locationData("region", "city", "zip")))
+        r = requests.get("https://www.wunderground.com/hourly/{}/{}/{}".format(*self.locationData("region_code", "city", "zip_code")))
         page = lxml.html.fromstring(r.content)
         rows = page.xpath("//table[@id='hourly-forecast-table']/tbody/tr")
         if rows:
@@ -163,9 +163,9 @@ class toolBox:
             print("Here's today's hourly forecast:")
             printColumns(self.weatherHourly())
 
-    def locationData(self, *keys):
-        url = 'http://ip-api.com/json'
-        r = requests.get(url,headers={"user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36 OPR/48.0.2685.50"})
+    def locationData(self,*keys):
+        url = 'http://freegeoip.net/json'
+        r = requests.get(url)
         j = json.loads(r.text)
         return [j[k] if k in j else None for k in keys]
 
@@ -360,7 +360,7 @@ class toolBox:
                 elif cmd == 'shutdown':
                     os.system(r"%windir%\System32\shutdown.exe -s")
                 elif cmd == 'reboot':
-                    os.system(r"%windir%\System32\shutdown.exe -r")
+                    os.system("%windir%\System32\shutdown.exe -r")
             else:
                 return "Sorry, your platform isn't supported yet"
         else:
