@@ -206,7 +206,6 @@ class toolBox:
             return "%s (did you mean %s?)" % (random.choice(["Never heard of it", "A %s?" % word]),self.spellcheckSuggest(word))
 
     def translate(self, text, src="en", dest="zh-TW"):
-        session = requests.session()
         url = "https://www.translate.com/translator/ajax_translate"
         headers = {
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (Klxml.html, like Gecko) Chrome/61.0.3163.100 Safari/537.36 OPR/48.0.2685.39"}
@@ -214,7 +213,7 @@ class toolBox:
                 "source_lang": src,
                 "translated_lang": dest,
                 "use_cache_only": "false"}
-        page = session.post(url, data=data, headers=headers)
+        page = requests.post(url, data=data, headers=headers)
         j = json.loads(page.text)
         if j["translation_id"] != 0:
             return html.unescape(j["translated_text"]).encode('utf-8')
