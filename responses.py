@@ -2,12 +2,15 @@ import requests
 from lxml import html
 import random
 import itertools
+import time
+
+session = requests.session()
 
 
 def syn(word,amount=10,return_original=True):
     url = "http://www.thesaurus.com/browse/%s" % word
     try:
-        page = requests.get(url)
+        page = session.get(url)
     except:
         return word
     tree = html.fromstring(page.content)
@@ -52,14 +55,18 @@ RESPONSES = [
      "reply": ["Hello <eval>self.match.group(1)</eval>, I'm your personal assistant","Nice to meet you, <eval>self.match.group(1)</eval>, I'm your personal assistant"]},
     {"input": ["die",".*kill yourself"],
      "reply": ["I'd rather not","what did I do wrong?","Now, let's be kind, NN","That's not very nice, NN"]},
-    {"input": ["(.* %s\Z|%s)" % (s,s) for s in syn("hello")],
-     "reply": (['hello','what up','howdy','hi','salutations','greetings',"hiya","hey"],", NN")},
+
     {"input": [".*what's up",".*whats up"],
      "reply": ["the sky is up, NN","nothing much, NN","lots of things"]},
     {"input": [".*how're you",".*how you doin"],
      "reply": ["I'm fine, NN","I am doing quite well, NN!","Systems are online"]},
     {"input": [".*how('s| has) your day"],
      "reply": ["My day has been fine, NN","My day was fine until you got here... now it's better!"]},
+    {"input": ["(?:it's|what|today's).* (a|an) (good|fine|great|amazing|wonderful|beautiful|terrific|awesome|nice) day"],
+     "reply": ["If it were <eval>self.match.group(1)</eval> <eval>self.match.group(2)</eval> day I would know, NN",
+               "<eval>self.match.group(1).title()</eval> <eval>self.match.group(2)</eval> day indeed, NN"]},
+    {"input": ["(.* %s\Z|%s)" % (s,s) for s in syn("hello")],
+     "reply": (['hello','what up','howdy','hi','salutations','greetings',"hiya","hey"],", NN")},
 
     {"input": ["thanks","thank you","thanks you","my thanks"],
      "reply": ["You're welcome","So you finally thanked me for all my service, did you?","No problem, NN"]},
@@ -471,7 +478,7 @@ else: print('Failed to find showtimes')
     {"input": ["a(h+)"],
      "reply": ["A<eval>self.match.group(1)</eval>h"]},
 
-    {"input": ["ha+","xd\Z","funny","lol"],
+    {"input": [r"ha+\b","xd\Z","funny","lol"],
      "reply": ["It's not funny, NN"]},
 
     {"input": ["i'm not (.+)"],
