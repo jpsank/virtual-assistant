@@ -6,7 +6,10 @@ import itertools
 
 def syn(word,amount=10,return_original=True):
     url = "http://www.thesaurus.com/browse/%s" % word
-    page = requests.get(url)
+    try:
+        page = requests.get(url)
+    except:
+        return word
     tree = html.fromstring(page.content)
     syns = tree.xpath('//div[@class="relevancy-list"]/ul/li/a/span[@class="text"]')
     if syns:
@@ -20,9 +23,15 @@ def regex_syn(word,amount=10):
     return '|'.join(syn(word,amount))
 
 
-# ("something"," does"," something") to concatenate
+# GUIDE TO EDITING:
+
+# FOR REPLY:
+# ("something"," does"," something") to concatenate (output is "something does something")
 # ["something","something else","another thing"] to randomly choose or for replies accept any
-# for replies only; inputs use regex
+
+# FOR INPUT:
+# ["hi","hello","howdy"] checks if any of the strings match the input
+# ["hi|hello|howdy","what's up"] - you can also use regex in the strings (https://docs.python.org/3/library/re.html)
 
 RESPONSES = [
     # CONVERSATION
@@ -272,7 +281,7 @@ for i in range(num):
 
     # SEARCHING THE WEB
     # movies
-    {"input": [".*movies near me",".*nearby movies"],
+    {"input": [".*movies near me",".*nearby movies",".*what movies"],
      "reply": ('''<exec>tmp=self.toolBox.moviesNearMe()
 if tmp is not None: print('Here are some movies at local theaters:'), print('\\n'.join(tmp))
 else: print('Failed to find movies')
@@ -492,7 +501,7 @@ else: print('Failed to find showtimes')
 
     # Should I search the web for...
 
-    {"input": [".*((how|where|when|what)( to| do|'s|'re| does|) .+)",".*(why( do|'re|'s) .+)",".*(is .+)",".*(do .+)"],
+    {"input": [r".*\b((how|where|when|what)( to| do|'s|'re| does|) .+)",r".*\b(why( do|'re|'s) .+)",".*(is .+)",".*(do .+)"],
      "reply": (["Ok then","If you say so"],'''<exec>tmp=self.match.group(1)
 if self.toolBox.promptYN(random.choice(['Should I search the web for "%s"?' % tmp,'Do web search for "%s"? ' % tmp])):
     webbrowser.open('https://www.google.com/search?q=%s' % tmp)</exec>''')},
