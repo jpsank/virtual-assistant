@@ -10,14 +10,26 @@ if platform.system() == "Windows":
     import winsound
 import re
 import os
-from responses import RESPONSES
 import subprocess
 import html
 import threading
+import pickle
 
 import requests
 import lxml.html
 from enchant.checker import SpellChecker
+
+
+FAST_LOAD_RESPONSES = False  # Save response data to file so no thesaurus scraping on startup. Turn off for development
+
+if FAST_LOAD_RESPONSES and os.path.exists('response_data.p'):
+    with open('response_data.p','rb') as f:
+        RESPONSES = pickle.load(f)
+else:
+    from responses import RESPONSES
+    if FAST_LOAD_RESPONSES:
+        with open('response_data.p','wb') as f:
+            pickle.dump(RESPONSES,f)
 
 
 SPELL_CHECK = False
@@ -741,7 +753,7 @@ class JERF:
         stringlist = []
         onnumber = False
         for word in textnum.split():
-            if word in numwords and not (word == 'and' and stringlist[-1] in noAnd):
+            if word in numwords and not (word == 'and' and stringlist and stringlist[-1] in noAnd) and not (word == 'and' and not onnumber):
                 scale, increment = numwords[word]
                 current = current * scale + increment
                 if scale > 100:

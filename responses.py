@@ -2,6 +2,9 @@ import requests
 from lxml import html
 import random
 import itertools
+import time
+
+session = requests.session()
 
 global offlineMode
 
@@ -37,9 +40,15 @@ def regex_syn(word,amount=10):
         return word
 
 
-# ("something"," does"," something") to concatenate
+# GUIDE TO EDITING:
+
+# FOR REPLY:
+# ("something"," does"," something") to concatenate (output is "something does something")
 # ["something","something else","another thing"] to randomly choose or for replies accept any
-# for replies only; inputs use regex
+
+# FOR INPUT:
+# ["hi","hello","howdy"] checks if any of the strings match the input
+# ["hi|hello|howdy","what's up"] - you can also use regex in the strings (https://docs.python.org/3/library/re.html)
 
 RESPONSES = [
     # CONVERSATION
@@ -60,14 +69,18 @@ RESPONSES = [
      "reply": ["Hello <eval>self.match.group(1)</eval>, I'm your personal assistant","Nice to meet you, <eval>self.match.group(1)</eval>, I'm your personal assistant"]},
     {"input": ["die",".*kill yourself"],
      "reply": ["I'd rather not","what did I do wrong?","Now, let's be kind, NN","That's not very nice, NN"]},
-    {"input": ["(.* %s\Z|%s)" % (s,s) for s in syn("hello")],
-     "reply": (['hello','what up','howdy','hi','salutations','greetings',"hiya","hey"],", NN")},
+
     {"input": [".*what's up",".*whats up"],
      "reply": ["the sky is up, NN","nothing much, NN","lots of things"]},
     {"input": [".*how're you",".*how you doin"],
      "reply": ["I'm fine, NN","I am doing quite well, NN!","Systems are online"]},
     {"input": [".*how('s| has) your day"],
      "reply": ["My day has been fine, NN","My day was fine until you got here... now it's better!"]},
+    {"input": ["(?:it's|what|today's).* (a|an) (good|fine|great|amazing|wonderful|beautiful|terrific|awesome|nice) day"],
+     "reply": ["If it were <eval>self.match.group(1)</eval> <eval>self.match.group(2)</eval> day I would know, NN",
+               "<eval>self.match.group(1).title()</eval> <eval>self.match.group(2)</eval> day indeed, NN"]},
+    {"input": ["(.* %s\Z|%s)" % (s,s) for s in syn("hello")],
+     "reply": (['hello','what up','howdy','hi','salutations','greetings',"hiya","hey"],", NN")},
 
     {"input": ["thanks","thank you","thanks you","my thanks"],
      "reply": ["You're welcome","So you finally thanked me for all my service, did you?","No problem, NN"]},
@@ -289,7 +302,7 @@ for i in range(num):
 
     # SEARCHING THE WEB
     # movies
-    {"input": [".*movies near me",".*nearby movies"],
+    {"input": [".*movies near me",".*nearby movies",".*what movies"],
      "reply": ('''<exec>tmp=self.toolBox.moviesNearMe()
 if tmp is not None: print('Here are some movies at local theaters:'), print('\\n'.join(tmp))
 else: print('Failed to find movies')
@@ -479,7 +492,7 @@ else: print('Failed to find showtimes')
     {"input": ["a(h+)"],
      "reply": ["A<eval>self.match.group(1)</eval>h"]},
 
-    {"input": ["ha+","xd\Z","funny","lol"],
+    {"input": [r"ha+\b","xd\Z","funny","lol"],
      "reply": ["It's not funny, NN"]},
 
     {"input": ["i'm not (.+)"],
@@ -509,7 +522,7 @@ else: print('Failed to find showtimes')
 
     # Should I search the web for...
 
-    {"input": [".*((how|where|when|what)( to| do|'s|'re| does|) .+)",".*(why( do|'re|'s) .+)",".*(is .+)",".*(do .+)"],
+    {"input": [r".*\b((how|where|when|what)( to| do|'s|'re| does|) .+)",r".*\b(why( do|'re|'s) .+)",".*(is .+)",".*(do .+)"],
      "reply": (["Ok then","If you say so"],'''<exec>tmp=self.match.group(1)
 if self.toolBox.promptYN(random.choice(['Should I search the web for "%s"?' % tmp,'Do web search for "%s"? ' % tmp])):
     webbrowser.open('https://www.google.com/search?q=%s' % tmp)</exec>''')},
