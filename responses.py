@@ -6,24 +6,38 @@ import time
 
 session = requests.session()
 
+global offlineMode
+
+def offlineTest(url='https://www.github.com/', timeout=0.1):
+    try:
+        _ = requests.get(url, timeout=timeout)
+        return False
+    except requests.ConnectionError:
+        print("Starting in offline mode. Some features will not be available")
+    return True
+
+offlineMode = offlineTest()
 
 def syn(word,amount=10,return_original=True):
-    url = "http://www.thesaurus.com/browse/%s" % word
-    try:
-        page = session.get(url)
-    except:
+    if offlineMode == False:
+        url = "http://www.thesaurus.com/browse/%s" % word
+        page = requests.get(url)
+        tree = html.fromstring(page.content)
+        syns = tree.xpath('//div[@class="relevancy-list"]/ul/li/a/span[@class="text"]')
+        if syns:
+            syns = syns if amount is None else syns[:amount]
+            syns = [d.text_content() for d in syns]
+            if return_original: syns.append(word)
+            return syns
+    else:
         return word
-    tree = html.fromstring(page.content)
-    syns = tree.xpath('//div[@class="relevancy-list"]/ul/li/a/span[@class="text"]')
-    if syns:
-        syns = syns if amount is None else syns[:amount]
-        syns = [d.text_content() for d in syns]
-        if return_original: syns.append(word)
-        return syns
 
 
 def regex_syn(word,amount=10):
-    return '|'.join(syn(word,amount))
+    if offlineMode == False:
+        return '|'.join(syn(word,amount))
+    else:
+        return word
 
 
 # GUIDE TO EDITING:
