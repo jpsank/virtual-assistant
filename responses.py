@@ -6,20 +6,21 @@ import time
 
 session = requests.session()
 
-global offlineMode
 
 def offlineTest(url='https://www.github.com/', timeout=0.1):
     try:
-        _ = requests.get(url, timeout=timeout)
+        requests.get(url, timeout=timeout)
         return False
     except requests.ConnectionError:
         print("Starting in offline mode. Some features will not be available")
     return True
 
+
 offlineMode = offlineTest()
 
+
 def syn(word,amount=10,return_original=True):
-    if offlineMode == False:
+    if offlineMode is False:
         url = "http://www.thesaurus.com/browse/%s" % word
         page = requests.get(url)
         tree = html.fromstring(page.content)
