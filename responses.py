@@ -7,7 +7,7 @@ import time
 session = requests.session()
 
 
-def offlineTest(url='https://www.github.com/', timeout=0.1):
+def offlineTest(url='https://www.github.com/', timeout=None):
     try:
         requests.get(url, timeout=timeout)
         return False
@@ -22,7 +22,7 @@ offlineMode = offlineTest()
 def syn(word,amount=10,return_original=True):
     if offlineMode is False:
         url = "http://www.thesaurus.com/browse/%s" % word
-        page = requests.get(url)
+        page = session.get(url)  # session.get() is way faster than requests.get()
         tree = html.fromstring(page.content)
         syns = tree.xpath('//div[@class="relevancy-list"]/ul/li/a/span[@class="text"]')
         if syns:
