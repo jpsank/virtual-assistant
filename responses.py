@@ -162,10 +162,6 @@ RESPONSES = [
     {"input": [".*i like you"],
      "reply": ["i like me, too","you do?","how touching","i enjoy you"]},
 
-    # SPELL A WORD
-    {"input": [".*spell (.+)"],
-     "reply": ["Did you mean <eval>self.toolBox.spellcheckSuggest(self.match.group(1))</eval>?"]},
-
     # CHECK CONTACT INFO
     {"input": [".*what's (?P<who>my|.+'s) name",
                ".*whats (?P<who>my|.+'s) name",
