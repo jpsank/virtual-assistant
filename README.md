@@ -2,7 +2,7 @@
 Text-based virtual assistant that tells you all you need to know (developed in Python 3.5)
 
 ## Prerequisites
-You'll need the modules [lxml](http://lxml.de/installation.html) and [requests](http://docs.python-requests.org/en/master/user/install/), for web scraping, and [pyenchant](http://pythonhosted.org/pyenchant/tutorial.html#installing-pyenchant) for spell checking.
+You'll need the modules [lxml](http://lxml.de/installation.html) and [requests](http://docs.python-requests.org/en/master/user/install/), for web scraping.
 
 ## Usage
 To run type
