@@ -32,11 +32,6 @@ else:
             pickle.dump(RESPONSES,f)
 
 
-SPELL_CHECK = False
-
-
-spellchecker = SpellChecker("en_US")
-
 home = os.path.expanduser("~")
 
 primaryCommandPrompt = '>> '
@@ -215,7 +210,7 @@ class toolBox:
         if d:
             return "%s: %s" % (word,d)
         else:
-            return "%s (did you mean %s?)" % (random.choice(["Never heard of it", "A %s?" % word]),self.spellcheckSuggest(word))
+            return "Sorry, I don't know that word."
 
     def translate(self, text, src="en", dest="zh-TW"):
         url = "https://www.translate.com/translator/ajax_translate"
@@ -233,9 +228,6 @@ class toolBox:
     def translateTo(self,text,dest,src="auto detect"):
         if src in LANGUAGES and dest in LANGUAGES:
             return '"%s" in %s: "%s"' % (text, dest, self.translate(text,LANGUAGES[src],LANGUAGES[dest]).decode())
-
-    def spellcheckSuggest(self,word):
-        return ', '.join(spellchecker.suggest(word))
 
     def usedInASentence(self,word):
         url = "http://www.dictionary.com/browse/%s" % word
@@ -779,12 +771,6 @@ class JERF:
 
         return ' '.join(stringlist)
 
-    def spellcheck(self,text):
-        spellchecker.set_text(text)
-        for err in spellchecker:
-            err.replace(err.suggest()[0] if err.suggest() else err)
-        return spellchecker.get_text().lower()
-
     def contractify(self,text):
         dictionary = {
             " was":"'s",
@@ -823,7 +809,7 @@ class JERF:
         return text_blueprint
 
     def reply(self,text):
-        text = self.text2num(self.contractify(self.spellcheck(text.lower()) if SPELL_CHECK else text.lower()))
+        text = self.text2num(self.contractify(text.lower()))
         self.text = text
         for r in RESPONSES:
             self.match = None
