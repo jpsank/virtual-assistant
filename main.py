@@ -17,7 +17,9 @@ import pickle
 
 import requests
 import lxml.html
-from enchant.checker import SpellChecker
+
+global offlineMode
+offlineMode = False
 
 
 FAST_LOAD_RESPONSES = False  # Save response data to file so no thesaurus scraping on startup. Turn off for development
@@ -118,48 +120,73 @@ class toolBox:
             print("Sorry, I can only sing on Windows Computers")
 
     def thesaurus(self,word):
+        global offlineMode
         url = "http://www.thesaurus.com/browse/%s" % word
-        page = requests.get(url)
-        tree = lxml.html.fromstring(page.content)
-        syns = tree.xpath('//div[@class="relevancy-list"]/ul/li/a/span[@class="text"]')
-        if syns:
-            return ', '.join([d.text_content() for d in syns])
-        return random.choice(["Never heard of it", "A %s?" % word])
+        try:
+            if not offlineMode:
+                page = requests.get(url)
+                tree = lxml.html.fromstring(page.content)
+                syns = tree.xpath('//div[@class="relevancy-list"]/ul/li/a/span[@class="text"]')
+                if syns:
+                    return ', '.join([d.text_content() for d in syns])
+                return random.choice(["Never heard of it", "A %s?" % word])
+            else:
+                print("Sorry, Offline Mode is Enabled. Please restart your session if you are online.")
+        except:
+            print("Offline Mode is now Enabled. Some features may be unavailable")
+            offlineMode = True
+
 
     def weatherHourly(self,*keys):
-        r = requests.get("https://www.wunderground.com/hourly/{}/{}/{}".format(*self.locationData("region_code","city","zip_code")))
-        page = lxml.html.fromstring(r.content)
-        rows = page.xpath("//table[@id='hourly-forecast-table']/tbody/tr")
-        if rows:
-            headers = ["Time","Conditions","Temp.","Feels Like","Precip","Amount","Cloud Cover","Dew Point","Humidity","Wind","Pressure"]
-            result = [[h for h in headers if not (keys and h not in keys)]]
-            for row in rows:
-                data = row.xpath('./td')
-                if data:
-                    for i,d in enumerate(data):
-                        if not (keys and headers[i] not in keys):
-                            text = data[i].xpath('.//span//text()[not(ancestor::*[contains(@class,"show-for-small-only")])]')
-                            data[i] = ' '.join(''.join(text).split())
-                    result.append(data)
-            return result
+        global offlineMode
+        try:
+            if not offlineMode:
+                r = requests.get("https://www.wunderground.com/hourly/{}/{}/{}".format(*self.locationData("region_code","city","zip_code")))
+                page = lxml.html.fromstring(r.content)
+                rows = page.xpath("//table[@id='hourly-forecast-table']/tbody/tr")
+                if rows:
+                    headers = ["Time","Conditions","Temp.","Feels Like","Precip","Amount","Cloud Cover","Dew Point","Humidity","Wind","Pressure"]
+                    result = [[h for h in headers if not (keys and h not in keys)]]
+                    for row in rows:
+                        data = row.xpath('./td')
+                        if data:
+                            for i,d in enumerate(data):
+                                if not (keys and headers[i] not in keys):
+                                    text = data[i].xpath('.//span//text()[not(ancestor::*[contains(@class,"show-for-small-only")])]')
+                                    data[i] = ' '.join(''.join(text).split())
+                            result.append(data)
+                    return result
+            else:
+                print("Sorry, Offline Mode is Enabled. Please restart your session if you are online.")
+        except:
+            print("Offline Mode is now Enabled. Some features may be unavailable")
+            offlineMode = True
 
     def weatherCurrent(self,*keys):
-        r = requests.get("https://www.wunderground.com/hourly/{}/{}/{}".format(*self.locationData("region_code", "city", "zip_code")))
-        page = lxml.html.fromstring(r.content)
-        rows = page.xpath("//table[@id='hourly-forecast-table']/tbody/tr")
-        if rows:
-            headers = ["Time", "Conditions", "Temp.", "Feels Like", "Precip", "Amount", "Cloud Cover", "Dew Point",
-                       "Humidity", "Wind", "Pressure"]
-            row = rows[0]
-            result = {}
-            cells = row.xpath('./td')
-            if cells:
-                for i, d in enumerate(cells):
-                    if not (keys and headers[i] not in keys):
-                        text = cells[i].xpath('.//span//text()[not(ancestor::*[contains(@class,"show-for-small-only")])]')
-                        cells[i] = ' '.join(''.join(text).split())
-                        result[headers[i]] = cells[i]
-            return result
+        global offlineMode
+        try:
+            if not offlineMode:
+                r = requests.get("https://www.wunderground.com/hourly/{}/{}/{}".format(*self.locationData("region_code", "city", "zip_code")))
+                page = lxml.html.fromstring(r.content)
+                rows = page.xpath("//table[@id='hourly-forecast-table']/tbody/tr")
+                if rows:
+                    headers = ["Time", "Conditions", "Temp.", "Feels Like", "Precip", "Amount", "Cloud Cover", "Dew Point",
+                               "Humidity", "Wind", "Pressure"]
+                    row = rows[0]
+                    result = {}
+                    cells = row.xpath('./td')
+                    if cells:
+                        for i, d in enumerate(cells):
+                            if not (keys and headers[i] not in keys):
+                                text = cells[i].xpath('.//span//text()[not(ancestor::*[contains(@class,"show-for-small-only")])]')
+                                cells[i] = ' '.join(''.join(text).split())
+                                result[headers[i]] = cells[i]
+                    return result
+            else:
+                print("Sorry, Offline Mode is Enabled. Please restart your session if you are online.")
+        except:
+            print("Offline Mode is now Enabled. Some features may be unavailable")
+            offlineMode = True
 
     def weatherPrint(self,key=None):
         if key is not None:
@@ -171,10 +198,18 @@ class toolBox:
             printColumns(self.weatherHourly())
 
     def locationData(self,*keys):
+        global offlineMode
         url = 'http://freegeoip.net/json'
-        r = requests.get(url)
-        j = json.loads(r.text)
-        return [j[k] if k in j else None for k in keys]
+        try:
+            if not offlineMode:
+                r = requests.get(url)
+                j = json.loads(r.text)
+                return [j[k] if k in j else None for k in keys]
+            else:
+                print("Sorry, Offline Mode is Enabled. Please restart your session if you are online.")
+        except:
+            print("Offline Mode is now Enabled. Some features may be unavailable")
+            offlineMode = True
 
     def googleMapSearch(self,search):
         search = re.sub(r"\?+\Z", "", search)
@@ -194,16 +229,24 @@ class toolBox:
         return 'https://www.google.com/maps/search/?api=1&query=%s' %place
 
     def define(self,word,index=None):
+        global offlineMode
         url = "http://www.dictionary.com/browse/%s" % word
-        page = requests.get(url)
-        tree = lxml.html.fromstring(page.content)
-        defsets = tree.xpath('//div[@class="def-content"]')
-        if defsets:
-            defs = [' '.join(d.text_content().replace('\n','').replace('\r','').split()) for d in defsets]
-            if index is not None:
-                return defs[index]
+        try:
+            if not offlineMode:
+                page = requests.get(url)
+                tree = lxml.html.fromstring(page.content)
+                defsets = tree.xpath('//div[@class="def-content"]')
+                if defsets:
+                    defs = [' '.join(d.text_content().replace('\n','').replace('\r','').split()) for d in defsets]
+                    if index is not None:
+                        return defs[index]
+                    else:
+                        return defs
             else:
-                return defs
+                print("Sorry, Offline Mode is Enabled. Please restart your session if you are online.")
+        except:
+            print("Offline Mode is now Enabled. Some features may be unavailable")
+            offlineMode = True
 
     def getDefinition(self,word):
         d = self.define(word,0)
@@ -213,6 +256,7 @@ class toolBox:
             return "Sorry, I don't know that word."
 
     def translate(self, text, src="en", dest="zh-TW"):
+        global offlineMode
         url = "https://www.translate.com/translator/ajax_translate"
         headers = {
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (Klxml.html, like Gecko) Chrome/61.0.3163.100 Safari/537.36 OPR/48.0.2685.39"}
@@ -220,24 +264,39 @@ class toolBox:
                 "source_lang": src,
                 "translated_lang": dest,
                 "use_cache_only": "false"}
-        page = requests.post(url, data=data, headers=headers)
-        j = json.loads(page.text)
-        if j["translation_id"] != 0:
-            return html.unescape(j["translated_text"]).encode('utf-8')
+        try:
+            if not offlineMode:
+                page = requests.post(url, data=data, headers=headers)
+                j = json.loads(page.text)
+                if j["translation_id"] != 0:
+                    return html.unescape(j["translated_text"]).encode('utf-8')
+            else:
+                print("Sorry, Offline Mode is Enabled. Please restart your session if you are online.")
+        except:
+            print("Offline Mode is now Enabled. Some features may be unavailable")
+            offlineMode = True
 
     def translateTo(self,text,dest,src="auto detect"):
         if src in LANGUAGES and dest in LANGUAGES:
             return '"%s" in %s: "%s"' % (text, dest, self.translate(text,LANGUAGES[src],LANGUAGES[dest]).decode())
 
     def usedInASentence(self,word):
+        global offlineMode
         url = "http://www.dictionary.com/browse/%s" % word
-        page = requests.get(url)
-        tree = lxml.html.fromstring(page.content)
-        defsets = tree.xpath('//p[@class="partner-example-text"]')
-        if defsets:
-            defs = [' '.join(d.text_content().split()) for d in defsets]
-            return defs
-        return random.choice(["Never heard of it", "A %s?" % word])
+        try:
+            if not offlineMode:
+                page = requests.get(url)
+                tree = lxml.html.fromstring(page.content)
+                defsets = tree.xpath('//p[@class="partner-example-text"]')
+                if defsets:
+                    defs = [' '.join(d.text_content().split()) for d in defsets]
+                    return defs
+                return random.choice(["Never heard of it", "A %s?" % word])
+            else:
+                print("Sorry, Offline Mode is Enabled. Please restart your session if you are online.")
+        except:
+            print("Offline Mode is now Enabled. Some features may be unavailable")
+            offlineMode = True
 
     def basicMath(self,mathstr):
         signs = {
@@ -258,37 +317,53 @@ class toolBox:
             return mathstr
 
     def moviesNearMe(self):
+        global offlineMode
         url = 'https://www.google.com/search?q=movies%20near%20me'
-        page = requests.get(url)
-        tree = lxml.html.fromstring(page.content)
-        movies = tree.xpath('//div[@class="_Nxj"]')
-        if movies:
-            result = []
-            for m in movies:
-                title = m.xpath('./div/a[@class="fl _yxj"]')
-                if title: title = title[0].text_content()
-                genre = m.xpath('./span[@class="_Bxj"]')
-                if genre: genre = genre[0].text_content()
-                if title and genre:
-                    result.append('%s (%s)' % (title,genre))
-            if result:
-                return result
+        try:
+            if offlineMode ==  False:
+                page = requests.get(url)
+                tree = lxml.html.fromstring(page.content)
+                movies = tree.xpath('//div[@class="_Nxj"]')
+                if movies:
+                    result = []
+                    for m in movies:
+                        title = m.xpath('./div/a[@class="fl _yxj"]')
+                        if title: title = title[0].text_content()
+                        genre = m.xpath('./span[@class="_Bxj"]')
+                        if genre: genre = genre[0].text_content()
+                        if title and genre:
+                            result.append('%s (%s)' % (title,genre))
+                    if result:
+                        return result
+            else:
+                print("Sorry, Offline Mode is Enabled. Please restart your session if you are online.")
+        except:
+            print("Offline Mode is now Enabled. Some features may be unavailable")
+            offlineMode = True
 
     def movieShowTimes(self,movie):
+        global offlineMode
         url = "https://www.google.com/search?q=showtimes+for+%s" % movie
-        page = requests.get(url)
-        tree = lxml.html.fromstring(page.content)
-        name = tree.xpath('//div[@class="_Kxj"]/span/span')
-        if name:
-            rows = tree.xpath('//table[@class="_W5j _Axj"]/tbody/tr')
-            showtimes = {}
-            for i in range(0,len(rows),3):
-                title = rows[i].text_content()
-                times = rows[i+1].xpath('.//div[@class="_wxj"]')
-                if title and times:
-                    showtimes[title] = [t.text_content() for t in times]
-            if showtimes:
-                return name[0].text_content(), showtimes
+        try:
+            if not offlineMode:
+                page = requests.get(url)
+                tree = lxml.html.fromstring(page.content)
+                name = tree.xpath('//div[@class="_Kxj"]/span/span')
+                if name:
+                    rows = tree.xpath('//table[@class="_W5j _Axj"]/tbody/tr')
+                    showtimes = {}
+                    for i in range(0,len(rows),3):
+                        title = rows[i].text_content()
+                        times = rows[i+1].xpath('.//div[@class="_wxj"]')
+                        if title and times:
+                            showtimes[title] = [t.text_content() for t in times]
+                    if showtimes:
+                        return name[0].text_content(), showtimes
+            else:
+                print("Sorry, Offline Mode is Enabled. Please restart your session if you are online.")
+        except:
+            print("Offline Mode is now Enabled. Some features may be unavailable")
+            offlineMode = True
 
     def musicControlMac(self, cmd):
         if cmd == "play":
@@ -377,26 +452,34 @@ class toolBox:
             return result
 
     def wikiLookup(self,topic):
+        global offlineMode
         url = "https://en.wikipedia.org/wiki/?search=%s" % topic
-        page = requests.get(url)
-        if '?search' in page.url:
-            tree = lxml.html.fromstring(page.content)
-            searches = tree.xpath('//div[@class="mw-search-result-heading"]/a')
-            if searches:
-                prompt = self.promptD("Choose the number of the article you want to open: (or type 'cancel' to return)\n%s" % '\n'.join(
-                    ["%s. %s" % (i, s.text_content()) for i, s in enumerate(searches)]),cancel='cancel')
-                if prompt is False:
-                    return False
-                while prompt[0] >= len(searches):
-                    prompt = self.promptD("Choose a number between 0 and %s (or 'cancel' to return)" % str(len(searches)-1),cancel='cancel')
-                    if prompt is False:
-                        return False
-                page = requests.get("https://en.wikipedia.org%s" % searches[prompt[0]].get('href'))
-                return self.wikiPageScrape(page)
+        try:
+            if not offlineMode:
+                page = requests.get(url)
+                if '?search' in page.url:
+                    tree = lxml.html.fromstring(page.content)
+                    searches = tree.xpath('//div[@class="mw-search-result-heading"]/a')
+                    if searches:
+                        prompt = self.promptD("Choose the number of the article you want to open: (or type 'cancel' to return)\n%s" % '\n'.join(
+                            ["%s. %s" % (i, s.text_content()) for i, s in enumerate(searches)]),cancel='cancel')
+                        if prompt is False:
+                            return False
+                        while prompt[0] >= len(searches):
+                            prompt = self.promptD("Choose a number between 0 and %s (or 'cancel' to return)" % str(len(searches)-1),cancel='cancel')
+                            if prompt is False:
+                                return False
+                        page = requests.get("https://en.wikipedia.org%s" % searches[prompt[0]].get('href'))
+                        return self.wikiPageScrape(page)
+                    else:
+                        return None
+                else:
+                    return self.wikiPageScrape(requests.get(page.url))
             else:
-                return None
-        else:
-            return self.wikiPageScrape(requests.get(page.url))
+                print("Sorry, Offline Mode is Enabled. Please restart your session if you are online.")
+        except:
+            print("Offline Mode is now Enabled. Some features may be unavailable")
+            offlineMode = True
 
     def wikiLookupRespond(self,topic):
         wiki = self.wikiLookup(topic)

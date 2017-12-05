@@ -6,30 +6,25 @@ import time
 
 session = requests.session()
 
-
-def offlineTest(url='https://www.github.com/', timeout=0.1):
-    try:
-        requests.get(url, timeout=timeout)
-        return False
-    except requests.ConnectionError:
-        print("Starting in offline mode. Some features will not be available")
-    return True
-
-
-offlineMode = offlineTest()
-
+global offlineMode
+offlineMode = False
 
 def syn(word,amount=10,return_original=True):
-    if offlineMode is False:
-        url = "http://www.thesaurus.com/browse/%s" % word
-        page = requests.get(url)
-        tree = html.fromstring(page.content)
-        syns = tree.xpath('//div[@class="relevancy-list"]/ul/li/a/span[@class="text"]')
-        if syns:
-            syns = syns if amount is None else syns[:amount]
-            syns = [d.text_content() for d in syns]
-            if return_original: syns.append(word)
-            return syns
+    global offlineMode
+    if offlineMode == False:
+        try:
+            url = "http://www.thesaurus.com/browse/%s" % word
+            page = requests.get(url)
+            tree = html.fromstring(page.content)
+            syns = tree.xpath('//div[@class="relevancy-list"]/ul/li/a/span[@class="text"]')
+            if syns:
+                syns = syns if amount is None else syns[:amount]
+                syns = [d.text_content() for d in syns]
+                if return_original: syns.append(word)
+                return syns
+        except:
+            offlineMode = True
+            return word
     else:
         return word
 
@@ -256,7 +251,7 @@ RESPONSES = [
 
     # MATH
     {"input": [".*?(([+-]?(?:\d+(?:\.\d*)?|\d*\.\d+))(?: *(?:\+|plus|\*|times|multiplied by|\-|minus|\/|divided by|over|\*\*|\^|to the power of) *([+-]?(?:\d+(?:\.\d*)?|\d*\.\d+)))+)"],
-     "reply": ("<eval>print('%s = %s' %self.toolBox.basicMath(self.match.group(1)))</eval>")},
+     "reply": "<eval>print('%s = %s' %self.toolBox.basicMath(self.match.group(1)))</eval>"},
     {"input": [".*(?:sqrt|square root)(?: of)? ([+-]?(?:\d+(?:\.\d*)?|\d*\.\d+))"],
      "reply": ("<eval>print('The square root of %s is %s' %(self.match.group(1),math.sqrt(float(self.match.group(1)))))</eval>")},
 
