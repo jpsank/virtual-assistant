@@ -17,6 +17,7 @@ import pickle
 
 import requests
 import lxml.html
+from bs4 import BeautifulSoup
 from enchant.checker import SpellChecker
 
 
@@ -120,13 +121,47 @@ class toolBox:
     def thesaurus(self,word):
         url = "http://www.thesaurus.com/browse/%s" % word
         page = requests.get(url)
-        tree = lxml.html.fromstring(page.content)
-        syns = tree.xpath('//div[@class="relevancy-list"]/ul/li/a/span[@class="text"]')
+        soup = BeautifulSoup(page.text, "lxml")
+        syns = soup.select('div.relevancy-list > ul > li > a > span.text')
         if syns:
-            return ', '.join([d.text_content() for d in syns])
-        return random.choice(["Never heard of it", "A %s?" % word])
+            return syns
+
+    def getSynonyms(self,word):
+        synonyms = self.thesaurus(word)
+        if synonyms:
+            string = ', '.join([d.text for d in synonyms])
+            choices = ["Here's some synonyms for %s:" % word,
+                       "Other words for %s:" % word]
+            return "%s %s" % (random.choice(choices),string)
+        else:
+            return random.choice(["Never heard of it", "I could not find any synonyms for %s, NN" % word])
 
     def weatherHourly(self,*keys):
+        r = requests.get("https://www.wunderground.com/hourly/{}/{}/{}".format(*self.locationData("region_code","city","zip_code")))
+        page = BeautifulSoup(r.text,"lxml")
+        rows = page.select("table#hourly-forecast-table > tbody > tr")
+        if rows:
+            headers = ["Time","Conditions","Temp.","Feels Like","Precip","Amount","Cloud Cover","Dew Point","Humidity","Wind","Pressure"]
+            result = [[h for h in headers if not (keys and h not in keys)]]
+            for row in rows:
+                data = row.select('td')
+                if data:
+                    for i,d in enumerate(data):
+                        if not (keys and headers[i] not in keys):
+                            spans = data[i].select('span')
+                            text = []
+                            if len(spans) > 1:
+                                for s in spans:
+                                    if not s.parent.has_attr("class") or not "show-for-small-only" in s.parent["class"]:
+                                        text.append(s.text)
+                            else:
+                                text.append(spans[0].text)
+                            print(text)
+                            data[i] = ' '.join(''.join(text).split())
+                    result.append(data)
+            return result
+
+    def weatherHourlyOld(self,*keys):
         r = requests.get("https://www.wunderground.com/hourly/{}/{}/{}".format(*self.locationData("region_code","city","zip_code")))
         page = lxml.html.fromstring(r.content)
         rows = page.xpath("//table[@id='hourly-forecast-table']/tbody/tr")
@@ -816,8 +851,11 @@ class JERF:
             for choice in r["input"]:
                 self.match = re.match(choice,text)
                 if self.match is not None:
-                    rep = ''.join(self.process_reply(r["reply"]))
-                    return self.replaceify(self.evaluate(rep))
+                    try:
+                        rep = ''.join(self.process_reply(r["reply"]))
+                        return self.replaceify(self.evaluate(rep))
+                    except ConnectionError or requests.ConnectionError:
+                        return "Offline, connection failed"
         return None
 
 

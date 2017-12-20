@@ -12,8 +12,7 @@ def offlineTest(url='https://www.github.com/', timeout=None):
         requests.get(url, timeout=timeout)
         return False
     except requests.ConnectionError:
-        print("Starting in offline mode. Some features will not be available")
-    return True
+        return True
 
 
 offlineMode = offlineTest()
@@ -35,7 +34,7 @@ def syn(word,amount=10,return_original=True):
 
 
 def regex_syn(word,amount=10):
-    if offlineMode == False:
+    if offlineMode is False:
         return '|'.join(syn(word,amount))
     else:
         return word
@@ -374,7 +373,7 @@ else: print('Failed to find showtimes')
     {"input": [".*example of (.+) .*in a sentence",".*use (.+) in a sentence"],
      "reply": ("example sentence for <eval>self.match.group(1)</eval>: ","<eval>random.choice(self.toolBox.usedInASentence(re.sub(r'[\W]', ' ', self.match.group(1))))</eval>")},
     {"input": [".*synonyms for (.+)",".*synonyms of (.+)",".*synonym for (.+)",".*synonym of (.+)",".*another word for (.+)",".*other word for (.+)",".*other words for (.+)"],
-     "reply": (["Here's some synonyms for <eval>self.match.group(1)</eval>: ","Other words for <eval>self.match.group(1)</eval>: "],"<eval>self.toolBox.thesaurus(self.match.group(1))</eval>")},
+     "reply": ("<eval>self.toolBox.getSynonyms(self.match.group(1))</eval>")},
 
     # translate
     {"input": ["translate (.+) from (.+) to (.+)"],
