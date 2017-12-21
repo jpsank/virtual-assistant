@@ -44,22 +44,16 @@ if os.path.exists('contacts.json'):
 else:
     print("Welcome to virtual-assistant setup, friend")
     CONTACTS = [{"BDAY": None, "GENDER": None, "NN": None, "FULLNAME": None, "EMAIL": None, "PHONE": None}]
-    time.sleep(1)
     print("Enter your nickname, or hit return and I'll keep calling you 'friend': ")
     CONTACTS[0]["NN"] = input(primaryCommandPrompt)
     CONTACTS[0]["NN"] = CONTACTS[0]["NN"] if CONTACTS[0]["NN"] != '' else 'friend'
-    time.sleep(1)
     print("Okay, %s, here's some guidance:" % CONTACTS[0]["NN"])
-    time.sleep(2)
     print(" - At any time, you can tell me more about yourself and change your contact info")
-    time.sleep(2)
     print(" - You can also ask me for help if you get hopelessly lost")
     with open('contacts.json', 'w') as f:
         json.dump(CONTACTS, f)
-    time.sleep(1)
     print("Setup complete")
     print()
-    time.sleep(1)
     print("Now talk to me!")
 
 
