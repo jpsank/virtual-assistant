@@ -1,6 +1,6 @@
 import requests
-from lxml import html
 import random
+from bs4 import BeautifulSoup
 import itertools
 import time
 
@@ -22,11 +22,11 @@ def syn(word,amount=10,return_original=True):
     if offlineMode is False:
         url = "http://www.thesaurus.com/browse/%s" % word
         page = session.get(url)  # session.get() is way faster than requests.get()
-        tree = html.fromstring(page.content)
-        syns = tree.xpath('//div[@class="relevancy-list"]/ul/li/a/span[@class="text"]')
+        soup = BeautifulSoup(page.text,"lxml")
+        syns = soup.select('div.relevancy-list ul li a span.text')
         if syns:
             syns = syns if amount is None else syns[:amount]
-            syns = [d.text_content() for d in syns]
+            syns = [d.text for d in syns]
             if return_original: syns.append(word)
             return syns
     else:
