@@ -378,7 +378,6 @@ class toolBox:
                 print(random.choice(['So you came crawling back', 'There. I hope you have learned your lesson']))
             else:
                 print("...")
-        time.sleep(1)
         print("<Shun mode deactivated>")
 
     def sleep(self, cmd):
@@ -479,7 +478,7 @@ class toolBox:
             if prompt:
                 p = prompt[0]
                 webbrowser.open(searches[p].get('href'))
-                return random.choice(["Opening reddit post","Opening '%s'" % searches[p].text_content()])
+                return random.choice(["Opening reddit post","Opening '%s'" % searches[p].text])
             else:
                 return "Cancelled"
         elif searches is False:
