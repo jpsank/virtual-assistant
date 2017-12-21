@@ -22,7 +22,7 @@ def syn(word,amount=10,return_original=True):
     if offlineMode is False:
         url = "http://www.thesaurus.com/browse/%s" % word
         page = session.get(url)  # session.get() is way faster than requests.get()
-        soup = BeautifulSoup(page.text,"lxml")
+        soup = BeautifulSoup(page.text,"html.parser")
         syns = soup.select('div.relevancy-list ul li a span.text')
         if syns:
             syns = syns if amount is None else syns[:amount]

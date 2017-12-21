@@ -119,12 +119,13 @@ class toolBox:
     def thesaurus(self,word):
         url = "http://www.thesaurus.com/browse/%s" % word
         page = requests.get(url)
-        soup = BeautifulSoup(page.text, "lxml")
+        soup = BeautifulSoup(page.text, "html.parser")
         syns = soup.select('div.relevancy-list > ul > li > a > span.text')
         if syns:
             return syns
 
     def getSynonyms(self,word):
+        word = re.sub("\?","",word)
         synonyms = self.thesaurus(word)
         if synonyms:
             string = ', '.join([d.text for d in synonyms])
@@ -136,7 +137,7 @@ class toolBox:
 
     def weatherHourly(self,*keys):
         r = requests.get("https://www.wunderground.com/hourly/{}/{}/{}".format(*self.locationData("region_code","city","zip_code")))
-        page = BeautifulSoup(r.text,"lxml")
+        page = BeautifulSoup(r.text,"html.parser")
         rows = page.select("table#hourly-forecast-table > tbody > tr")
         if rows:
             headers = ["Time","Conditions","Temp.","Feels Like","Precip","Amount","Cloud Cover","Dew Point","Humidity","Wind","Pressure"]
@@ -160,7 +161,7 @@ class toolBox:
 
     def weatherCurrent(self,*keys):
         r = requests.get("https://www.wunderground.com/hourly/{}/{}/{}".format(*self.locationData("region_code", "city", "zip_code")))
-        page = BeautifulSoup(r.text,"lxml")
+        page = BeautifulSoup(r.text,"html.parser")
         rows = page.select("table#hourly-forecast-table tbody tr")
         if rows:
             headers = ["Time", "Conditions", "Temp.", "Feels Like", "Precip", "Amount", "Cloud Cover", "Dew Point",
@@ -218,7 +219,7 @@ class toolBox:
     def define(self,word,index=None):
         url = "http://www.dictionary.com/browse/%s" % word
         page = requests.get(url)
-        soup = BeautifulSoup(page.text,"lxml")
+        soup = BeautifulSoup(page.text,"html.parser")
         defsets = soup.select('div.def-content')
         if defsets:
             defs = [' '.join(d.text.replace('\n','').replace('\r','').split()) for d in defsets]
@@ -254,7 +255,7 @@ class toolBox:
     def exampleSentences(self,word):
         url = "http://www.dictionary.com/browse/%s" % word
         page = requests.get(url)
-        soup = BeautifulSoup(page.text,"lxml")
+        soup = BeautifulSoup(page.text,"html.parser")
         defsets = soup.select('p.partner-example-text')
         if defsets:
             defs = [' '.join(d.text.split()) for d in defsets]
@@ -289,7 +290,7 @@ class toolBox:
     def moviesNearMe(self):
         url = 'https://www.google.com/search?q=movies%20near%20me'
         page = requests.get(url)
-        soup = BeautifulSoup(page.text,"lxml")
+        soup = BeautifulSoup(page.text,"html.parser")
         movies = soup.select('div._Nxj')
         if movies:
             result = []
@@ -306,7 +307,7 @@ class toolBox:
     def movieShowTimes(self,movie):
         url = "https://www.google.com/search?q=showtimes+for+%s" % movie
         page = requests.get(url)
-        soup = BeautifulSoup(page.text, "lxml")
+        soup = BeautifulSoup(page.text, "html.parser")
         name = soup.select('div._Kxj span span')
         if name:
             showtimes = {}
@@ -413,7 +414,7 @@ class toolBox:
             return "Canceled"
 
     def wikiPageScrape(self, page):
-        soup = BeautifulSoup(page.text, "lxml")
+        soup = BeautifulSoup(page.text, "html.parser")
         desc = soup.select('div.mw-parser-output > p')
         if desc:
             result = desc[0].text
@@ -426,7 +427,7 @@ class toolBox:
         url = "https://en.wikipedia.org/wiki/?search=%s" % topic
         page = requests.get(url)
         if '?search' in page.url:
-            soup = BeautifulSoup(page.text,"lxml")
+            soup = BeautifulSoup(page.text,"html.parser")
             searches = soup.select('div.mw-search-result-heading a')
             if searches:
                 prompt = self.promptD("Choose the number of the article you want to open: (or type 'cancel' to return)\n%s" % '\n'.join(["%s. %s" % (i, s.text) for i, s in enumerate(searches)]),cancel='cancel')
@@ -470,7 +471,7 @@ class toolBox:
             page = requests.get(url,headers={'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (Klxml.html, like Gecko) Chrome/60.0.3112.78 Safari/537.36 OPR/47.0.2631.55'})
         except Exception:
             return False
-        soup = BeautifulSoup(page.text,"lxml")
+        soup = BeautifulSoup(page.text,"html.parser")
         results = soup.select('div.search-result-link a.search-title')
         if results:
             return results
