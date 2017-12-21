@@ -36,6 +36,8 @@ home = os.path.expanduser("~")
 primaryCommandPrompt = '>> '
 secondaryCommandPrompt = '> '
 
+userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (Klxml.html, like Gecko) Chrome/61.0.3163.100 Safari/537.36 OPR/48.0.2685.39"
+
 LANGUAGES = {'malayalam': 'ml', 'telugu': 'te', 'armenian': 'hy', 'finnish': 'fi', 'urdu': 'ur', 'thai': 'th', 'georgian': 'ka', 'lao': 'lo', 'scots gaelic': 'gd', 'lithuanian': 'lt', 'italian': 'it', 'hmong daw': 'mww', 'auto detect': 'auto_detect', 'belarusian': 'be', 'hebrew': 'iw', 'sesotho': 'st', 'estonian': 'et', 'czech': 'cs', 'basque': 'eu', 'russian': 'ru', 'luxembourgish': 'lb', 'filipino': 'tl', 'welsh': 'cy', 'korean': 'ko', 'sindhi': 'sd', 'persian': 'fa', 'german': 'de', 'samoan': 'sm', 'icelandic': 'is', 'maltese': 'mt', 'somali': 'so', 'malay': 'ms', 'indonesian': 'id', 'spanish': 'es', 'latin': 'la', 'hindi': 'hi', 'hungarian': 'hu', 'danish': 'da', 'xhosa': 'xh', 'sundanese': 'su', 'uzbek': 'uz', 'ukrainian': 'uk', 'slovak': 'sk', 'kannada': 'kn', 'hmong': 'hmn', 'yucatec maya': 'yua', 'afrikaans': 'af', 'albanian': 'sq', 'vietnamese': 'vi', 'croatian': 'hr', 'galician': 'gl', 'bengali': 'bn', 'zulu': 'zu', 'nepali': 'ne', 'slovenian': 'sl', 'cebuano': 'ceb', 'shona': 'sn', 'tamil': 'ta', 'portuguese': 'pt', 'chichewa': 'ny', 'french': 'fr', 'greek': 'el', 'kazakh': 'kk', 'mongolian': 'mn', 'sinhala': 'si', 'tajik': 'tg', 'polish': 'pl', 'malagasy': 'mg', 'chinese (simplified)': 'zh', 'pashto': 'ps', 'marathi': 'mr', 'kyrgyz': 'ky', 'arabic': 'ar', 'hawaiian': 'haw', 'latvian': 'lv', 'igbo': 'ig', 'yiddish': 'yi', 'kurdish': 'ku', 'khmer': 'km', 'punjabi': 'pa', 'esperanto': 'eo', 'javanese': 'jw', 'serbian (latin)': 'sr-La', 'hausa': 'ha', 'amharic': 'am', 'bosnian (latin)': 'bs', 'japanese': 'ja', 'burmese': 'my', 'bulgarian': 'bg', 'turkish': 'tr', 'klingon': 'tlh', 'irish': 'ga', 'catalan': 'ca', 'gujarati': 'gu', 'macedonian': 'mk', 'chinese (traditional)': 'zh-TW', 'maori': 'mi', 'dutch': 'nl', 'frisian': 'fy', 'swedish': 'sv', 'norwegian': 'no', 'english': 'en', 'haitian creole': 'ht', 'swahili': 'sw', 'yoruba': 'yo', 'romanian': 'ro', 'azerbaijani': 'az', 'serbian (cyrillic)': 'sr'}
 
 if os.path.exists('contacts.json'):
@@ -232,7 +234,7 @@ class toolBox:
     def translate(self, text, src="en", dest="zh-TW"):
         url = "https://www.translate.com/translator/ajax_translate"
         headers = {
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (Klxml.html, like Gecko) Chrome/61.0.3163.100 Safari/537.36 OPR/48.0.2685.39"}
+            "user-agent": userAgent}
         data = {"text_to_translate": text,
                 "source_lang": src,
                 "translated_lang": dest,
@@ -466,10 +468,42 @@ class toolBox:
         else:
             return "If you say so"
 
+    def searchAmazon(self,search):
+        url = "https://www.amazon.com/s?keywords=%s" % search
+        headers = {"User-Agent":  userAgent}
+        page = requests.get(url,headers=headers)
+        soup = BeautifulSoup(page.text, "html.parser")
+        data = []
+        results = soup.select("li.s-result-item.celwidget")
+        if results:
+            for result in results:
+                title = result.select("a.s-access-detail-page")
+                price = result.select("span.sx-price")
+                if title and price:
+                    pricetext = price[0].text.split()
+                    pricetext = "%s%s.%s" % (pricetext[0],pricetext[1],pricetext[2])
+                    data.append({"title":title[0].text,"price":pricetext,"link":title[0]["href"]})
+        return data
+
+    def getSearchAmazon(self,search=None):
+        if search is None:
+            search = self.promptANY("What would you like to shop for? ")
+        data = self.searchAmazon(search)
+        if not data:
+            return random.choice(["No items found!", "I could not find any items, NN"])
+        prompt = self.promptLIST(["%s %s" % (i["title"], i["price"]) for i in data],
+                                 "Choose the number result you want to open: (or type 'cancel' to return)",
+                                 "Pick a number between 0 and %s" % str(len(data)-1), cancel="cancel")
+        if prompt is False:
+            return "Cancelled"
+        else:
+            print("Opening %s..." % (data[prompt]["link"]))
+            webbrowser.open(data[prompt]["link"])
+
     def redditSearchScrape(self, topic):
         url = "https://www.reddit.com/search?q=%s" % topic
         try:
-            page = requests.get(url,headers={'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (Klxml.html, like Gecko) Chrome/60.0.3112.78 Safari/537.36 OPR/47.0.2631.55'})
+            page = requests.get(url,headers={'user-agent': userAgent})
         except Exception:
             return False
         soup = BeautifulSoup(page.text,"html.parser")
@@ -757,7 +791,17 @@ class toolBox:
         if result:
             return result
         else:
-            return self.promptD(failsafe,failsafe)
+            return self.promptD(failsafe,failsafe,cancel=cancel)
+
+    def promptLIST(self,list,prompt,failsafe="Pick a number",cancel=None):
+        prompt = self.promptD("%s\n%s" % (prompt, '\n'.join(["%s. %s" % (i, s) for i, s in enumerate(list)])),failsafe,cancel=cancel)
+        if prompt is False:
+            return False
+        while prompt[0] >= len(list) or prompt[0] < 0:
+            prompt = self.promptD(failsafe,failsafe, cancel=cancel)
+            if prompt is False:
+                return False
+        return prompt[0]
 
 
 class VirtAssistant:

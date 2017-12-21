@@ -21,7 +21,7 @@ offlineMode = offlineTest()
 def syn(word,amount=10,return_original=True):
     if offlineMode is False:
         url = "http://www.thesaurus.com/browse/%s" % word
-        page = session.get(url)  # session.get() is way faster than requests.get()
+        page = session.get(url)  # session.get() is faster than requests.get()
         soup = BeautifulSoup(page.text,"html.parser")
         syns = soup.select('div.relevancy-list ul li a span.text')
         if syns:
@@ -61,7 +61,7 @@ RESPONSES = [
     {"input": [".*(you're|you)( so| really| super| very)* (%s)" % regex_syn('intelligent')],
      "reply": ["I must agree","I strive to be","Thank you for stating the obvious","I am your <eval>self.match.group(2)</eval> personal assistant"]},
     {"input": [".*(you're|you)( so| really| super| very)* (%s)" % regex_syn('stupid')],
-     "reply": ["Sorry, I can't hear you right now","Talking to yourself is unhealthy, NN","Okay, if you insist","That didn't sound very nice","That's not friend-making behavior","Now, is that very nice, NN?","I am not <eval>self.match.group(2)</eval>"]},
+     "reply": ["Sorry, I can't hear you right now","Talking to yourself is unhealthy, NN","Okay, if you insist","That didn't sound very nice","That's not friend-making behavior","Now, is that very nice, NN?","I am not <eval>self.match.group(3)</eval>"]},
     {"input": [".*you're (.+)"],
      "reply": ["You could say that", "How dare you call me <eval>self.match.group(1)</eval>","I'm touched"]},
 
@@ -348,6 +348,14 @@ for i in range(num):
      "reply": (["Will do, NN","opening Google News...","Here's the news about <eval>self.match.group(1)</eval>"],"<eval>webbrowser.open('https://news.google.com/news/search/section/q/%s' % self.match.group(1))</eval>")},
     {"input": [".*news"],
      "reply": (["Will do, NN","opening Google News...","Here's the news"],"<eval>webbrowser.open('https://news.google.com/news/')</eval>")},
+
+    # search amazon
+    {"input": ["(find|look up|show me|open|shop for|shop|search for|search) (.+) on amazon"],
+     "reply": ["<eval>self.toolBox.getSearchAmazon(self.match.group(2))</eval>"]},
+    {"input": [".*amazon for (.+)",".*amazon (.+)"],
+     "reply": ["<eval>self.toolBox.getSearchAmazon(self.match.group(1))</eval>"]},
+    {"input": [".*(shop|search) amazon"],
+     "reply": ["<eval>self.toolBox.getSearchAmazon()</eval>"]},
 
     # search google
     {"input": [''.join(i) for i in list(itertools.product([".*find ",".*search the .*web.* for ",".*search for ",".*search ",".*browse",".*show me "],
