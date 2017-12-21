@@ -16,9 +16,7 @@ import threading
 import pickle
 
 import requests
-import lxml.html
 from bs4 import BeautifulSoup
-from enchant.checker import SpellChecker
 
 
 FAST_LOAD_RESPONSES = False  # Save response data to file so no thesaurus scraping on startup. Turn off for development
@@ -152,46 +150,35 @@ class toolBox:
                             text = []
                             if len(spans) > 1:
                                 for s in spans:
-                                    if not s.parent.has_attr("class") or not "show-for-small-only" in s.parent["class"]:
-                                        text.append(s.text)
+                                    if not s.has_attr("class") or not "show-for-small-only" in s["class"]:
+                                        text.append(s.find(text=True))
                             else:
-                                text.append(spans[0].text)
-                            print(text)
-                            data[i] = ' '.join(''.join(text).split())
-                    result.append(data)
-            return result
-
-    def weatherHourlyOld(self,*keys):
-        r = requests.get("https://www.wunderground.com/hourly/{}/{}/{}".format(*self.locationData("region_code","city","zip_code")))
-        page = lxml.html.fromstring(r.content)
-        rows = page.xpath("//table[@id='hourly-forecast-table']/tbody/tr")
-        if rows:
-            headers = ["Time","Conditions","Temp.","Feels Like","Precip","Amount","Cloud Cover","Dew Point","Humidity","Wind","Pressure"]
-            result = [[h for h in headers if not (keys and h not in keys)]]
-            for row in rows:
-                data = row.xpath('./td')
-                if data:
-                    for i,d in enumerate(data):
-                        if not (keys and headers[i] not in keys):
-                            text = data[i].xpath('.//span//text()[not(ancestor::*[contains(@class,"show-for-small-only")])]')
+                                text.append(spans[0].find(text=True))
                             data[i] = ' '.join(''.join(text).split())
                     result.append(data)
             return result
 
     def weatherCurrent(self,*keys):
         r = requests.get("https://www.wunderground.com/hourly/{}/{}/{}".format(*self.locationData("region_code", "city", "zip_code")))
-        page = lxml.html.fromstring(r.content)
-        rows = page.xpath("//table[@id='hourly-forecast-table']/tbody/tr")
+        page = BeautifulSoup(r.text,"lxml")
+        rows = page.select("table#hourly-forecast-table tbody tr")
         if rows:
             headers = ["Time", "Conditions", "Temp.", "Feels Like", "Precip", "Amount", "Cloud Cover", "Dew Point",
                        "Humidity", "Wind", "Pressure"]
             row = rows[0]
             result = {}
-            cells = row.xpath('./td')
+            cells = row.select('td')
             if cells:
                 for i, d in enumerate(cells):
                     if not (keys and headers[i] not in keys):
-                        text = cells[i].xpath('.//span//text()[not(ancestor::*[contains(@class,"show-for-small-only")])]')
+                        spans = cells[i].select('span')
+                        text = []
+                        if len(spans) > 1:
+                            for s in spans:
+                                if not s.has_attr("class") or not "show-for-small-only" in s["class"]:
+                                    text.append(s.find(text=True))
+                        else:
+                            text.append(spans[0].find(text=True))
                         cells[i] = ' '.join(''.join(text).split())
                         result[headers[i]] = cells[i]
             return result
@@ -231,10 +218,10 @@ class toolBox:
     def define(self,word,index=None):
         url = "http://www.dictionary.com/browse/%s" % word
         page = requests.get(url)
-        tree = lxml.html.fromstring(page.content)
-        defsets = tree.xpath('//div[@class="def-content"]')
+        soup = BeautifulSoup(page.text,"lxml")
+        defsets = soup.select('div.def-content')
         if defsets:
-            defs = [' '.join(d.text_content().replace('\n','').replace('\r','').split()) for d in defsets]
+            defs = [' '.join(d.text.replace('\n','').replace('\r','').split()) for d in defsets]
             if index is not None:
                 return defs[index]
             else:
@@ -264,15 +251,22 @@ class toolBox:
         if src in LANGUAGES and dest in LANGUAGES:
             return '"%s" in %s: "%s"' % (text, dest, self.translate(text,LANGUAGES[src],LANGUAGES[dest]).decode())
 
-    def usedInASentence(self,word):
+    def exampleSentences(self,word):
         url = "http://www.dictionary.com/browse/%s" % word
         page = requests.get(url)
-        tree = lxml.html.fromstring(page.content)
-        defsets = tree.xpath('//p[@class="partner-example-text"]')
+        soup = BeautifulSoup(page.text,"lxml")
+        defsets = soup.select('p.partner-example-text')
         if defsets:
-            defs = [' '.join(d.text_content().split()) for d in defsets]
+            defs = [' '.join(d.text.split()) for d in defsets]
             return defs
-        return random.choice(["Never heard of it", "A %s?" % word])
+
+    def usedInASentence(self,word):
+        examples = self.exampleSentences(word)
+        if examples:
+            stem = random.choice(["example sentence for %s:" % word, "sentences with %s:" % word])
+            return "%s %s" % (stem,random.choice(examples))
+        else:
+            return random.choice(["Never heard of it", "I could not find sentences for %s, NN" % word])
 
     def basicMath(self,mathstr):
         signs = {
@@ -295,15 +289,15 @@ class toolBox:
     def moviesNearMe(self):
         url = 'https://www.google.com/search?q=movies%20near%20me'
         page = requests.get(url)
-        tree = lxml.html.fromstring(page.content)
-        movies = tree.xpath('//div[@class="_Nxj"]')
+        soup = BeautifulSoup(page.text,"lxml")
+        movies = soup.select('div._Nxj')
         if movies:
             result = []
             for m in movies:
-                title = m.xpath('./div/a[@class="fl _yxj"]')
-                if title: title = title[0].text_content()
-                genre = m.xpath('./span[@class="_Bxj"]')
-                if genre: genre = genre[0].text_content()
+                title = m.select('div a.fl._yxj')
+                if title: title = title[0].text
+                genre = m.select('span._Bxj')
+                if genre: genre = genre[0].text
                 if title and genre:
                     result.append('%s (%s)' % (title,genre))
             if result:
@@ -312,18 +306,32 @@ class toolBox:
     def movieShowTimes(self,movie):
         url = "https://www.google.com/search?q=showtimes+for+%s" % movie
         page = requests.get(url)
-        tree = lxml.html.fromstring(page.content)
-        name = tree.xpath('//div[@class="_Kxj"]/span/span')
+        soup = BeautifulSoup(page.text, "lxml")
+        name = soup.select('div._Kxj span span')
         if name:
-            rows = tree.xpath('//table[@class="_W5j _Axj"]/tbody/tr')
             showtimes = {}
-            for i in range(0,len(rows),3):
-                title = rows[i].text_content()
-                times = rows[i+1].xpath('.//div[@class="_wxj"]')
+            rows = soup.select('table._W5j._Axj tbody tr')
+            nrows = []
+            last = 0
+            for i in range(0, len(rows)):
+                if len(rows[i].select("div._U5j")) == 1:
+                    nrows.append(rows[last:i])
+                    last = i+1
+            for r in nrows:
+                title = r[0].text
+                times = r[1].select('div._wxj')
                 if title and times:
-                    showtimes[title] = [t.text_content() for t in times]
+                    showtimes[title] = [t.text for t in times]
             if showtimes:
-                return name[0].text_content(), showtimes
+                return name[0].text, showtimes
+
+    def getMovieTimes(self,movie):
+        showtimes = self.movieShowTimes(movie)
+        if showtimes:
+            print('Here are the showtimes for "%s":' % showtimes[0])
+            printColumns(showtimes[1])
+        else:
+            print('Failed to find showtimes')
 
     def musicControlMac(self, cmd):
         if cmd == "play":
@@ -405,21 +413,23 @@ class toolBox:
             return "Canceled"
 
     def wikiPageScrape(self, page):
-        tree = lxml.html.fromstring(page.content)
-        desc = tree.xpath('//div[@class="mw-parser-output"]/p')
+        soup = BeautifulSoup(page.text, "lxml")
+        desc = soup.select('div.mw-parser-output > p')
         if desc:
-            result = desc[0].text_content()
+            result = desc[0].text
+            if "may refer to:" in result:
+                ul = soup.select("div.mw-parser-output > ul")
+                result = "%s %s" % (result,ul[0].text)
             return result
 
     def wikiLookup(self,topic):
         url = "https://en.wikipedia.org/wiki/?search=%s" % topic
         page = requests.get(url)
         if '?search' in page.url:
-            tree = lxml.html.fromstring(page.content)
-            searches = tree.xpath('//div[@class="mw-search-result-heading"]/a')
+            soup = BeautifulSoup(page.text,"lxml")
+            searches = soup.select('div.mw-search-result-heading a')
             if searches:
-                prompt = self.promptD("Choose the number of the article you want to open: (or type 'cancel' to return)\n%s" % '\n'.join(
-                    ["%s. %s" % (i, s.text_content()) for i, s in enumerate(searches)]),cancel='cancel')
+                prompt = self.promptD("Choose the number of the article you want to open: (or type 'cancel' to return)\n%s" % '\n'.join(["%s. %s" % (i, s.text) for i, s in enumerate(searches)]),cancel='cancel')
                 if prompt is False:
                     return False
                 while prompt[0] >= len(searches):
@@ -460,8 +470,8 @@ class toolBox:
             page = requests.get(url,headers={'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (Klxml.html, like Gecko) Chrome/60.0.3112.78 Safari/537.36 OPR/47.0.2631.55'})
         except Exception:
             return False
-        tree = lxml.html.fromstring(page.content)
-        results = tree.xpath('//div[contains(@class, "search-result-link")]//a[contains(@class, "search-title")]')
+        soup = BeautifulSoup(page.text,"lxml")
+        results = soup.select('div.search-result-link a.search-title')
         if results:
             return results
 
@@ -470,7 +480,7 @@ class toolBox:
             topic = self.promptANY(["Search Reddit for what?","What do I search for?"])
         searches = self.redditSearchScrape(topic)
         if searches:
-            prompt = self.promptD("Which number post to open? (or type 'cancel' to return)\n%s" % '\n'.join(["%s. %s" % (i,s.text_content()) for i,s in enumerate(searches)]),cancel="cancel")
+            prompt = self.promptD("Which number post to open? (or type 'cancel' to return)\n%s" % '\n'.join(["%s. %s" % (i,s.text) for i,s in enumerate(searches)]),cancel="cancel")
             if prompt:
                 p = prompt[0]
                 webbrowser.open(searches[p].get('href'))
@@ -705,6 +715,8 @@ class toolBox:
                 else:
                     return "%s email will be left as '%s'" % (possessive.capitalize(),original)
             elif key == "PHONE":
+                if "-" in newValue or " " in newValue:
+                    newValue = re.sub('[^0-9]+', '', newValue)
                 if self.promptYN('Change %s phone number to %s? ' % (possessive,newValue)):
                     self.changeContact(contactNum,{key: newValue})
                     return '%s phone number is now %s' % (possessive.capitalize(),CONTACTS[contactNum][key])

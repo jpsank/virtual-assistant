@@ -214,7 +214,7 @@ RESPONSES = [
 
     {"input": [".*?(?P<who>my|.+'s) email(?:'s| to) (?P<val>.+@.+)"],
      "reply": "<eval>self.toolBox.changeContactInfo(self.match.group('who'),'EMAIL',self.match.group('val'))</eval>"},
-    {"input": [".*?(?P<who>my|.+'s)(?: phone|) number(?:'s| to) (?P<val>.+-.+-.+)"],
+    {"input": [".*?(?P<who>my|.+'s)(?: phone|) number(?:'s| to) (?P<val>(?:\d{3,4}(?:| |-))+)"],
      "reply": "<eval>self.toolBox.changeContactInfo(self.match.group('who'),'PHONE',self.match.group('val'))</eval>"},
 
     # ADD CONTACT
@@ -303,13 +303,8 @@ for i in range(num):
 if tmp is not None: print('Here are some movies at local theaters:'), print('\\n'.join(tmp))
 else: print('Failed to find movies')
 </exec>''')},
-    {"input": [".*(showtimes|show times) for (.+)"],
-     "reply": ('''<exec>tmp=self.toolBox.movieShowTimes(self.match.group(2))
-if tmp is not None:
-    print('Here are the showtimes for "%s":' % tmp[0])
-    printColumns(tmp[1])
-else: print('Failed to find showtimes')
-</exec>''')},
+    {"input": [".*(?:showtimes|show times) for (.+)"],
+     "reply": ('''<eval>self.toolBox.getMovieTimes(self.match.group(1))</eval>''')},
 
     # maps
     {"input": [".*directions from (.+) to (.+)",".*directions (.+) to (.+)",".*directions to (.+)"],
@@ -371,7 +366,7 @@ else: print('Failed to find showtimes')
     {"input": ["define (.+)",".+definition of (.+)",".+meaning of (.+)",".+ does (.+) mean"],
      "reply": "<eval>self.toolBox.getDefinition(re.sub(r'[\W]', ' ', self.match.group(1)))</eval>"},
     {"input": [".*example of (.+) .*in a sentence",".*use (.+) in a sentence"],
-     "reply": ("example sentence for <eval>self.match.group(1)</eval>: ","<eval>random.choice(self.toolBox.usedInASentence(re.sub(r'[\W]', ' ', self.match.group(1))))</eval>")},
+     "reply": ("<eval>self.toolBox.usedInASentence(re.sub(r'[\W]', ' ', self.match.group(1)))</eval>")},
     {"input": [".*synonyms for (.+)",".*synonyms of (.+)",".*synonym for (.+)",".*synonym of (.+)",".*another word for (.+)",".*other word for (.+)",".*other words for (.+)"],
      "reply": ("<eval>self.toolBox.getSynonyms(self.match.group(1))</eval>")},
 
