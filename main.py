@@ -298,6 +298,14 @@ class toolBox:
             if result:
                 return result
 
+    def getMoviesNearMe(self):
+        movies = self.moviesNearMe()
+        if movies:
+            print('Here are some movies at local theaters:')
+            print('\n'.join(movies))
+        else:
+            print('Failed to find movies')
+
     def movieShowTimes(self,movie):
         url = "https://www.google.com/search?q=showtimes+for+%s" % movie
         page = requests.get(url)
@@ -752,7 +760,7 @@ class toolBox:
             return self.promptD(failsafe,failsafe)
 
 
-class JERF:
+class VirtAssistant:
     def __init__(self):
         self.match = None
         self.text = None
@@ -860,12 +868,14 @@ class JERF:
                     try:
                         rep = ''.join(self.process_reply(r["reply"]))
                         return self.replaceify(self.evaluate(rep))
-                    except ConnectionError or requests.ConnectionError:
-                        return "Offline, connection failed"
+                    except requests.exceptions.ConnectionError:
+                        string = random.choice(["Offline, connection failed","It looks like you're offline, NN",
+                                                "I could not connect to the interwebs, NN","Connection failed"])
+                        return self.replaceify(string)
         return None
 
 
-assistant = JERF()
+assistant = VirtAssistant()
 
 while True:
     text = input(primaryCommandPrompt)

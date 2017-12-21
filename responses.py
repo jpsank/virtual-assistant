@@ -299,10 +299,7 @@ for i in range(num):
     # SEARCHING THE WEB
     # movies
     {"input": [".*movies near me",".*nearby movies",".*what movies"],
-     "reply": ('''<exec>tmp=self.toolBox.moviesNearMe()
-if tmp is not None: print('Here are some movies at local theaters:'), print('\\n'.join(tmp))
-else: print('Failed to find movies')
-</exec>''')},
+     "reply": ('''<eval>self.toolBox.getMoviesNearMe()</eval>''')},
     {"input": [".*(?:showtimes|show times) for (.+)"],
      "reply": ('''<eval>self.toolBox.getMovieTimes(self.match.group(1))</eval>''')},
 
