@@ -32,6 +32,7 @@ else:
 
 
 home = os.path.expanduser("~")
+currentDir = os.path.dirname(os.path.realpath(__file__))
 
 primaryCommandPrompt = '>> '
 secondaryCommandPrompt = '> '
@@ -40,8 +41,8 @@ userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (Klxml
 
 LANGUAGES = {'malayalam': 'ml', 'telugu': 'te', 'armenian': 'hy', 'finnish': 'fi', 'urdu': 'ur', 'thai': 'th', 'georgian': 'ka', 'lao': 'lo', 'scots gaelic': 'gd', 'lithuanian': 'lt', 'italian': 'it', 'hmong daw': 'mww', 'auto detect': 'auto_detect', 'belarusian': 'be', 'hebrew': 'iw', 'sesotho': 'st', 'estonian': 'et', 'czech': 'cs', 'basque': 'eu', 'russian': 'ru', 'luxembourgish': 'lb', 'filipino': 'tl', 'welsh': 'cy', 'korean': 'ko', 'sindhi': 'sd', 'persian': 'fa', 'german': 'de', 'samoan': 'sm', 'icelandic': 'is', 'maltese': 'mt', 'somali': 'so', 'malay': 'ms', 'indonesian': 'id', 'spanish': 'es', 'latin': 'la', 'hindi': 'hi', 'hungarian': 'hu', 'danish': 'da', 'xhosa': 'xh', 'sundanese': 'su', 'uzbek': 'uz', 'ukrainian': 'uk', 'slovak': 'sk', 'kannada': 'kn', 'hmong': 'hmn', 'yucatec maya': 'yua', 'afrikaans': 'af', 'albanian': 'sq', 'vietnamese': 'vi', 'croatian': 'hr', 'galician': 'gl', 'bengali': 'bn', 'zulu': 'zu', 'nepali': 'ne', 'slovenian': 'sl', 'cebuano': 'ceb', 'shona': 'sn', 'tamil': 'ta', 'portuguese': 'pt', 'chichewa': 'ny', 'french': 'fr', 'greek': 'el', 'kazakh': 'kk', 'mongolian': 'mn', 'sinhala': 'si', 'tajik': 'tg', 'polish': 'pl', 'malagasy': 'mg', 'chinese (simplified)': 'zh', 'pashto': 'ps', 'marathi': 'mr', 'kyrgyz': 'ky', 'arabic': 'ar', 'hawaiian': 'haw', 'latvian': 'lv', 'igbo': 'ig', 'yiddish': 'yi', 'kurdish': 'ku', 'khmer': 'km', 'punjabi': 'pa', 'esperanto': 'eo', 'javanese': 'jw', 'serbian (latin)': 'sr-La', 'hausa': 'ha', 'amharic': 'am', 'bosnian (latin)': 'bs', 'japanese': 'ja', 'burmese': 'my', 'bulgarian': 'bg', 'turkish': 'tr', 'klingon': 'tlh', 'irish': 'ga', 'catalan': 'ca', 'gujarati': 'gu', 'macedonian': 'mk', 'chinese (traditional)': 'zh-TW', 'maori': 'mi', 'dutch': 'nl', 'frisian': 'fy', 'swedish': 'sv', 'norwegian': 'no', 'english': 'en', 'haitian creole': 'ht', 'swahili': 'sw', 'yoruba': 'yo', 'romanian': 'ro', 'azerbaijani': 'az', 'serbian (cyrillic)': 'sr'}
 
-if os.path.exists('contacts.json'):
-    with open('contacts.json','r') as f:
+if os.path.exists(currentDir+'/contacts.json'):
+    with open(currentDir+'/contacts.json','r') as f:
         CONTACTS = json.load(f)
 else:
     print("Welcome to virtual-assistant setup, friend")
@@ -52,7 +53,7 @@ else:
     print("Okay, %s, here's some guidance:" % CONTACTS[0]["NN"])
     print(" - At any time, you can tell me more about yourself and change your contact info")
     print(" - You can also ask me for help if you get hopelessly lost")
-    with open('contacts.json', 'w') as f:
+    with open(currentDir+'/contacts.json', 'w') as f:
         json.dump(CONTACTS, f)
     print("Setup complete")
     print()
@@ -600,7 +601,7 @@ class toolBox:
             name = self.promptANY("What is the contact's name?")
         if self.promptYN("Add contact '%s'?" % name):
             CONTACTS.append({"BDAY": None, "GENDER": None, "NN": name, "FULLNAME": None, "EMAIL": None, "PHONE": None})
-            with open('contacts.json', 'w') as f:
+            with open(currentDir+'/contacts.json', 'w') as f:
                 json.dump(CONTACTS, f)
             return random.choice(["Added %s as a contact" % name, "I've added your contact %s" % name,
                                   "%s has been added as a contact" % name])
@@ -620,7 +621,7 @@ class toolBox:
         else:
             if self.promptYN("Are you sure you want to remove contact '%s'?" % CONTACTS[contactIndex]["NN"]):
                 del CONTACTS[contactIndex]
-                with open('contacts.json', 'w') as f:
+                with open(currentDir+'/contacts.json', 'w') as f:
                     json.dump(CONTACTS, f)
                 return random.choice(["Removed %s from your contacts, NN" % name,"Your contact %s has been removed, NN" % name,
                                       "Contact %s has been deleted, NN" % name])
@@ -762,7 +763,7 @@ class toolBox:
 
     def changeContact(self,contactNum,update):
         CONTACTS[contactNum].update(update)
-        with open('contacts.json', 'w') as f:
+        with open(currentDir+'/contacts.json', 'w') as f:
             json.dump(CONTACTS,f)
 
     def promptANY(self,prompt):
