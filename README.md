@@ -2,7 +2,7 @@
 Text-based virtual assistant that tells you all you need to know (Python 3)
 
 ## Prerequisites
-You'll need the modules [lxml](http://lxml.de/installation.html) and [requests](http://docs.python-requests.org/en/master/user/install/), for web scraping.
+You'll need the modules [beautifulsoup4](https://www.crummy.com/software/BeautifulSoup/bs4/doc/#installing-beautiful-soup) and [requests](http://docs.python-requests.org/en/master/user/install/), for web scraping.
 
 ## Usage
 To run type
