@@ -205,5 +205,5 @@ ENV/
 # mypy
 .mypy_cache/
 
-contacts.json
 response_data.p
+prefrences.json

@@ -24,14 +24,22 @@ currentDir = os.path.dirname(os.path.realpath(__file__))
 
 FAST_LOAD_RESPONSES = False  # Save response data to file so no thesaurus scraping on startup. Turn off for development
 
+if os.path.exists(currentDir+"/prefrences.json"):
+    with open(currentDir+"/prefrences.json", "r") as f:
+        responseTime = json.load(f)["response"]
+    if os.path.getmtime(currentDir+"/responses.py") == float(responseTime):
+        FAST_LOAD_RESPONSES = True
+
+
 if FAST_LOAD_RESPONSES and os.path.exists(currentDir+'/response_data.p'):
     with open(currentDir+'/response_data.p','rb') as f:
         RESPONSES = pickle.load(f)
 else:
     from responses import RESPONSES
-    if FAST_LOAD_RESPONSES:
-        with open('response_data.p','wb') as f:
-            pickle.dump(RESPONSES,f)
+    with open('response_data.p','wb') as f:
+        pickle.dump(RESPONSES,f)
+    with open("prefrences.json", "w") as f:
+        json.dump({"response":os.path.getmtime(currentDir+"/responses.py")}, f)
 
 
 home = os.path.expanduser("~")

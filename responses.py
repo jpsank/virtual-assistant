@@ -39,7 +39,6 @@ def regex_syn(word,amount=10):
     else:
         return word
 
-
 # GUIDE TO EDITING:
 
 # FOR REPLY:
