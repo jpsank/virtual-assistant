@@ -22,7 +22,7 @@ from bs4 import BeautifulSoup
 
 currentDir = os.path.dirname(os.path.realpath(__file__))
 
-FAST_LOAD_RESPONSES = False  # Save response data to file so no thesaurus scraping on startup. Turn off for development
+FAST_LOAD_RESPONSES = False  # Don't touch me
 
 if os.path.exists(currentDir+"/prefrences.json"):
     with open(currentDir+"/prefrences.json", "r") as f:
