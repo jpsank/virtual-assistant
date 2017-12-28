@@ -14,15 +14,18 @@ import subprocess
 import html
 import threading
 import pickle
+import argparse
 
 import requests
 from bs4 import BeautifulSoup
 
 
+currentDir = os.path.dirname(os.path.realpath(__file__))
+
 FAST_LOAD_RESPONSES = False  # Save response data to file so no thesaurus scraping on startup. Turn off for development
 
-if FAST_LOAD_RESPONSES and os.path.exists('response_data.p'):
-    with open('response_data.p','rb') as f:
+if FAST_LOAD_RESPONSES and os.path.exists(currentDir+'/response_data.p'):
+    with open(currentDir+'/response_data.p','rb') as f:
         RESPONSES = pickle.load(f)
 else:
     from responses import RESPONSES
@@ -32,7 +35,6 @@ else:
 
 
 home = os.path.expanduser("~")
-currentDir = os.path.dirname(os.path.realpath(__file__))
 
 primaryCommandPrompt = '>> '
 secondaryCommandPrompt = '> '
@@ -40,24 +42,24 @@ secondaryCommandPrompt = '> '
 userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (Klxml.html, like Gecko) Chrome/61.0.3163.100 Safari/537.36 OPR/48.0.2685.39"
 
 LANGUAGES = {'malayalam': 'ml', 'telugu': 'te', 'armenian': 'hy', 'finnish': 'fi', 'urdu': 'ur', 'thai': 'th', 'georgian': 'ka', 'lao': 'lo', 'scots gaelic': 'gd', 'lithuanian': 'lt', 'italian': 'it', 'hmong daw': 'mww', 'auto detect': 'auto_detect', 'belarusian': 'be', 'hebrew': 'iw', 'sesotho': 'st', 'estonian': 'et', 'czech': 'cs', 'basque': 'eu', 'russian': 'ru', 'luxembourgish': 'lb', 'filipino': 'tl', 'welsh': 'cy', 'korean': 'ko', 'sindhi': 'sd', 'persian': 'fa', 'german': 'de', 'samoan': 'sm', 'icelandic': 'is', 'maltese': 'mt', 'somali': 'so', 'malay': 'ms', 'indonesian': 'id', 'spanish': 'es', 'latin': 'la', 'hindi': 'hi', 'hungarian': 'hu', 'danish': 'da', 'xhosa': 'xh', 'sundanese': 'su', 'uzbek': 'uz', 'ukrainian': 'uk', 'slovak': 'sk', 'kannada': 'kn', 'hmong': 'hmn', 'yucatec maya': 'yua', 'afrikaans': 'af', 'albanian': 'sq', 'vietnamese': 'vi', 'croatian': 'hr', 'galician': 'gl', 'bengali': 'bn', 'zulu': 'zu', 'nepali': 'ne', 'slovenian': 'sl', 'cebuano': 'ceb', 'shona': 'sn', 'tamil': 'ta', 'portuguese': 'pt', 'chichewa': 'ny', 'french': 'fr', 'greek': 'el', 'kazakh': 'kk', 'mongolian': 'mn', 'sinhala': 'si', 'tajik': 'tg', 'polish': 'pl', 'malagasy': 'mg', 'chinese (simplified)': 'zh', 'pashto': 'ps', 'marathi': 'mr', 'kyrgyz': 'ky', 'arabic': 'ar', 'hawaiian': 'haw', 'latvian': 'lv', 'igbo': 'ig', 'yiddish': 'yi', 'kurdish': 'ku', 'khmer': 'km', 'punjabi': 'pa', 'esperanto': 'eo', 'javanese': 'jw', 'serbian (latin)': 'sr-La', 'hausa': 'ha', 'amharic': 'am', 'bosnian (latin)': 'bs', 'japanese': 'ja', 'burmese': 'my', 'bulgarian': 'bg', 'turkish': 'tr', 'klingon': 'tlh', 'irish': 'ga', 'catalan': 'ca', 'gujarati': 'gu', 'macedonian': 'mk', 'chinese (traditional)': 'zh-TW', 'maori': 'mi', 'dutch': 'nl', 'frisian': 'fy', 'swedish': 'sv', 'norwegian': 'no', 'english': 'en', 'haitian creole': 'ht', 'swahili': 'sw', 'yoruba': 'yo', 'romanian': 'ro', 'azerbaijani': 'az', 'serbian (cyrillic)': 'sr'}
-
-if os.path.exists(currentDir+'/contacts.json'):
-    with open(currentDir+'/contacts.json','r') as f:
-        CONTACTS = json.load(f)
-else:
-    print("Welcome to virtual-assistant setup, friend")
-    CONTACTS = [{"BDAY": None, "GENDER": None, "NN": None, "FULLNAME": None, "EMAIL": None, "PHONE": None}]
-    print("Enter your nickname, or hit return and I'll keep calling you 'friend': ")
-    CONTACTS[0]["NN"] = input(primaryCommandPrompt)
-    CONTACTS[0]["NN"] = CONTACTS[0]["NN"] if CONTACTS[0]["NN"] != '' else 'friend'
-    print("Okay, %s, here's some guidance:" % CONTACTS[0]["NN"])
-    print(" - At any time, you can tell me more about yourself and change your contact info")
-    print(" - You can also ask me for help if you get hopelessly lost")
-    with open(currentDir+'/contacts.json', 'w') as f:
-        json.dump(CONTACTS, f)
-    print("Setup complete")
-    print()
-    print("Now talk to me!")
+if __name__ == '__main__':
+    if os.path.exists(currentDir+'/contacts.json'):
+        with open(currentDir+'/contacts.json','r') as f:
+            CONTACTS = json.load(f)
+    else:
+        print("Welcome to virtual-assistant setup, friend")
+        CONTACTS = [{"BDAY": None, "GENDER": None, "NN": None, "FULLNAME": None, "EMAIL": None, "PHONE": None}]
+        print("Enter your nickname, or hit return and I'll keep calling you 'friend': ")
+        CONTACTS[0]["NN"] = input(primaryCommandPrompt)
+        CONTACTS[0]["NN"] = CONTACTS[0]["NN"] if CONTACTS[0]["NN"] != '' else 'friend'
+        print("Okay, %s, here's some guidance:" % CONTACTS[0]["NN"])
+        print(" - At any time, you can tell me more about yourself and change your contact info")
+        print(" - You can also ask me for help if you get hopelessly lost")
+        with open(currentDir+'/contacts.json', 'w') as f:
+            json.dump(CONTACTS, f)
+        print("Setup complete")
+        print()
+        print("Now talk to me!")
 
 
 def printColumns(data):
@@ -919,10 +921,20 @@ class VirtAssistant:
                         return self.replaceify(string)
         return None
 
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("cmd", nargs='*', type=str, default="", help="Run a single command instead of a session.")
+    args = parser.parse_args()
 
-assistant = VirtAssistant()
+    args.cmd = " ".join(args.cmd)
 
-while True:
-    text = input(primaryCommandPrompt)
-    rep = assistant.reply(text)
-    if rep is not '': print(rep)
+    assistant = VirtAssistant()
+
+    if len(args.cmd) > 0:
+        rep = assistant.reply(args.cmd)
+        if rep is not '': print(rep)
+    else:
+        while True:
+            text = input(primaryCommandPrompt)
+            rep = assistant.reply(text)
+            if rep is not '': print(rep)
