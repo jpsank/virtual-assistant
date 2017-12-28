@@ -5,9 +5,13 @@ Text-based virtual assistant that tells you all you need to know (Python 3)
 You'll need the modules [beautifulsoup4](https://www.crummy.com/software/BeautifulSoup/bs4/doc/#installing-beautiful-soup) and [requests](http://docs.python-requests.org/en/master/user/install/), for web scraping.
 
 ## Usage
-To run type
+To start a session, type
 
     python main.py
+    
+Or for a single command, type
+
+    python main.py What time is it?
 
 The first time you run it, it will ask for your username. Then you guys can talk and get to know each other.
 
@@ -31,8 +35,10 @@ Things you can ask it:
  - What is ninety-two million over eight to the power of four minus 201?
  - Translate hello world to Spanish
  - Launch Google Chrome
+ - Suspend
+ - Pause
+ - find cat food on Amazon
 ```
-
 And much more!
 
 ## Contribution
