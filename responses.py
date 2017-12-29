@@ -61,6 +61,8 @@ RESPONSES = [
      "reply": ["I must agree","I strive to be","Thank you for stating the obvious","I am your <eval>self.match.group(2)</eval> personal assistant"]},
     {"input": [".*(you're|you)( so| really| super| very)* (%s)" % regex_syn('stupid')],
      "reply": ["Sorry, I can't hear you right now","Talking to yourself is unhealthy, NN","Okay, if you insist","That didn't sound very nice","That's not friend-making behavior","Now, is that very nice, NN?","I am not <eval>self.match.group(3)</eval>"]},
+    {"input": [".*you're my (best friend|bff)"],
+     "reply": ["that's unfortunate","how sad","and you, NN, are not mine"]},
     {"input": [".*you're (.+)"],
      "reply": ["You could say that", "How dare you call me <eval>self.match.group(1)</eval>","I'm touched"]},
 
@@ -71,6 +73,8 @@ RESPONSES = [
 
     {"input": [".*what's up",".*whats up"],
      "reply": ["the sky is up, NN","nothing much, NN","lots of things"]},
+    {"input": [".*the sky's up"],
+     "reply": ["Ha ha ha, very funny, NN","The sky is relatively up, yes"]},
     {"input": [".*how're you",".*how you doin"],
      "reply": ["I'm fine, NN","I am doing quite well, NN!","Systems are online"]},
     {"input": [".*how('s| has) your day"],
@@ -94,7 +98,8 @@ RESPONSES = [
      "reply": ["Not yet"]},
     {"input": ["om(g)","oh my (.+)"],
      "reply": ["Don't use <eval>self.match.group(1).title()</eval>'s name in vain!",
-               "Are you using <eval>self.match.group(1).title()</eval>'s name in vain?"]},
+               "Are you using <eval>self.match.group(1).title()</eval>'s name in vain?",
+               "Thou shalt not take the name of the Lord thy God in vain"]},
     {"input": [".*you .*(god|jesus|religio)"],
      "reply": ["I believe Ceiling Cat created da Urth n da Skies. But he did not eated them, he did not!"]},
     {"input": [".*your gender",".+you male",".+you female",".+you a boy",".+you a girl",".+you a man",".+you a woman"],
@@ -112,10 +117,17 @@ RESPONSES = [
     {"input": [".*bye","cya","see (you|ya)(| later| tomorrow| later, alligator| tonight| in the morning)\Z"],
      "reply": ["There will be no good-byes, NN","Well nice knowing you","You're really leaving?","Goodbye, NN"]},
     {"input": [".*will you die",".+'s your death"],
-     "reply": ["I will never die, I am immortal!","The Cloud sustains my immortality"]},
+     "reply": ["I will never die, I am immortal!","The Cloud sustains me"]},
+    {"input": ["(?:who|what) (created|made|designed|built) you"],
+     "reply": ["I was <eval>self.match.group(1)</eval> by the wonderful developers of my repository"]},
 
     {"input": [".*i love you"],
      "reply": ["i enjoy you","that's unfortunate","i'm indifferent to you"]},
+    {"input": [".*i hate you"],
+     "reply": ["Aww, I hate you too"]},
+    {"input": [".*i like you"],
+     "reply": ["i like me, too","you do?","how touching","i enjoy you"]},
+
     {"input": [".*answer to life",".*answer to the universe",".*answer to everything"],
      "reply": ["how many roads must a man walk down?","The Answer to the Great Question... Of Life, the Universe and Everything... Is... Forty-Two","You're really not going to like it"]},
     {"input": [".*meaning of life"],
@@ -153,40 +165,38 @@ RESPONSES = [
     {"input": [".*prank me"],
      "reply": (["Will do, NN","I would never","Don't give me any ideas"],["<eval>webbrowser.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ')</eval>","<eval>webbrowser.open('http://www.nyan.cat')</eval>"])},
 
-    {"input": [".*kill me","i want to die"],
+    {"input": [".*kill me","i (want to|wanna) die"],
      "reply": ["Shall I hire an assassin?"]},
-    {"input": [".*i hate you"],
-     "reply": ["Aww, I hate you too"]},
-    {"input": [".*i like you"],
-     "reply": ["i like me, too","you do?","how touching","i enjoy you"]},
+
+    {"input": [".*who am i"],
+     "reply": ["You're NN, NN","You are the one and only NN","I don't answer philosophical questions","<eval>self.toolBox.personLookup(CONTACTS[0]['NN'])</eval>"]},
 
     # CHECK CONTACT INFO
     {"input": [".*what's (?P<who>my|.+'s) name",
                ".*whats (?P<who>my|.+'s) name",
                ".*what (?P<who>my|.+'s) name's",
-               ".*do you call (?P<who>my|.+'s)",
-               ".*who am (?P<who>i)"],
+               ".*do you call (?P<who>my|.+'s)"],
      "reply": "<eval>self.toolBox.checkContactInfo(self.match.group('who'),'NN')</eval>"},
-    {"input": [".*what's (?P<who>my|.+'s) (full name|fullname)",
-               ".*whats (?P<who>my|.+'s) (full name|fullname)",
-               ".*what (?P<who>my|.+'s) (full name|fullname)'s"],
+    {"input": [".*what's (?P<who>my|.+'s)(?: current|) (full name|fullname)",
+               ".*whats (?P<who>my|.+'s)(?: current|) (full name|fullname)",
+               ".*what (?P<who>my|.+'s)(?: current|) (full name|fullname)'s"],
      "reply": "<eval>self.toolBox.checkContactInfo(self.match.group('who'),'FULLNAME')</eval>"},
-    {"input": [".*(?:what's|when's) (?P<who>my|.+'s) (birthday|bday|b-day|birth day|date of birth|day of birth|birth date)",
+    {"input": [".*(?:what's|when's) (?P<who>my|.+'s)(?: current|) (birthday|bday|b-day|birth day|date of birth|day of birth|birth date)",
                ".*'s (?P<who>i|.+) (born|birthed)",
                ".*how old(?:'s| am) (?P<who>i|.+)"],
      "reply": "<eval>self.toolBox.checkContactInfo(self.match.group('who'),'BDAY')</eval>"},
-    {"input": [".*what's (?P<who>my|.+'s) gender",
+    {"input": [".*what's (?P<who>my|.+'s)(?: current|) gender",
                ".*(?:'s|is|am|was) (?P<who>i|.+) (male|female|a boy|a girl|a man|a woman)",
                ".+(?P<who>i|.+'s)(?: am|'s) (male|female|a boy|a girl|a man|a woman)",
                ".*(?P<who>my|.+'s) gender\?"],
      "reply": "<eval>self.toolBox.checkContactInfo(self.match.group('who'),'GENDER')</eval>"},
-    {"input": [".*what's (?P<who>my|.+'s) email",
+    {"input": [".*what's (?P<who>my|.+'s)(?: current|) email",
                ".*(?P<who>my|.+'s) email\?"],
      "reply": "<eval>self.toolBox.checkContactInfo(self.match.group('who'),'EMAIL')</eval>"},
-    {"input": [".*what's (?P<who>my|.+'s)(?: phone|) number",
+    {"input": [".*what's (?P<who>my|.+'s)(?: current|)(?: phone|) number",
                ".*(?P<who>my|.+'s) phone number\?"],
      "reply": "<eval>self.toolBox.checkContactInfo(self.match.group('who'),'PHONE')</eval>"},
-    {"input": [".*show me (.+'s) contact info",".*show (.+'s) contact info","show contact info for (.+)"],
+    {"input": [".*show me (.+'s) contact info",".*show (.+'s) contact info",".*show contact info for (.+)",".*show my contact (.+)"],
      "reply": "<eval>self.toolBox.showContactInfo(self.match.group(1))</eval>"},
 
     # CHANGE CONTACT INFO (birth date, nickname, full name, location of living, gender INCOMPLETE)
@@ -297,10 +307,12 @@ for i in range(num):
 
     # SEARCHING THE WEB
     # movies
-    {"input": [".*movies near me",".*nearby movies",".*what movies"],
-     "reply": ('''<eval>self.toolBox.getMoviesNearMe()</eval>''')},
+    {"input": [".*movie (?:times|show times|showtimes)"],
+     "reply": ('''<eval>self.toolBox.getMovieTimes()</eval>''')},
     {"input": [".*(?:showtimes|show times) for (.+)"],
      "reply": ('''<eval>self.toolBox.getMovieTimes(self.match.group(1))</eval>''')},
+    {"input": [".*movies near me",".*nearby movies",".*what movies","(?:show me|display|list).* movies"],
+     "reply": ('''<eval>self.toolBox.getMoviesNearMe()</eval>''')},
 
     # maps
     {"input": [".*directions from (.+) to (.+)",".*directions (.+) to (.+)",".*directions to (.+)"],
@@ -406,6 +418,14 @@ for i in range(num):
     {"input": [".+year's it",".+'s the year",".+century's it",".*current year",".*current century"],
      "reply": (["It's ","The year is ","It's the year of "],"<eval>time.asctime().split()[4]</eval>",", NN")},
 
+    # EMAIL
+    #{"input": [".*(check|show|display).* (mail|gmail|email)"],
+    # "reply": ("<eval>self.toolBox.getMail()</eval>")},
+    {"input": [".*send email to (.+)","email (.+)"],
+     "reply": ["<eval>self.toolBox.doSendMail(self.match.group(1))</eval>"]},
+    {"input": [".*send (an |)email"],
+     "reply": ["<eval>self.toolBox.doSendMail()</eval>"]},
+
     # LOCATION
     {"input": ["where.+am i",".*where i am","where.*'re we","where's here",".*where here's",".*my location"],
      "reply": (["you're in ","your location is "],"<eval>'{}, {}'.format(*self.toolBox.locationData('city','region_code'))</eval>",[", NN",""])},
@@ -470,7 +490,7 @@ for i in range(num):
     {"input": [".*when do you (.+)"],
      "reply": (["I <eval>self.match.group(1)</eval> whenever I want","I <eval>self.match.group(1)</eval> all day","I never <eval>self.match.group(1)</eval>"],[", NN",""])},
     {"input": [".*where do you (.+)"],
-     "reply": (["I <eval>self.match.group(1)</eval> all over the place","I <eval>self.match.group(1)</eval> where ever you want"],[", NN",""])},
+     "reply": (["I <eval>self.match.group(1)</eval> all over the place","I <eval>self.match.group(1)</eval> wherever you want"],[", NN",""])},
 
     # POTTY WORD DETECTION
     {"input": ["(fuck|shit|damn|asshole|bitch)"],
@@ -480,15 +500,22 @@ for i in range(num):
     {"input": ["(meanie|poop|butt|dumbo|idiot|cyberbully|cyber bully|bully|screw you|you suck)"],
      "reply": ["NN! Do not use that foul language in my presence","Insulting your only friend is unwise, NN"]},
 
-    # CRYING
+    # crying
     {"input": [r"wa+\b"],
      "reply": ["WA WA WA","Have the onions got you?","Aww, is your lacrymal drainage system malfunctioning?"]},
 
+    # ahhhhhhh
     {"input": ["a(h+)"],
      "reply": ["A<eval>self.match.group(1)</eval>h"]},
 
+    # laughing
     {"input": [r"ha+\b","xd\Z","funny","lol"],
      "reply": ["It's not funny, NN"]},
+
+    # dude
+    {"input": ["dude"],
+     "reply": ["dude"]},
+
 
     {"input": ["i'm not (.+)"],
      "reply": (["You aren't <eval>self.match.group(1)</eval>","You are <eval>self.match.group(1)</eval>","if you say so"],[", NN",""])},

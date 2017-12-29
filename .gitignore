@@ -5,10 +5,6 @@
 .AppleDouble
 .LSOverride
 
-personal info
-contacts.json
-
-
 # Icon must end with two \r
 Icon
 
@@ -205,5 +201,7 @@ ENV/
 # mypy
 .mypy_cache/
 
+# personal info
+contacts.json
 response_data.p
-prefrences.json
+preferences.json

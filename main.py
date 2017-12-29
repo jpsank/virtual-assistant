@@ -16,30 +16,10 @@ import threading
 import pickle
 import argparse
 
+import smtplib
+
 import requests
 from bs4 import BeautifulSoup
-
-
-currentDir = os.path.dirname(os.path.realpath(__file__))
-
-FAST_LOAD_RESPONSES = False  # Don't touch me
-
-if os.path.exists(currentDir+"/prefrences.json"):
-    with open(currentDir+"/prefrences.json", "r") as f:
-        responseTime = json.load(f)["response"]
-    if os.path.getmtime(currentDir+"/responses.py") == float(responseTime):
-        FAST_LOAD_RESPONSES = True
-
-
-if FAST_LOAD_RESPONSES and os.path.exists(currentDir+'/response_data.p'):
-    with open(currentDir+'/response_data.p','rb') as f:
-        RESPONSES = pickle.load(f)
-else:
-    from responses import RESPONSES
-    with open('response_data.p','wb') as f:
-        pickle.dump(RESPONSES,f)
-    with open("prefrences.json", "w") as f:
-        json.dump({"response":os.path.getmtime(currentDir+"/responses.py")}, f)
 
 
 home = os.path.expanduser("~")
@@ -50,24 +30,54 @@ secondaryCommandPrompt = '> '
 userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (Klxml.html, like Gecko) Chrome/61.0.3163.100 Safari/537.36 OPR/48.0.2685.39"
 
 LANGUAGES = {'malayalam': 'ml', 'telugu': 'te', 'armenian': 'hy', 'finnish': 'fi', 'urdu': 'ur', 'thai': 'th', 'georgian': 'ka', 'lao': 'lo', 'scots gaelic': 'gd', 'lithuanian': 'lt', 'italian': 'it', 'hmong daw': 'mww', 'auto detect': 'auto_detect', 'belarusian': 'be', 'hebrew': 'iw', 'sesotho': 'st', 'estonian': 'et', 'czech': 'cs', 'basque': 'eu', 'russian': 'ru', 'luxembourgish': 'lb', 'filipino': 'tl', 'welsh': 'cy', 'korean': 'ko', 'sindhi': 'sd', 'persian': 'fa', 'german': 'de', 'samoan': 'sm', 'icelandic': 'is', 'maltese': 'mt', 'somali': 'so', 'malay': 'ms', 'indonesian': 'id', 'spanish': 'es', 'latin': 'la', 'hindi': 'hi', 'hungarian': 'hu', 'danish': 'da', 'xhosa': 'xh', 'sundanese': 'su', 'uzbek': 'uz', 'ukrainian': 'uk', 'slovak': 'sk', 'kannada': 'kn', 'hmong': 'hmn', 'yucatec maya': 'yua', 'afrikaans': 'af', 'albanian': 'sq', 'vietnamese': 'vi', 'croatian': 'hr', 'galician': 'gl', 'bengali': 'bn', 'zulu': 'zu', 'nepali': 'ne', 'slovenian': 'sl', 'cebuano': 'ceb', 'shona': 'sn', 'tamil': 'ta', 'portuguese': 'pt', 'chichewa': 'ny', 'french': 'fr', 'greek': 'el', 'kazakh': 'kk', 'mongolian': 'mn', 'sinhala': 'si', 'tajik': 'tg', 'polish': 'pl', 'malagasy': 'mg', 'chinese (simplified)': 'zh', 'pashto': 'ps', 'marathi': 'mr', 'kyrgyz': 'ky', 'arabic': 'ar', 'hawaiian': 'haw', 'latvian': 'lv', 'igbo': 'ig', 'yiddish': 'yi', 'kurdish': 'ku', 'khmer': 'km', 'punjabi': 'pa', 'esperanto': 'eo', 'javanese': 'jw', 'serbian (latin)': 'sr-La', 'hausa': 'ha', 'amharic': 'am', 'bosnian (latin)': 'bs', 'japanese': 'ja', 'burmese': 'my', 'bulgarian': 'bg', 'turkish': 'tr', 'klingon': 'tlh', 'irish': 'ga', 'catalan': 'ca', 'gujarati': 'gu', 'macedonian': 'mk', 'chinese (traditional)': 'zh-TW', 'maori': 'mi', 'dutch': 'nl', 'frisian': 'fy', 'swedish': 'sv', 'norwegian': 'no', 'english': 'en', 'haitian creole': 'ht', 'swahili': 'sw', 'yoruba': 'yo', 'romanian': 'ro', 'azerbaijani': 'az', 'serbian (cyrillic)': 'sr'}
-if __name__ == '__main__':
-    if os.path.exists(currentDir+'/contacts.json'):
-        with open(currentDir+'/contacts.json','r') as f:
-            CONTACTS = json.load(f)
-    else:
-        print("Welcome to virtual-assistant setup, friend")
-        CONTACTS = [{"BDAY": None, "GENDER": None, "NN": None, "FULLNAME": None, "EMAIL": None, "PHONE": None}]
-        print("Enter your nickname, or hit return and I'll keep calling you 'friend': ")
-        CONTACTS[0]["NN"] = input(primaryCommandPrompt)
-        CONTACTS[0]["NN"] = CONTACTS[0]["NN"] if CONTACTS[0]["NN"] != '' else 'friend'
-        print("Okay, %s, here's some guidance:" % CONTACTS[0]["NN"])
-        print(" - At any time, you can tell me more about yourself and change your contact info")
-        print(" - You can also ask me for help if you get hopelessly lost")
-        with open(currentDir+'/contacts.json', 'w') as f:
-            json.dump(CONTACTS, f)
-        print("Setup complete")
-        print()
-        print("Now talk to me!")
+
+
+currentDir = os.path.dirname(os.path.realpath(__file__))
+
+mtime = os.path.getmtime(currentDir+"/responses.py")+os.path.getmtime(currentDir+"/main.py")
+# Load preferences
+if os.path.exists(currentDir+"/preferences.json"):
+    # print("Fetching preferences...")
+    with open(currentDir+"/preferences.json", "r") as f:
+        PREFERENCES = json.load(f)
+else:
+    print("Generating preferences...")
+    PREFERENCES = {"contacts":[{"BDAY": None, "GENDER": None, "NN": None, "FULLNAME": None, "EMAIL": None, "PHONE": None}],
+                   "mtime":mtime}
+    # User initiation
+    print("Welcome to virtual-assistant setup, friend")
+    CONTACTS = PREFERENCES["contacts"]
+    print("Enter your nickname, or hit return and I'll keep calling you 'friend': ")
+    CONTACTS[0]["NN"] = input(primaryCommandPrompt)
+    CONTACTS[0]["NN"] = CONTACTS[0]["NN"] if CONTACTS[0]["NN"] != '' else 'friend'
+    print("Okay, %s, here's some guidance:" % CONTACTS[0]["NN"])
+    print(" - At any time, you can tell me more about yourself and change your contact info")
+    print(" - You can also ask me for help if you get hopelessly lost")
+    PREFERENCES["contacts"] = CONTACTS
+    print("Setup complete")
+
+# Load responses
+if os.path.exists(currentDir+'/response_data.p') and mtime == float(PREFERENCES["mtime"]):
+    # print("Fetching response data...")
+    with open(currentDir + '/response_data.p', 'rb') as f:
+        RESPONSES = pickle.load(f)
+else:
+    print("Generating response data...")
+    from responses import RESPONSES
+    with open('response_data.p','wb') as f:
+        pickle.dump(RESPONSES,f)
+    PREFERENCES["mtime"] = mtime
+
+with open(currentDir+"/preferences.json", "w") as f:
+    json.dump(PREFERENCES,f)
+
+CONTACTS = PREFERENCES["contacts"]
+
+
+def save_contacts():
+    PREFERENCES["contacts"] = CONTACTS
+    with open(currentDir + "/preferences.json", "w") as f:
+        json.dump(PREFERENCES, f)
 
 
 def printColumns(data):
@@ -341,7 +351,9 @@ class toolBox:
             if showtimes:
                 return name[0].text, showtimes
 
-    def getMovieTimes(self,movie):
+    def getMovieTimes(self,movie=None):
+        if movie is None:
+            movie = self.promptANY("Showtimes for what movie?")
         showtimes = self.movieShowTimes(movie)
         if showtimes:
             print('Here are the showtimes for "%s":' % showtimes[0])
@@ -387,7 +399,7 @@ class toolBox:
                 os.system(cmd)
 
     def shunMode(self):
-        print("<Entering shun mode... beg for forgiveness required>")
+        print("Entering shun mode... beg for forgiveness required")
         done = False
         while not done:
             s = input(primaryCommandPrompt)
@@ -399,7 +411,7 @@ class toolBox:
                 print(random.choice(['So you came crawling back', 'There. I hope you have learned your lesson']))
             else:
                 print("...")
-        print("<Shun mode deactivated>")
+        print("Shun mode deactivated")
 
     def sleep(self, cmd):
         if self.promptYN("Are you sure you would like to %s your system? (y/n)" % cmd):
@@ -547,6 +559,28 @@ class toolBox:
             webbrowser.open("https://xkcd.com/%s" % number)
             return random.choice(["Here's comic number %s" % number,"Opening comic number %s..." % number])
 
+    def sendEmail(self, from_addr, to_addr_list, cc_addr_list, subject, message, login, password, smtpserver='smtp.gmail.com:587'):
+        header = 'From: %s\nTo: %s\nCc: %s\nSubject: %s\n' % (from_addr,', '.join(to_addr_list),', '.join(cc_addr_list),subject)
+        message = header + message
+
+        server = smtplib.SMTP(smtpserver)
+        server.starttls()
+        server.login(login, password)
+        problems = server.sendmail(from_addr, to_addr_list, message)
+        server.quit()
+
+    def doSendMail(self,to=None):
+        if to is None:
+            to = input("To whom? (email address) ")
+        from_addr = CONTACTS[0]["EMAIL"] if CONTACTS[0]["EMAIL"] is not None else input("From address: ")
+        self.sendEmail(from_addr=from_addr,
+                       to_addr_list=[to],
+                       cc_addr_list=[],
+                       subject=input("Subject: "),
+                       message=input("Message: "),
+                       login=from_addr,
+                       password=input("Password: "))
+
     def appCheck(self, thing):
         opSys = platform.system()
         if opSys == "Linux":
@@ -611,8 +645,7 @@ class toolBox:
             name = self.promptANY("What is the contact's name?")
         if self.promptYN("Add contact '%s'?" % name):
             CONTACTS.append({"BDAY": None, "GENDER": None, "NN": name, "FULLNAME": None, "EMAIL": None, "PHONE": None})
-            with open(currentDir+'/contacts.json', 'w') as f:
-                json.dump(CONTACTS, f)
+            save_contacts()
             return random.choice(["Added %s as a contact" % name, "I've added your contact %s" % name,
                                   "%s has been added as a contact" % name])
         else:
@@ -628,11 +661,12 @@ class toolBox:
         elif contactIndex is None:
             return random.choice(["No contact named '%s'" % name,"I could not find any contact named '%s'" % name,
                                   "I couldn't find the contact you were looking for, NN"])
+        elif contactIndex == 0:
+            return "You can't remove yourself, NN!"
         else:
             if self.promptYN("Are you sure you want to remove contact '%s'?" % CONTACTS[contactIndex]["NN"]):
                 del CONTACTS[contactIndex]
-                with open(currentDir+'/contacts.json', 'w') as f:
-                    json.dump(CONTACTS, f)
+                save_contacts()
                 return random.choice(["Removed %s from your contacts, NN" % name,"Your contact %s has been removed, NN" % name,
                                       "Contact %s has been deleted, NN" % name])
             else:
@@ -641,7 +675,7 @@ class toolBox:
     def personLookup(self,name):
         name = re.sub(r"\?+\Z","",name)
         index = self.parseContactString(name)
-        if isinstance(index,int):
+        if index is not False and index is not None:
             if self.promptYN("Show %s's contact info?" % CONTACTS[index]["NN"]):
                 self.showContactInfo(index)
             else:
@@ -773,10 +807,9 @@ class toolBox:
 
     def changeContact(self,contactNum,update):
         CONTACTS[contactNum].update(update)
-        with open(currentDir+'/contacts.json', 'w') as f:
-            json.dump(CONTACTS,f)
+        save_contacts()
 
-    def promptANY(self,prompt):
+    def promptANY(self,prompt,password=False):
         print(random.choice(prompt) if isinstance(prompt, list) else prompt)
         answer = input(secondaryCommandPrompt)
         return answer
@@ -928,6 +961,7 @@ class VirtAssistant:
                                                 "I could not connect to the interwebs, NN","Connection failed"])
                         return self.replaceify(string)
         return None
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
