@@ -17,6 +17,7 @@ import pickle
 import argparse
 
 import smtplib
+import getpass
 
 import requests
 from bs4 import BeautifulSoup
@@ -131,7 +132,7 @@ class toolBox:
                 winsound.Beep(300*m, beatlength)
                 winsound.Beep(400*m, int(beatlength * 2))
         else:
-            print("Sorry, I can only sing on Windows Computers")
+            print("Sorry, I can only sing on Windows computers")
 
     def thesaurus(self,word):
         url = "http://www.thesaurus.com/browse/%s" % word
@@ -520,6 +521,8 @@ class toolBox:
         if prompt is False:
             return "Cancelled"
         else:
+            if data[prompt]["link"].startswith("/"):
+                data[prompt]["link"] = "https://www.amazon.com"+data[prompt]["link"]
             print("Opening %s..." % (data[prompt]["link"]))
             webbrowser.open(data[prompt]["link"])
 
@@ -568,18 +571,38 @@ class toolBox:
         server.login(login, password)
         problems = server.sendmail(from_addr, to_addr_list, message)
         server.quit()
+        return problems
 
     def doSendMail(self,to=None):
         if to is None:
-            to = input("To whom? (email address) ")
+            to = input("To whom? ")
+        index = self.parseContactString(to)
+        if index is not False and index is not None:
+            if self.promptYN("Mail to your contact %s's email?" % CONTACTS[index]["NN"]):
+                if CONTACTS[index]["EMAIL"] is not None:
+                    to = CONTACTS[index]["EMAIL"]
+                else:
+                    print("You have not set an email for %s" % CONTACTS[index]["NN"])
+        if re.match("(.+)@(.+)\.(.+)",to) is None:
+            return "Email address '%s' invalid. Cancelled" % to
         from_addr = CONTACTS[0]["EMAIL"] if CONTACTS[0]["EMAIL"] is not None else input("From address: ")
-        self.sendEmail(from_addr=from_addr,
-                       to_addr_list=[to],
-                       cc_addr_list=[],
-                       subject=input("Subject: "),
-                       message=input("Message: "),
-                       login=from_addr,
-                       password=input("Password: "))
+        password = getpass.getpass("Login to your email %s. Password: " % from_addr)
+        print("MESSAGE")
+        print("From: %s" % from_addr)
+        print("To: %s" % to)
+        subject = input("Subject: ")
+        message = input("Message: ")
+        if self.promptYN("Send email?"):
+            self.sendEmail(from_addr=from_addr,
+                           to_addr_list=[to],
+                           cc_addr_list=[],
+                           subject=subject,
+                           message=message,
+                           login=from_addr,
+                           password=password)
+            print("Email sent.")
+        else:
+            return "Cancelled"
 
     def appCheck(self, thing):
         opSys = platform.system()

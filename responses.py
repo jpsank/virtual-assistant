@@ -419,11 +419,11 @@ for i in range(num):
      "reply": (["It's ","The year is ","It's the year of "],"<eval>time.asctime().split()[4]</eval>",", NN")},
 
     # EMAIL
-    #{"input": [".*(check|show|display).* (mail|gmail|email)"],
-    # "reply": ("<eval>self.toolBox.getMail()</eval>")},
-    {"input": [".*send email to (.+)","email (.+)"],
+    {"input": [".*(check|show|display).* (mail|gmail|email)"],
+     "reply": ("Sorry, that feature is not implemented yet")},
+    {"input": [".*send (?:an |)email to (.+)","email (.+)"],
      "reply": ["<eval>self.toolBox.doSendMail(self.match.group(1))</eval>"]},
-    {"input": [".*send (an |)email"],
+    {"input": [".*send (?:an |)email"],
      "reply": ["<eval>self.toolBox.doSendMail()</eval>"]},
 
     # LOCATION
