@@ -134,6 +134,17 @@ class toolBox:
         else:
             print("Sorry, I can only sing on Windows computers")
 
+    def checkPalindrome(self,word):
+        if word[::-1] == word:
+            return True
+        return False
+
+    def doCheckPalindrome(self,word):
+        if self.checkPalindrome(word):
+            return "'%s' is indeed a palindrome" % word
+        else:
+            return "'%s' is not a palindrome" % word
+
     def thesaurus(self,word):
         url = "http://www.thesaurus.com/browse/%s" % word
         page = requests.get(url)
@@ -255,20 +266,24 @@ class toolBox:
 
     def translate(self, text, src="en", dest="zh-TW"):
         url = "https://www.translate.com/translator/ajax_translate"
-        headers = {
-            "user-agent": userAgent}
+        headers = {"user-agent": userAgent}
         data = {"text_to_translate": text,
                 "source_lang": src,
                 "translated_lang": dest,
                 "use_cache_only": "false"}
         page = requests.post(url, data=data, headers=headers)
         j = json.loads(page.text)
+        print(j)
         if j["translation_id"] != 0:
             return html.unescape(j["translated_text"]).encode('utf-8')
 
     def translateTo(self,text,dest,src="auto detect"):
         if src in LANGUAGES and dest in LANGUAGES:
-            return '"%s" in %s: "%s"' % (text, dest, self.translate(text,LANGUAGES[src],LANGUAGES[dest]).decode())
+            translation = self.translate(text,LANGUAGES[src],LANGUAGES[dest])
+            if translation is not None:
+                return '"%s" in %s: "%s"' % (text, dest, translation.decode())
+            else:
+                return random.choice(["Could not translate","Translation failed","Failed to translate"])
 
     def exampleSentences(self,word):
         url = "http://www.dictionary.com/browse/%s" % word
@@ -648,16 +663,19 @@ class toolBox:
 
                 print("Attempting to open {}".format(appcheck))
             else:
-                if self.promptYN('Open website %s? ' % thing):
+                url = thing
+                if '.' not in url:
+                    url = "%s.com" % url
+                if not url.startswith('http'):
+                    url = "https://%s" % url
+                if self.promptYN('Open website %s? ' % url):
                     try:
-                        if '.' not in thing:
-                            thing = "%s.com" % thing
-                        if not thing.startswith('http'):
-                            thing = "https://%s" % thing
-                        print("Opening %s..." % thing)
-                        webbrowser.open(thing)
+                        print("Opening %s..." % url)
+                        webbrowser.open(url)
                     except:
-                        print("Unable to open %s" % thing)
+                        print("Unable to open %s" % url)
+                else:
+                    print("Cancelled")
 
     def googleIt(self,search):
         webbrowser.open("https://www.google.com/search?q=%s" % search)

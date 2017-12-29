@@ -171,6 +171,11 @@ RESPONSES = [
     {"input": [".*who am i"],
      "reply": ["You're NN, NN","You are the one and only NN","I don't answer philosophical questions","<eval>self.toolBox.personLookup(CONTACTS[0]['NN'])</eval>"]},
 
+    # PALINDROMES
+    {"input": [".*is (.+) (?:a palindrome|palindromic)",".*(.+) is (?:a palindrome|palindromic)",
+               ".*is (.+) spelled the same (?:backward.*forward|forward.*backward)"],
+     "reply": ["<eval>self.toolBox.doCheckPalindrome(self.match.group(1))</eval>"]},
+
     # CHECK CONTACT INFO
     {"input": [".*what's (?P<who>my|.+'s) name",
                ".*whats (?P<who>my|.+'s) name",
@@ -227,17 +232,17 @@ RESPONSES = [
      "reply": "<eval>self.toolBox.changeContactInfo(self.match.group('who'),'PHONE',self.match.group('val'))</eval>"},
 
     # ADD CONTACT
-    {"input": [".*add contact (.+)",".*add (.+) as (?:a contact|contact)"],
+    {"input": [".*(add|create|make).* contact (.+)",".*add (.+) as (?:a contact|contact)"],
      "reply": "<eval>self.toolBox.addContact(self.match.group(1))</eval>"},
-    {"input": [".*(make|add) .*contact"],
+    {"input": [".*(make|add|create) .*contact"],
      "reply": "<eval>self.toolBox.addContact()</eval>"},
 
     # REMOVE CONTACT
-    {"input": [".*(?:remove|delete) contact (.+)",
-               ".*(?:remove|delete) (.+) as (?:a contact|contact)",
-               ".*(?:remove|delete) (.+) from .*contacts"],
+    {"input": [".*(?:remove|delete|forget) contact (.+)",
+               ".*(?:remove|delete|forget) (.+) as (?:a contact|contact)",
+               ".*(?:remove|delete|forget) (.+) from .*contacts"],
      "reply": "<eval>self.toolBox.removeContact(self.match.group(1))</eval>"},
-    {"input": [".*(?:remove|delete) .*contact"],
+    {"input": [".*(?:remove|delete|forget) .*contact"],
      "reply": "<eval>self.toolBox.removeContact()</eval>"},
 
     # OTHER CONTACT STUFF
