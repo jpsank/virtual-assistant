@@ -273,7 +273,6 @@ class toolBox:
                 "use_cache_only": "false"}
         page = requests.post(url, data=data, headers=headers)
         j = json.loads(page.text)
-        print(j)
         if j["translation_id"] != 0:
             return html.unescape(j["translated_text"]).encode('utf-8')
 
@@ -394,6 +393,14 @@ class toolBox:
             self.musicControlMac(cmd)
         else:
             return "Sorry, music control isn't supported for you yet."
+        if cmd == "play":
+            return "Music set to play"
+        elif cmd == "pause":
+            return "Music set to pause"
+        elif cmd == "next":
+            return "Playing next track"
+        elif cmd == "previous":
+            return "Playing previous track"
 
     def runTerminal(self, command):
         try:
@@ -455,15 +462,19 @@ class toolBox:
         else:
             return "Canceled"
 
-    def wikiPageScrape(self, page):
+    def wikiPageScrape(self, page, paragraphs=1):
         soup = BeautifulSoup(page.text, "html.parser")
         desc = soup.select('div.mw-parser-output > p')
         if desc:
-            result = desc[0].text
-            if "may refer to:" in result:
-                ul = soup.select("div.mw-parser-output > ul")
-                result = "%s %s" % (result,ul[0].text)
-            return result
+            if paragraphs == 1:
+                result = desc[0].text
+                if "may refer to:" in result:
+                    ul = soup.select("div.mw-parser-output > ul")
+                    result = "%s %s" % (result,ul[0].text)
+                return result
+            else:
+                result = [d.text for d in desc]
+                return result[:paragraphs]
 
     def wikiLookup(self,topic):
         url = "https://en.wikipedia.org/wiki/?search=%s" % topic
@@ -472,14 +483,13 @@ class toolBox:
             soup = BeautifulSoup(page.text,"html.parser")
             searches = soup.select('div.mw-search-result-heading a')
             if searches:
-                prompt = self.promptD("Choose the number of the article you want to open: (or type 'cancel' to return)\n%s" % '\n'.join(["%s. %s" % (i, s.text) for i, s in enumerate(searches)]),cancel='cancel')
+                prompt = self.promptLIST([s.text for s in searches],
+                                         "Choose the number of the article you want to view: (or type 'cancel')",
+                                         "Choose a number between 0 and %s (or 'cancel')" % str(len(searches)-1),
+                                         "cancel")
                 if prompt is False:
                     return False
-                while prompt[0] >= len(searches):
-                    prompt = self.promptD("Choose a number between 0 and %s (or 'cancel' to return)" % str(len(searches)-1),cancel='cancel')
-                    if prompt is False:
-                        return False
-                page = requests.get("https://en.wikipedia.org%s" % searches[prompt[0]].get('href'))
+                page = requests.get("https://en.wikipedia.org%s" % searches[prompt].get('href'))
                 return self.wikiPageScrape(page)
             else:
                 return None
@@ -506,6 +516,42 @@ class toolBox:
             return wiki
         else:
             return "If you say so"
+
+    def wikiTableScrape(self,url):
+        page = requests.get(url)
+        soup = BeautifulSoup(page.text,"html.parser")
+        rows = soup.select("table.wikitable tr")
+        links = []
+        for r in rows:
+            cells = r.find_all(["th","td"])
+            for c in cells:
+                a = c.find("a")
+                if a:
+                    links.append(a)
+        return links
+
+    def wikiDecadeFind(self, query):
+        links = self.wikiTableScrape("https://en.wikipedia.org/wiki/List_of_decades")
+        choices = {}
+        for l in links:
+            if query in l.text:
+                choices[l.text] = "https://en.wikipedia.org" + l["href"]
+        if len(choices) < 1:
+            return random.choice(["Couldn't find requested time period"])
+        keys = list(choices.keys())
+        index = 0
+        if len(choices) > 1:
+            index = self.promptLIST(keys,
+                                     "Choose the number of the article you want to view: (or type 'cancel' to cancel)",
+                                     "Choose a number between 0 and %s (or 'cancel' to cancel)" % str(len(choices)-1),
+                                     "cancel")
+            if index is False:
+                return "Cancelled"
+        page = requests.get(choices[keys[index]])
+        result = self.wikiPageScrape(page,2)
+        return '\n'.join(result)
+
+
 
     def searchAmazon(self,search):
         url = "https://www.amazon.com/s?keywords=%s" % search

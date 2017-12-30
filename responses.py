@@ -87,7 +87,7 @@ RESPONSES = [
 
     {"input": ["thanks","thank you","thanks you","my thanks"],
      "reply": ["You're welcome","So you finally thanked me for all my service, did you?","No problem, NN"]},
-    {"input": [".*story"],
+    {"input": [r".*\bstory\b"],
      "reply": ["Once upon a time, there was a guy named Bob. Bob died THE END",
                "Once upon a time, there was an adventurer like you, but then he took an arrow to the knee"]},
     {"input": [".*you.*pet"],
@@ -127,6 +127,15 @@ RESPONSES = [
      "reply": ["Aww, I hate you too"]},
     {"input": [".*i like you"],
      "reply": ["i like me, too","you do?","how touching","i enjoy you"]},
+    {"input": [".*i like (.+)"],
+     "reply": ["I don't care much for <eval>self.match.group(1)</eval>",
+               "I find <eval>self.match.group(1)</eval> intriguing"]},
+    {"input": [".*i hate (.+)"],
+     "reply": ["I love <eval>self.match.group(1)</eval>",
+               "I find <eval>self.match.group(1)</eval> intriguing"]},
+    {"input": [".*i (.+)"],
+     "reply": ["I <eval>self.match.group(1)</eval> as well",
+               "I never <eval>self.match.group(1)</eval>","I don't often <eval>self.match.group(1)</eval>"]},
 
     {"input": [".*answer to life",".*answer to the universe",".*answer to everything"],
      "reply": ["how many roads must a man walk down?","The Answer to the Great Question... Of Life, the Universe and Everything... Is... Forty-Two","You're really not going to like it"]},
@@ -232,9 +241,9 @@ RESPONSES = [
      "reply": "<eval>self.toolBox.changeContactInfo(self.match.group('who'),'PHONE',self.match.group('val'))</eval>"},
 
     # ADD CONTACT
-    {"input": [".*(add|create|make).* contact (.+)",".*add (.+) as (?:a contact|contact)"],
+    {"input": [".*(?:add|create|make).* contact (.+)",".*add (.+) as (?:a contact|contact)"],
      "reply": "<eval>self.toolBox.addContact(self.match.group(1))</eval>"},
-    {"input": [".*(make|add|create) .*contact"],
+    {"input": [".*(?:make|add|create) .*contact"],
      "reply": "<eval>self.toolBox.addContact()</eval>"},
 
     # REMOVE CONTACT
@@ -278,9 +287,9 @@ RESPONSES = [
      "reply": (["it's ","that would be "],"<eval>str(random.randint(int(self.match.group(1)),int(self.match.group(2))))</eval>")},
     {"input": [".*flip a coin"],
      "reply": (["it landed on ","it landed "],"<eval>'heads' if random.randint(0,1)==1 else 'tails'</eval>",[" this time",""])},
-    {"input": ["roll a (\d+) sided die","roll a (\d+)-sided die"],
+    {"input": ["roll (?:a|an) (\d+) sided (?:die|dice)","roll (?:a|an) (\d+)-sided (?:die|dice)"],
      "reply": (["it's ","rolling... it's ","OK, it's "],"<eval>str(random.randint(1,int(self.match.group(1))))</eval>",[" this time",""])},
-    {"input": ["roll a die"],
+    {"input": ["roll a (?:die|dice)"],
      "reply": (["it's ","rolling... it's ","OK, it's "],"<eval>str(random.randint(1,6))</eval>",[" this time",""])},
 
     # TIMER/COUNTDOWN
@@ -336,8 +345,14 @@ for i in range(num):
      "reply": '''<eval>self.toolBox.openSomething(self.match.group(1))</eval>'''},
 
     #music
-    {"input": ["(play|pause|next|previous)\Z"],
+    {"input": ["(play|pause|next|previous)\Z","(play|pause|next|previous).* (?:music|song|track)"],
      "reply": "<eval>self.toolBox.musicControl(self.match.group(1))</eval>"},
+    {"input": [".*(?:start|begin|commence|initiate|play).* (previous|next) (?:track|song|music)"],
+     "reply": "<eval>self.toolBox.musicControl(self.match.group(1))</eval>"},
+    {"input": [".*(?:start|begin|commence|initiate).* (?:track|song|music)"],
+     "reply": "<eval>self.toolBox.musicControl('play')</eval>"},
+    {"input": [".*(?:stop|turn off|end|freeze|break|halt|kill|suspend|cease).* (?:track|song|music)"],
+     "reply": "<eval>self.toolBox.musicControl('pause')</eval>"},
 
     # reddit
     {"input": [".*reddit for (.+)",".*reddit (.+)"],
@@ -356,8 +371,10 @@ for i in range(num):
     # wikipedia
     {"input": [".*wikipedia for (.+)",".*wikipedia (.+)"],
      "reply": ["<eval>self.toolBox.wikiLookupRespond(self.match.group(1))</eval>"]},
-    {"input": ["(find|look up|show me|open) (.+) on wikipedia"],
-     "reply": ["<eval>self.toolBox.wikiLookupRespond(self.match.group(2))</eval>"]},
+    {"input": ["(?:find|look up|show me|open) (.+) on wikipedia"],
+     "reply": ["<eval>self.toolBox.wikiLookupRespond(self.match.group(1))</eval>"]},
+    {"input": [r".* the (\d+(?:th|st|rd|nd) century)",r".* the (\d(?:th|st|rd|nd) millennium)",r".* the (\d{2,4}s)"],
+     "reply": ["<eval>self.toolBox.wikiDecadeFind(self.match.group(1))</eval>"]},
 
     # news
     {"input": [".*news about (.+)",".*news for (.+)"],
@@ -482,7 +499,7 @@ for i in range(num):
      "reply": ["who's <eval>self.match.group(1)</eval>?","how <eval>self.match.group(1)</eval>","very <eval>self.match.group(1)</eval>"]},
     {"input": [".*it's (.+)"],
      "reply": ["what's <eval>self.match.group(1)</eval>?","very <eval>self.match.group(1)</eval>","that's <eval>self.match.group(1)</eval>"]},
-    {"input": ["that's (.+)"],
+    {"input": [r".*\bthat's (.+)"],
      "reply": ["no way is that <eval>self.match.group(1)</eval>","it was very <eval>self.match.group(1)</eval>"]},
 
     {"input": [".*are you (.+)"],
@@ -549,7 +566,8 @@ for i in range(num):
 
     # Should I search the web for...
 
-    {"input": [r".*\b((how|where|when|what)( to| do|'s|'re| does|) .+)",r".*\b(why( do|'re|'s) .+)",".*(is .+)",".*(do .+)"],
+    {"input": [r".*?(\b(how|where|when|what)( to| do|'s|'re| does|) .+)",r".*\b(why( do|'re|'s) .+)",
+               r".*\b((?:is|are) .+)",".*(do .+)"],
      "reply": (["Ok then","If you say so"],'''<exec>tmp=self.match.group(1)
 if self.toolBox.promptYN(random.choice(['Should I search the web for "%s"?' % tmp,'Do web search for "%s"? ' % tmp])):
     webbrowser.open('https://www.google.com/search?q=%s' % tmp)</exec>''')},
