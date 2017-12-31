@@ -406,9 +406,9 @@ class toolBox:
             return "Playing previous track"
 
     def volumeControl(self, volume):
-        if not re.match("(\d+(\.\d+|))",volume) or float(volume) > 100 or float(volume) < 0:
+        if not re.match("(\d+(\.\d+|))",volume) or int(volume) > 100 or int(volume) < 0:
             return "Invalid volume input. Please set volume to a number between 0 and 100."
-        volume = float(volume)
+        volume = int(volume)
         # TODO Linux needs testing
         if platform.system() == "Linux":
             os.system("amixer set Master {}%".format(volume))
