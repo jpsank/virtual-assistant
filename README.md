@@ -35,9 +35,11 @@ Things you can ask it:
  - What is ninety-two million over eight to the power of four minus 201?
  - Translate hello world to Spanish
  - Launch Google Chrome
- - Suspend
- - Pause
- - find cat food on Amazon
+ - Suspend my computer
+ - Pause my music
+ - Find cat food on Amazon
+ - Send an email to johndoe@example.com
+ - Check my mail
 ```
 And much more!
 
