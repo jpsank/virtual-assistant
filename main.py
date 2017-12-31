@@ -37,7 +37,7 @@ LANGUAGES = {'malayalam': 'ml', 'telugu': 'te', 'armenian': 'hy', 'finnish': 'fi
 
 currentDir = os.path.dirname(os.path.realpath(__file__))
 
-mtime = os.path.getmtime(currentDir+"/responses.py")+os.path.getmtime(currentDir+"/main.py")
+mtime = os.path.getmtime(currentDir+"/responses.py")# why is this here? +os.path.getmtime(currentDir+"/main.py")
 # Load preferences
 if os.path.exists(currentDir+"/preferences.json"):
     # print("Fetching preferences...")
@@ -403,6 +403,21 @@ class toolBox:
             return "Playing next track"
         elif cmd == "previous":
             return "Playing previous track"
+
+    def volumeControl(self, volume):
+        try:
+            volume = int(volume)
+        except:
+            return "Invalid volume input. Please set volume to a number between 0 and 100."
+        if (int(volume) > 100 or int(volume) < 0):
+            return "Invalid volume input. Please set volume to a number between 0 and 100."
+        # TODO Linux needs testing
+        if platform.system() == "Linux":
+            os.system("amixer set Master {}%".format(volume))
+        elif platform.system() == "Darwin":
+            os.system("osascript -e 'set Volume {}'".format(int(volume/10)))
+        else:
+            return "Sorry, your platform isn't supported for volume control."
 
     def runTerminal(self, command):
         try:
