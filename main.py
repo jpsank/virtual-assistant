@@ -17,6 +17,8 @@ import pickle
 import argparse
 
 import smtplib
+import imaplib
+import email.parser
 import getpass
 
 import requests
@@ -664,6 +666,71 @@ class toolBox:
             print("Email sent.")
         else:
             return "Cancelled"
+
+    def checkMail(self,username,password):
+        M = imaplib.IMAP4_SSL("imap.gmail.com")
+        try:
+            M.login(username,password)
+        except Exception as e:
+            if "[AUTHENTICATIONFAILED]" in str(e):
+                return None
+            else:
+                raise e
+        M.select(readonly=True)
+        messages = []
+        typ, data = M.search(None, '(UNSEEN)')
+        for num in data[0].split():
+            typ, data = M.fetch(num, '(RFC822)')
+            for response_part in data:
+                if isinstance(response_part, tuple):
+                    email_parser = email.parser.BytesFeedParser()
+                    email_parser.feed(response_part[1])
+                    msg = email_parser.close()
+                    messages.append({"HEADERS":{header.upper(): msg[header] for header in ['to', 'from', "subject"]}})
+                    body = ""
+                    if msg.is_multipart():
+                        for part in msg.walk():
+                            ctype = part.get_content_type()
+                            cdispo = str(part.get('Content-Disposition'))
+                            if ctype == 'text/plain' and 'attachment' not in cdispo:
+                                body = part.get_payload(decode=True)
+                                break
+                    else:
+                        body = msg.get_payload(decode=True)
+                    messages[-1].update({"BODY": body.decode()})
+
+        M.close()
+        M.logout()
+        return messages
+
+    def doCheckMail(self):
+        username = CONTACTS[0]["EMAIL"] if CONTACTS[0]["EMAIL"] is not None else input("Email to check: ")
+        password = getpass.getpass("Login to %s. Password: " % username)
+        messages = self.checkMail(username,password)
+        if messages is not None:
+            if messages:
+                print("UNREAD MESSAGES (%s)" % len(messages))
+                i = 0
+                for m in messages:
+                    print("---------------")
+                    for l in m["HEADERS"]:
+                        print("%s: %s" % (l.title(), m["HEADERS"][l]))
+                    print()
+                    body = m["BODY"]
+                    body = re.sub(r"(\n|\r)+","\n  ",body)
+                    if len(body) > 1000:
+                        body = body[:1000]+"..."
+                    print("  "+body)
+                    print()
+                    i += 1
+                    if i % 5 == 0:
+                        print("---------------")
+                        if not self.promptYN("%s messages remaining. See more? " % (len(messages)-i)):
+                            return "Exited mail"
+            else:
+                return random.choice(["No unread mail","All your mail is read","I could not find any unread mail"])
+        else:
+            return "Invalid credentials, cancelled"
 
     def appCheck(self, thing):
         opSys = platform.system()

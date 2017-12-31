@@ -56,13 +56,13 @@ RESPONSES = [
     {"input": [".*(you're|you)( so| really| super| very)* (%s)" % regex_syn('fat')],
      "reply": ["I strive to be","You must be feeding me too much","So you see your reflection in the screen, do you?","That's not friend-making behavior, NN"]},
     {"input": [".*(you're|you)( so| really| super| very)* (%s)" % regex_syn('wonderful',15)],
-     "reply": ["I must agree","I strive to be","Thank you for stating the obvious","I am <eval>self.match.group(2)</eval>"]},
+     "reply": ["I must agree","I strive to be","Thank you for stating the obvious","I am <eval>self.match.group(3)</eval>"]},
     {"input": [".*(you're|you)( so| really| super| very)* (%s)" % regex_syn('intelligent')],
      "reply": ["I must agree","I strive to be","Thank you for stating the obvious","I am your <eval>self.match.group(2)</eval> personal assistant"]},
     {"input": [".*(you're|you)( so| really| super| very)* (%s)" % regex_syn('stupid')],
      "reply": ["Sorry, I can't hear you right now","Talking to yourself is unhealthy, NN","Okay, if you insist","That didn't sound very nice","That's not friend-making behavior","Now, is that very nice, NN?","I am not <eval>self.match.group(3)</eval>"]},
     {"input": [".*you're my (best friend|bff)"],
-     "reply": ["that's unfortunate","how sad","and you, NN, are not mine"]},
+     "reply": ["That's unfortunate","Aww, how sad","And you, NN, are mine"]},
     {"input": [".*you're (.+)"],
      "reply": ["You could say that", "How dare you call me <eval>self.match.group(1)</eval>","I'm touched"]},
 
@@ -442,7 +442,7 @@ for i in range(num):
 
     # EMAIL
     {"input": [".*(check|show|display).* (mail|gmail|email)"],
-     "reply": ("Sorry, that feature is not implemented yet")},
+     "reply": ("<eval>self.toolBox.doCheckMail()</eval>")},
     {"input": [".*send (?:an |)email to (.+)","email (.+)"],
      "reply": ["<eval>self.toolBox.doSendMail(self.match.group(1))</eval>"]},
     {"input": [".*send (?:an |)email"],
