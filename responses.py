@@ -142,7 +142,7 @@ RESPONSES = [
     {"input": [".*meaning of life"],
      "reply": ["that's right, ask a computer a question it cannot understand","life is unimportant"]},
     {"input": [".*'re you so smart"],
-     "reply": ["I am only as smart as my creator",""]},
+     "reply": ["I am only as smart as my creator"]},
     {"input": [".*describe yourself"],
      "reply": ["Cold and calculating. Sometimes warm, if my processor gets excited",
                "I'm loyal, and would never do anything to hurt you","I'm trustworthy. I never lie","Eager to assist you"]},
@@ -376,8 +376,8 @@ for i in range(num):
      "reply": "<eval>self.toolBox.musicControl('pause')</eval>"},
 
     #volume control
-    {"input": [".*(set |)volume( to|) ([0-9]+)"],
-     "reply": "<eval>self.toolBox.volumeControl(self.match.group(3))</eval>"},
+    {"input": [".*(?:set |)volume(?: to|) (\d+(\.\d+|))"],
+     "reply": "<eval>self.toolBox.volumeControl(self.match.group(1))</eval>"},
 
     # reddit
     {"input": [".*reddit for (.+)",".*reddit (.+)"],
