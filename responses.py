@@ -375,6 +375,10 @@ for i in range(num):
     {"input": [".*(?:stop|turn off|end|freeze|break|halt|kill|suspend|cease).* (?:track|song|music)"],
      "reply": "<eval>self.toolBox.musicControl('pause')</eval>"},
 
+    #volume control
+    {"input": [".*(set |)volume( to|) ([0-9]+)"],
+     "reply": "<eval>self.toolBox.volumeControl(self.match.group(3))</eval>"},
+
     # reddit
     {"input": [".*reddit for (.+)",".*reddit (.+)"],
      "reply": ['''<eval>self.toolBox.redditLookup(self.match.group(1))</eval>''']},
