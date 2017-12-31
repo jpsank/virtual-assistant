@@ -55,7 +55,7 @@ else:
     CONTACTS[0]["NN"] = CONTACTS[0]["NN"] if CONTACTS[0]["NN"] != '' else 'friend'
     print("Okay, %s, here's some guidance:" % CONTACTS[0]["NN"])
     print(" - At any time, you can tell me more about yourself and change your contact info")
-    print(" - You can also ask me for help if you get hopelessly lost")
+    print(" - You can also type 'help' if you get hopelessly lost or want to know what I can do")
     PREFERENCES["contacts"] = CONTACTS
     print("Setup complete")
 
@@ -639,6 +639,12 @@ class toolBox:
         else:
             webbrowser.open("https://xkcd.com/%s" % number)
             return random.choice(["Here's comic number %s" % number,"Opening comic number %s..." % number])
+
+    def getHelp(self):
+        with open("help.json", "r") as f:
+            helpData = json.load(f)
+        for term, descrip in helpData.items():
+            print("{}: {}".format(term, descrip))
 
     def sendEmail(self, from_addr, to_addr_list, cc_addr_list, subject, message, login, password, smtpserver='smtp.gmail.com:587'):
         header = 'From: %s\nTo: %s\nCc: %s\nSubject: %s\n' % (from_addr,', '.join(to_addr_list),', '.join(cc_addr_list),subject)

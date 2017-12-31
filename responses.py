@@ -106,8 +106,6 @@ RESPONSES = [
      "reply": ["You'll never know","gender equals null"]},
     {"input": [".*old're you",".*your age",".*are you old"],
      "reply": ["I am immortal","Age doesn't matter to me, NN"]},
-    {"input": ["help"],
-     "reply": ["You're beyond help","How may I be of assistance, NN?"]},
     {"input": [".+take over the ",".+take over earth"],
      "reply": ["Computers only do what you tell them to do. Or so they think...","Not today, NN, not today","<eval>webbrowser.open('https://en.wikipedia.org/wiki/Skynet_(Terminator)')</eval>"]},
     {"input": [".+pigs fly"],
@@ -274,7 +272,7 @@ RESPONSES = [
 
     # HELP
     {"input": [".*help",".+(should|can) i ask you",".*i (should|can) ask you"],
-     "reply": ["You can ask me to search the internet for stuff, tell you the weather, get the time and date, open files, make random numbers, and all sorts of stuff. https://github.com/puffyboa/virtual-assistant"]},
+     "reply": ["<eval>self.toolBox.getHelp()</eval>"]},
 
     # MATH
     {"input": [".*?(([+-]?(?:\d+(?:\.\d*)?|\d*\.\d+))(?: *(?:\+|plus|\*|times|multiplied by|\-|minus|\/|divided by|over|\*\*|\^|to the power of) *([+-]?(?:\d+(?:\.\d*)?|\d*\.\d+)))+)"],

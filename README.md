@@ -43,6 +43,8 @@ Things you can ask it:
 ```
 And much more!
 
+You can also type ```help``` and it'll display all of its features.
+
 Virtual-assistant is also 100% mobile compatible! Install in on Pythonista on iOS or whatever Android uses!
 
 ## Contribution
