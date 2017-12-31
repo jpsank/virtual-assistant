@@ -30,6 +30,8 @@ home = os.path.expanduser("~")
 primaryCommandPrompt = '>> '
 secondaryCommandPrompt = '> '
 
+default_contact = {"BDAY": None, "GENDER": None, "NN": None, "FULLNAME": None, "PHONE": None, "EMAILS": []}
+
 userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (Klxml.html, like Gecko) Chrome/61.0.3163.100 Safari/537.36 OPR/48.0.2685.39"
 
 LANGUAGES = {'malayalam': 'ml', 'telugu': 'te', 'armenian': 'hy', 'finnish': 'fi', 'urdu': 'ur', 'thai': 'th', 'georgian': 'ka', 'lao': 'lo', 'scots gaelic': 'gd', 'lithuanian': 'lt', 'italian': 'it', 'hmong daw': 'mww', 'auto detect': 'auto_detect', 'belarusian': 'be', 'hebrew': 'iw', 'sesotho': 'st', 'estonian': 'et', 'czech': 'cs', 'basque': 'eu', 'russian': 'ru', 'luxembourgish': 'lb', 'filipino': 'tl', 'welsh': 'cy', 'korean': 'ko', 'sindhi': 'sd', 'persian': 'fa', 'german': 'de', 'samoan': 'sm', 'icelandic': 'is', 'maltese': 'mt', 'somali': 'so', 'malay': 'ms', 'indonesian': 'id', 'spanish': 'es', 'latin': 'la', 'hindi': 'hi', 'hungarian': 'hu', 'danish': 'da', 'xhosa': 'xh', 'sundanese': 'su', 'uzbek': 'uz', 'ukrainian': 'uk', 'slovak': 'sk', 'kannada': 'kn', 'hmong': 'hmn', 'yucatec maya': 'yua', 'afrikaans': 'af', 'albanian': 'sq', 'vietnamese': 'vi', 'croatian': 'hr', 'galician': 'gl', 'bengali': 'bn', 'zulu': 'zu', 'nepali': 'ne', 'slovenian': 'sl', 'cebuano': 'ceb', 'shona': 'sn', 'tamil': 'ta', 'portuguese': 'pt', 'chichewa': 'ny', 'french': 'fr', 'greek': 'el', 'kazakh': 'kk', 'mongolian': 'mn', 'sinhala': 'si', 'tajik': 'tg', 'polish': 'pl', 'malagasy': 'mg', 'chinese (simplified)': 'zh', 'pashto': 'ps', 'marathi': 'mr', 'kyrgyz': 'ky', 'arabic': 'ar', 'hawaiian': 'haw', 'latvian': 'lv', 'igbo': 'ig', 'yiddish': 'yi', 'kurdish': 'ku', 'khmer': 'km', 'punjabi': 'pa', 'esperanto': 'eo', 'javanese': 'jw', 'serbian (latin)': 'sr-La', 'hausa': 'ha', 'amharic': 'am', 'bosnian (latin)': 'bs', 'japanese': 'ja', 'burmese': 'my', 'bulgarian': 'bg', 'turkish': 'tr', 'klingon': 'tlh', 'irish': 'ga', 'catalan': 'ca', 'gujarati': 'gu', 'macedonian': 'mk', 'chinese (traditional)': 'zh-TW', 'maori': 'mi', 'dutch': 'nl', 'frisian': 'fy', 'swedish': 'sv', 'norwegian': 'no', 'english': 'en', 'haitian creole': 'ht', 'swahili': 'sw', 'yoruba': 'yo', 'romanian': 'ro', 'azerbaijani': 'az', 'serbian (cyrillic)': 'sr'}
@@ -45,13 +47,12 @@ if os.path.exists(currentDir+"/preferences.json"):
         PREFERENCES = json.load(f)
 else:
     print("Generating preferences...")
-    PREFERENCES = {"contacts":[{"BDAY": None, "GENDER": None, "NN": None, "FULLNAME": None, "EMAIL": None, "PHONE": None}],
-                   "mtime":mtime}
+    PREFERENCES = {"contacts":[default_contact], "mtime":mtime}
     # User initiation
     print("Welcome to virtual-assistant setup, friend")
     CONTACTS = PREFERENCES["contacts"]
     print("Enter your nickname, or hit return and I'll keep calling you 'friend': ")
-    CONTACTS[0]["NN"] = input(primaryCommandPrompt)
+    CONTACTS[0]["NN"] = input(secondaryCommandPrompt)
     CONTACTS[0]["NN"] = CONTACTS[0]["NN"] if CONTACTS[0]["NN"] != '' else 'friend'
     print("Okay, %s, here's some guidance:" % CONTACTS[0]["NN"])
     print(" - At any time, you can tell me more about yourself and change your contact info")
@@ -642,13 +643,33 @@ class toolBox:
         index = self.parseContactString(to)
         if index is not False and index is not None:
             if self.promptYN("Mail to your contact %s's email?" % CONTACTS[index]["NN"]):
-                if CONTACTS[index]["EMAIL"] is not None:
-                    to = CONTACTS[index]["EMAIL"]
+                if CONTACTS[index]["EMAILS"]:
+                    if len(CONTACTS[index]["EMAILS"]) > 1:
+                        prompt = self.promptLIST(CONTACTS[index]["EMAILS"],
+                                                 "Which of %s's emails? (or 'cancel')" % CONTACTS[index]["NN"],
+                                                 cancel="cancel")
+                        if prompt is False:
+                            return "Cancelled"
+                        else:
+                            to = CONTACTS[index]["EMAILS"][prompt]
+                    else:
+                        to = CONTACTS[index]["EMAILS"][0]
                 else:
-                    print("You have not set an email for %s" % CONTACTS[index]["NN"])
+                    print("You have not set any emails for %s" % CONTACTS[index]["NN"])
         if re.match("(.+)@(.+)\.(.+)",to) is None:
             return "Email address '%s' invalid. Cancelled" % to
-        from_addr = CONTACTS[0]["EMAIL"] if CONTACTS[0]["EMAIL"] is not None else input("From address: ")
+
+        emails = CONTACTS[0]["EMAILS"]
+        from_addr = ""
+        if emails:
+            if len(emails) == 1:
+                from_addr = emails[0]
+            else:
+                prompt = self.promptLIST(emails, "Choose the from address (or 'cancel')",cancel="cancel")
+                if prompt is False:
+                    return "Cancelled"
+                else:
+                    from_addr = emails[prompt]
         password = getpass.getpass("Login to your email %s. Password: " % from_addr)
         print("MESSAGE")
         print("From: %s" % from_addr)
@@ -704,7 +725,17 @@ class toolBox:
         return messages
 
     def doCheckMail(self):
-        username = CONTACTS[0]["EMAIL"] if CONTACTS[0]["EMAIL"] is not None else input("Email to check: ")
+        emails = CONTACTS[0]["EMAILS"]
+        username = ""
+        if emails:
+            if len(emails) == 1:
+                username = emails[0]
+            else:
+                prompt = self.promptLIST(emails, "Choose the from address (or 'cancel')", cancel="cancel")
+                if prompt is False:
+                    return "Cancelled"
+                else:
+                    username = emails[prompt]
         password = getpass.getpass("Login to %s. Password: " % username)
         messages = self.checkMail(username,password)
         if messages is not None:
@@ -717,7 +748,7 @@ class toolBox:
                         print("%s: %s" % (l.title(), m["HEADERS"][l]))
                     print()
                     body = m["BODY"]
-                    body = re.sub(r"(\n|\r)+","\n  ",body)
+                    body = re.sub(r"[\n\r]+","\n  ",body)
                     if len(body) > 1000:
                         body = body[:1000]+"..."
                     print("  "+body)
@@ -728,7 +759,8 @@ class toolBox:
                         if not self.promptYN("%s messages remaining. See more? " % (len(messages)-i)):
                             return "Exited mail"
             else:
-                return random.choice(["No unread mail","All your mail is read","I could not find any unread mail"])
+                return random.choice(["No unread mail","You've read all the messages in your inbox",
+                                      "I could not find any unread mail"])
         else:
             return "Invalid credentials, cancelled"
 
@@ -794,11 +826,52 @@ class toolBox:
         webbrowser.open("https://www.google.com/search?q=%s" % search)
         return random.choice(["googling %s" % search,"searching for %s" % search, "accessing interwebs", "okay, NN, I'll google that"])
 
+    def personLookup(self,name):
+        name = re.sub(r"\?+\Z","",name)
+        index = self.parseContactString(name)
+        if index is not False and index is not None:
+            if self.promptYN("Show %s's contact info?" % CONTACTS[index]["NN"]):
+                self.showContactInfo(index)
+            else:
+                print("Okay then")
+            return
+
+        if self.promptYN("Search Wikipedia for %s?" %name):
+            wiki = self.wikiLookupRespond(name)
+            return wiki
+
+        return random.choice(["Never heard of them"])
+
+    def parseContactString(self, tag):
+        if isinstance(tag, str):
+            tag = tag.lower()
+            if tag in ['my', 'me', 'i']:
+                return 0
+            else:
+                if tag.endswith("'s"):
+                    tag = tag[:-2]
+                result = None
+                for i, c in enumerate(CONTACTS):
+                    if tag in c["NN"].lower() \
+                            or c["NN"].lower() in tag \
+                            or (c["FULLNAME"] is not None and any(n.lower() in c["FULLNAME"].split() for n in tag.split())):
+                        prompts = ["Are you referring to your contact NN?","You mean your contact NN?",
+                                   "Are you talking about your contact NN?"]
+                        if self.promptYN(random.choice(prompts).replace("NN",c["NN"])):
+                            return i
+                        else:
+                            result = False
+                return result
+        elif isinstance(tag, int):
+            return tag
+
     def addContact(self,name=None):
         if name is None:
             name = self.promptANY("What is the contact's name?")
         if self.promptYN("Add contact '%s'?" % name):
-            CONTACTS.append({"BDAY": None, "GENDER": None, "NN": name, "FULLNAME": None, "EMAIL": None, "PHONE": None})
+            con = default_contact.copy()
+            con["NN"] = name
+            CONTACTS.append(con)
             save_contacts()
             return random.choice(["Added %s as a contact" % name, "I've added your contact %s" % name,
                                   "%s has been added as a contact" % name])
@@ -826,45 +899,6 @@ class toolBox:
             else:
                 return "Cancelled"
 
-    def personLookup(self,name):
-        name = re.sub(r"\?+\Z","",name)
-        index = self.parseContactString(name)
-        if index is not False and index is not None:
-            if self.promptYN("Show %s's contact info?" % CONTACTS[index]["NN"]):
-                self.showContactInfo(index)
-            else:
-                print("Okay then")
-            return
-
-        if self.promptYN("Search Wikipedia for %s?" %name):
-            wiki = self.wikiLookupRespond(name)
-            return wiki
-
-        return random.choice(["Never heard of them"])
-
-    def parseContactString(self, tag):
-        if isinstance(tag, str):
-            name = tag.lower()
-            if name in ['my', 'me', 'i']:
-                return 0
-            else:
-                if name.endswith("'s"):
-                    name = name[:-2]
-                result = None
-                for i, c in enumerate(CONTACTS):
-                    if name in c["NN"].lower() \
-                            or c["NN"].lower() in name \
-                            or (c["FULLNAME"] is not None and any(n.lower() in c["FULLNAME"].split() for n in name.split())):
-                        prompts = ["Are you referring to your contact NN?","You mean your contact NN?",
-                                   "Are you talking about your contact NN?"]
-                        if self.promptYN(random.choice(prompts).replace("NN",c["NN"])):
-                            return i
-                        else:
-                            result = False
-                return result
-        elif isinstance(tag, int):
-            return tag
-
     def showContactInfo(self, contact):
         contactNum = self.parseContactString(contact)
         if isinstance(contactNum,int):
@@ -878,7 +912,7 @@ class toolBox:
 
     def checkContactInfo(self,contact,key):
         contactNum = self.parseContactString(contact)
-        if isinstance(contactNum,int) and key in CONTACTS[contactNum]:
+        if isinstance(contactNum,int):
             if contactNum == 0:
                 responses = {
                     "NN": ["Your name is NN, NN", "I thought you would know your own name, NN",
@@ -886,86 +920,161 @@ class toolBox:
                     "BDAY": ["You were born on BDAY, NN"],
                     "FULLNAME": ["Your full name is FULLNAME, NN", "I thought you would know your own full name, NN"],
                     "GENDER": ["You're GENDER, NN", "You should know this, NN"],
-                    "EMAIL": ["Your email is EMAIL, NN"],
-                    "PHONE": ["Your phone number is PHONE, NN"]
+                    "PHONE": ["Your phone number is PHONE, NN"],
+                    "EMAILS": [["You have not set any emails, NN"], ["Your only email is EMAILS, NN"],
+                               ["Your emails are EMAILS, NN"]]
                 }
             else:
                 responses = {
                     "NN": ["NN's name is NN", "I have a feeling you already know it",
                            "NN's name is - you guessed it - NN"],
-                    "BDAY": ["NN was born on BDAY","NN's birthday is BDAY"],
+                    "BDAY": ["NN was born on BDAY", "NN's birthday is BDAY"],
                     "FULLNAME": ["NN's full name is FULLNAME"],
                     "GENDER": ["NN is GENDER", "Apparently, NN is GENDER"],
-                    "EMAIL": ["NN's email is EMAIL"],
-                    "PHONE": ["NN's phone number is PHONE"]
+                    "PHONE": ["NN's phone number is PHONE"],
+                    "EMAILS": [["You have not set any emails for NN"], ["NN's only email is EMAILS"],
+                               ["NN's emails are EMAILS"]]
                 }
             if key in responses:
-                choice = random.choice(responses[key])
+                if isinstance(CONTACTS[contactNum][key],list):
+                    length = len(CONTACTS[contactNum][key])
+                    i = 0 if length == 0 else 1 if length == 1 else 2
+                    choice = random.choice(responses[key][i])
+                else:
+                    choice = random.choice(responses[key])
                 for r in responses:
-                    if CONTACTS[contactNum][r] is not None:
-                        choice = choice.replace(r,CONTACTS[contactNum][r])
+                    new = CONTACTS[contactNum][r]
+                    new = ", ".join(new) if isinstance(new,list) else "UNSPECIFIED" if new is None else new
+                    choice = choice.replace(r,new)
                 return choice
         fail = ["I don't know who that is", "Who's that?"]
         return random.choice(fail)
 
-    def changeContactInfo(self,contact,key,newValue):
+    def changeContactInfoSTR(self,contact,key,newValue):
         contactNum = self.parseContactString(contact)
         fail = ["Unable to find contact %s" % contact]
-        if isinstance(contactNum,int) and key in CONTACTS[contactNum]:
-            original = "UNKNOWN" if CONTACTS[contactNum][key] is None else CONTACTS[contactNum][key]
-            name = "you" if contactNum == 0 else CONTACTS[contactNum]["NN"]
-            possessive = "your" if contactNum == 0 else "%s's" % CONTACTS[contactNum]["NN"].capitalize()
-            if key == "BDAY":
-                try:
-                    newValue = parse(newValue).strftime('%m/%d/%Y')
-                except ValueError:
-                    return "Could not parse the date of birth entered"
-                if self.promptYN('Change %s birth date to %s? ' % (possessive,newValue)):
-                    self.changeContact(contactNum,{key: newValue})
-                    return "%s birthday is now %s" % (possessive.capitalize(),CONTACTS[contactNum][key])
-                else:
-                    return "Leaving %s birthday as %s" % (possessive,original)
-            elif key == "NN":
-                if self.promptYN('Change %s nickname to %s? ' % (possessive,newValue)):
-                    self.changeContact(contactNum,{key: newValue})
-                    return "I will call %s '%s' from now on" % (name,CONTACTS[contactNum][key])
-                else:
-                    return "%s name will be left as '%s'" % (possessive.capitalize(),original)
-            elif key == "FULLNAME":
-                if self.promptYN('Change %s full name to %s? ' % (possessive,newValue)):
-                    self.changeContact(contactNum,{key: newValue})
-                    return "%s full name is now %s" % (possessive.capitalize(),CONTACTS[contactNum][key])
-                else:
-                    return "%s full name will be left as '%s'" % (possessive.capitalize(),original)
-            elif key == "GENDER":
-                if self.promptYN('Change %s gender to %s? ' % (possessive,newValue)):
-                    self.changeContact(contactNum,{key: newValue})
-                    return "%s gender has been changed to %s" % (possessive.capitalize(),CONTACTS[contactNum][key])
-                else:
-                    return "%s gender will be left as '%s'" % (possessive.capitalize(),original)
-            elif key == "EMAIL":
-                if self.promptYN('Change %s email to %s? ' % (possessive,newValue)):
-                    self.changeContact(contactNum,{key: newValue})
-                    return "%s email is now %s" % (possessive.capitalize(),CONTACTS[contactNum][key])
-                else:
-                    return "%s email will be left as '%s'" % (possessive.capitalize(),original)
-            elif key == "PHONE":
-                if "-" in newValue or " " in newValue:
-                    newValue = re.sub('[^0-9]+', '', newValue)
-                if self.promptYN('Change %s phone number to %s? ' % (possessive,newValue)):
-                    self.changeContact(contactNum,{key: newValue})
-                    return '%s phone number is now %s' % (possessive.capitalize(),CONTACTS[contactNum][key])
-                else:
-                    return "%s phone number will be left as '%s'" % (possessive.capitalize(),original)
+        if isinstance(contactNum,int):
+            if key in CONTACTS[contactNum]:
+                original = "UNSPECIFIED" if CONTACTS[contactNum][key] is None else CONTACTS[contactNum][key]
+                name = "you" if contactNum == 0 else CONTACTS[contactNum]["NN"]
+                possessive = "your" if contactNum == 0 else "%s's" % CONTACTS[contactNum]["NN"].capitalize()
+                if key == "BDAY":
+                    try:
+                        newValue = parse(newValue).strftime('%m/%d/%Y')
+                    except ValueError:
+                        return "Could not parse the date of birth entered"
+                    if self.promptYN('Change %s birth date to %s? ' % (possessive,newValue)):
+                        self.changeContactSTR(contactNum, {key: newValue})
+                        return "%s birthday is now %s" % (possessive.capitalize(),CONTACTS[contactNum][key])
+                    else:
+                        return "Leaving %s birthday as %s" % (possessive,original)
+                elif key == "NN":
+                    if self.promptYN('Change %s nickname to %s? ' % (possessive,newValue)):
+                        self.changeContactSTR(contactNum, {key: newValue})
+                        return "I will call %s '%s' from now on" % (name,CONTACTS[contactNum][key])
+                    else:
+                        return "%s name will be left as '%s'" % (possessive.capitalize(),original)
+                elif key == "FULLNAME":
+                    if self.promptYN('Change %s full name to %s? ' % (possessive,newValue)):
+                        self.changeContactSTR(contactNum, {key: newValue})
+                        return "%s full name is now %s" % (possessive.capitalize(),CONTACTS[contactNum][key])
+                    else:
+                        return "%s full name will be left as '%s'" % (possessive.capitalize(),original)
+                elif key == "GENDER":
+                    if self.promptYN('Change %s gender to %s? ' % (possessive,newValue)):
+                        self.changeContactSTR(contactNum, {key: newValue})
+                        return "%s gender has been changed to %s" % (possessive.capitalize(),CONTACTS[contactNum][key])
+                    else:
+                        return "%s gender will be left as '%s'" % (possessive.capitalize(),original)
+                elif key == "PHONE":
+                    if "-" in newValue or " " in newValue:
+                        newValue = re.sub('[^0-9]+', '', newValue)
+                    if self.promptYN('Change %s phone number to %s? ' % (possessive,newValue)):
+                        self.changeContactSTR(contactNum, {key: newValue})
+                        return '%s phone number is now %s' % (possessive.capitalize(),CONTACTS[contactNum][key])
+                    else:
+                        return "%s phone number will be left as '%s'" % (possessive.capitalize(),original)
         return random.choice(fail)
 
-    def changeContact(self,contactNum,update):
+    def changeContactInfoLIST(self, contact, key, action, item=None):
+        contactNum = self.parseContactString(contact)
+        if isinstance(contactNum, int):
+            if key in CONTACTS[contactNum]:
+                if item is None:
+                    if action is 'remove':
+                        if len(CONTACTS[contactNum][key]) == 0:
+                            return "No items to remove"
+                        elif len(CONTACTS[contactNum][key]) == 1:
+                            item = CONTACTS[contactNum][key][0]
+                        else:
+                            prompt = self.promptLIST(CONTACTS[contactNum][key],"Which item to remove? (or 'cancel') ", cancel="cancel")
+                            if prompt is False:
+                                return "Cancelled"
+                            else:
+                                item = CONTACTS[contactNum][key][prompt]
+                    elif action is 'add':
+                        item = self.promptANY("What to add?",cancel="cancel")
+                        if item is False:
+                            return "Cancelled"
+                    elif action is 'update':
+                        item = self.promptANY("What should I set it as?", cancel="cancel")
+                        if item is False:
+                            return "Cancelled"
+                else:
+                    if action is 'remove':
+                        if item not in CONTACTS[contactNum][key]:
+                            return "Item to remove not found. Cancelled"
+                original = CONTACTS[contactNum][key]
+                name = "you" if contactNum == 0 else CONTACTS[contactNum]["NN"]
+                possessive = "your" if contactNum == 0 else "%s's" % CONTACTS[contactNum]["NN"].capitalize()
+                if key == "EMAILS":
+                    if action != 'remove' and re.match("(.+)@(.+)\.(.+)", item) is None:
+                        return "Email address '%s' invalid. Cancelled" % item
+                    else:
+                        item = re.sub(r"[?!]+\Z","",item)
+                    if self.promptYN('%s %s email %s? ' % (action.capitalize(), possessive, item)):
+                        if action == "remove":
+                            self.changeContactLIST(contactNum, remove={key: item})
+                        elif action == "add":
+                            self.changeContactLIST(contactNum, add={key: item})
+                        elif action == "update":
+                            self.changeContactLIST(contactNum, update={key: [item]})
+                        if len(CONTACTS[contactNum][key]) > 1:
+                            return '%s emails are now %s' % (possessive.capitalize(),', '.join(CONTACTS[contactNum][key]))
+                        elif len(CONTACTS[contactNum][key]) == 1:
+                            return '%s email is now %s' % (possessive.capitalize(), CONTACTS[contactNum][key][0])
+                        else:
+                            return '%s email has been removed' % (possessive.capitalize())
+                    else:
+                        if len(CONTACTS[contactNum][key]) > 1:
+                            return "%s emails will be left as %s" % (possessive.capitalize(),', '.join(original))
+                        elif len(CONTACTS[contactNum][key]) == 1:
+                            return '%s email will remain %s' % (possessive.capitalize(),original[0])
+                        else:
+                            return '%s will remain without email' % (name.capitalize())
+
+        return random.choice(["Unable to find contact %s" % contact])
+
+    def changeContactSTR(self, contactNum, update):
         CONTACTS[contactNum].update(update)
         save_contacts()
 
-    def promptANY(self,prompt,password=False):
+    def changeContactLIST(self, contactNum, add={}, remove={}, update={}):
+        if update:
+            CONTACTS[contactNum].update(update)
+        if remove:
+            for key in remove:
+                CONTACTS[contactNum][key].remove(remove[key])
+        if add:
+            for key in add:
+                CONTACTS[contactNum][key].append(add[key])
+        save_contacts()
+
+    def promptANY(self,prompt,password=False,cancel=None):
         print(random.choice(prompt) if isinstance(prompt, list) else prompt)
         answer = input(secondaryCommandPrompt)
+        if cancel is not None and re.match(cancel,answer):
+            return False
         return answer
 
     def promptYN(self,prompt,failsafe="Yes or no?",y="y",n="n"):
@@ -1089,7 +1198,8 @@ class VirtAssistant:
     def replaceify(self,text):
         replaces = CONTACTS[0]
         for r in replaces:
-            text = text.replace(r,replaces[r] if replaces[r] is not None else 'UNKNOWN')
+            new = ', '.join(replaces[r]) if isinstance(replaces[r],list) else replaces[r] if replaces[r] is not None else 'UNSPECIFIED'
+            text = text.replace(r, new)
         return text
 
     def process_reply(self,text_blueprint):
