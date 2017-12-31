@@ -131,7 +131,7 @@ RESPONSES = [
     {"input": [".*i hate (.+)"],
      "reply": ["I love <eval>self.match.group(1)</eval>",
                "I find <eval>self.match.group(1)</eval> intriguing"]},
-    {"input": [".*i (.+)"],
+    {"input": ["i (.+)\Z"],
      "reply": ["I <eval>self.match.group(1)</eval> as well",
                "I never <eval>self.match.group(1)</eval>","I don't often <eval>self.match.group(1)</eval>"]},
 
@@ -140,7 +140,7 @@ RESPONSES = [
     {"input": [".*meaning of life"],
      "reply": ["that's right, ask a computer a question it cannot understand","life is unimportant"]},
     {"input": [".*'re you so smart"],
-     "reply": ["I am only as smart as my creator",""]},
+     "reply": ["I am only as smart as my creator"]},
     {"input": [".*describe yourself"],
      "reply": ["Cold and calculating. Sometimes warm, if my processor gets excited",
                "I'm loyal, and would never do anything to hurt you","I'm trustworthy. I never lie","Eager to assist you"]},
@@ -184,6 +184,7 @@ RESPONSES = [
      "reply": ["<eval>self.toolBox.doCheckPalindrome(self.match.group(1))</eval>"]},
 
     # CHECK CONTACT INFO
+    # str
     {"input": [".*what's (?P<who>my|.+'s) name",
                ".*whats (?P<who>my|.+'s) name",
                ".*what (?P<who>my|.+'s) name's",
@@ -202,41 +203,61 @@ RESPONSES = [
                ".+(?P<who>i|.+'s)(?: am|'s) (male|female|a boy|a girl|a man|a woman)",
                ".*(?P<who>my|.+'s) gender\?"],
      "reply": "<eval>self.toolBox.checkContactInfo(self.match.group('who'),'GENDER')</eval>"},
-    {"input": [".*what's (?P<who>my|.+'s)(?: current|) email",
-               ".*(?P<who>my|.+'s) email\?"],
-     "reply": "<eval>self.toolBox.checkContactInfo(self.match.group('who'),'EMAIL')</eval>"},
     {"input": [".*what's (?P<who>my|.+'s)(?: current|)(?: phone|) number",
                ".*(?P<who>my|.+'s) phone number\?"],
      "reply": "<eval>self.toolBox.checkContactInfo(self.match.group('who'),'PHONE')</eval>"},
-    {"input": [".*show me (.+'s) contact info",".*show (.+'s) contact info",".*show contact info for (.+)",".*show my contact (.+)"],
+
+    # list
+    {"input": [".*(?:what's|what're|list) (?P<who>my|.+'s)(?: current|) email",
+               ".*(?P<who>my|.+'s) email\?"],
+     "reply": "<eval>self.toolBox.checkContactInfo(self.match.group('who'),'EMAILS')</eval>"},
+
+    {"input": [".*show me (.+'s|my) contact info",".*show (.+'s|my) contact info",".*show contact info for (.+|me)",".*show my contact (.+)"],
      "reply": "<eval>self.toolBox.showContactInfo(self.match.group(1))</eval>"},
 
-    # CHANGE CONTACT INFO (birth date, nickname, full name, location of living, gender INCOMPLETE)
+    # CHANGE CONTACT INFO (birth date, nickname, full name, home, gender) INCOMPLETE
+    # str
     {"input": [".*?(?P<who>my|.+'s) name's (?P<val>.+)",
                ".*?(?P<who>my|.+'s) name to (?P<val>.+)",
                "(?P<val>.+)'s (?P<who>my|.+'s) name",
                ".*call (?P<who>me|.+) (?P<val>.+)"],
-     "reply": "<eval>self.toolBox.changeContactInfo(self.match.group('who'),'NN',self.match.group('val'))</eval>"},
+     "reply": "<eval>self.toolBox.changeContactInfoSTR(self.match.group('who'),'NN',self.match.group('val'))</eval>"},
     {"input": [".*?(?P<who>my|.+'s) (?:full name|fullname)(?:'s| to) (?P<val>.+)",
                "(?P<val>.+)'s (?P<who>my|\w+'s) (?:full name|fullname)"],
-     "reply": "<eval>self.toolBox.changeContactInfo(self.match.group('who'),'FULLNAME',self.match.group('val'))</eval>"},
+     "reply": "<eval>self.toolBox.changeContactInfoSTR(self.match.group('who'),'FULLNAME',self.match.group('val'))</eval>"},
 
     {"input": [".*?(?P<who>my|\w+'s) (?:birthday|bday|b-day|birth day|date of birth|day of birth|birth date)(?:'s| to) (?P<val>.+)",
                "(?P<val>.+)'s (?P<who>my|.+'s) (?:birthday|bday|b-day|birth day|date of birth|day of birth|birth date)",
                ".*?(?P<who>i|.+)'s (?:born on|birthed on|born) (?P<val>.+)"],
-     "reply": "<eval>self.toolBox.changeContactInfo(self.match.group('who'),'BDAY',self.match.group('val'))</eval>"},
+     "reply": "<eval>self.toolBox.changeContactInfoSTR(self.match.group('who'),'BDAY',self.match.group('val'))</eval>"},
 
     {"input": [".*?(?P<who>i'm|.+'s) (?:female|a girl|a woman)",
                ".*?(?P<who>my|.+'s) gender's female"],
-     "reply": "<eval>self.toolBox.changeContactInfo(self.match.group('who'),'GENDER','female')</eval>"},
+     "reply": "<eval>self.toolBox.changeContactInfoSTR(self.match.group('who'),'GENDER','female')</eval>"},
     {"input": [".*?(?P<who>i'm|.+'s) (?:male|a boy|a man)",
                ".*?(?P<who>my|.+'s) gender's male"],
-     "reply": "<eval>self.toolBox.changeContactInfo(self.match.group('who'),'GENDER','male')</eval>"},
+     "reply": "<eval>self.toolBox.changeContactInfoSTR(self.match.group('who'),'GENDER','male')</eval>"},
 
-    {"input": [".*?(?P<who>my|.+'s) email(?:'s| to) (?P<val>.+@.+)"],
-     "reply": "<eval>self.toolBox.changeContactInfo(self.match.group('who'),'EMAIL',self.match.group('val'))</eval>"},
     {"input": [".*?(?P<who>my|.+'s)(?: phone|) number(?:'s| to) (?P<val>(?:\d{3,4}(?:| |-))+)"],
-     "reply": "<eval>self.toolBox.changeContactInfo(self.match.group('who'),'PHONE',self.match.group('val'))</eval>"},
+     "reply": "<eval>self.toolBox.changeContactInfoSTR(self.match.group('who'),'PHONE',self.match.group('val'))</eval>"},
+
+    # list
+    {"input": [".*?(?P<who>my|.+'s) email(?:'s| to) (?P<val>.+@.+\..+)"],
+     "reply": "<eval>self.toolBox.changeContactInfoLIST(self.match.group('who'),'EMAILS','update',self.match.group('val'))</eval>"},
+    {"input": [".*?(?:set|change|update) (?P<who>my|.+'s) email"],
+     "reply": "<eval>self.toolBox.changeContactInfoLIST(self.match.group('who'),'EMAILS','update')</eval>"},
+
+    {"input": [".*?(?:add) (?P<who>my|.+'s) email (?P<val>.+@.+\..+)"],
+     "reply": "<eval>self.toolBox.changeContactInfoLIST(self.match.group('who'),'EMAILS','add',self.match.group('val'))</eval>"},
+    {"input": [".*?(?:add) (?P<who>my|.+'s) email"],
+     "reply": "<eval>self.toolBox.changeContactInfoLIST(self.match.group('who'),'EMAILS','add')</eval>"},
+    {"input": [".*?(?:add)(?: another| an|) email"],
+     "reply": "<eval>self.toolBox.changeContactInfoLIST('my','EMAILS','add')</eval>"},
+
+    {"input": [".*?(?:remove) (?P<who>my|.+'s) email (?P<val>.+@.+\..+)"],
+     "reply": "<eval>self.toolBox.changeContactInfoLIST(self.match.group('who'),'EMAILS','remove',self.match.group('val'))</eval>"},
+    {"input": [".*?(?:remove) (?P<who>my|.+'s) email"],
+     "reply": "<eval>self.toolBox.changeContactInfoLIST(self.match.group('who'),'EMAILS','remove')</eval>"},
 
     # ADD CONTACT
     {"input": [".*(?:add|create|make).* contact (.+)",".*add (.+) as (?:a contact|contact)"],
@@ -329,7 +350,7 @@ for i in range(num):
     # maps
     {"input": [".*directions from (.+) to (.+)",".*directions (.+) to (.+)",".*directions to (.+)"],
      "reply": (["Opening Google Maps...","Finding directions..."],"<eval>webbrowser.open(self.toolBox.directionsURL(*reversed(self.match.groups())))</eval>")},
-    {"input": [".*how (many hours|many miles|long) from (.+) to (.+)"],
+    {"input": [".*how (many hours|many miles|long).* from (.+) to (.+)"],
      "reply": (["Opening Google Maps...","Finding directions..."],"<eval>webbrowser.open(self.toolBox.directionsURL(self.match.group(3),self.match.group(2)))</eval>")},
     {"input": ["where's (.+)","show me (.+) on .*map","find (.+) on .*map","search for (.+) on .*map","search (.+) on .*map"],
      "reply": '''<eval>self.toolBox.googleMapSearch(self.match.group(1))</eval>'''},
@@ -353,8 +374,8 @@ for i in range(num):
      "reply": "<eval>self.toolBox.musicControl('pause')</eval>"},
 
     #volume control
-    {"input": [".*(set |)volume( to|) ([0-9]+)"],
-     "reply": "<eval>self.toolBox.volumeControl(self.match.group(3))</eval>"},
+    {"input": [".*(?:set |)volume(?: to|) (\d+(\.\d+|))"],
+     "reply": "<eval>self.toolBox.volumeControl(self.match.group(1))</eval>"},
 
     # reddit
     {"input": [".*reddit for (.+)",".*reddit (.+)"],
@@ -491,7 +512,7 @@ for i in range(num):
     {"input": [".*i do"],
      "reply": ["I don't","no you don't","you do?"]},
 
-    {"input": ["really"],
+    {"input": ["(?:oh |)really"],
      "reply": ["yes, really","nope"]},
 
     {"input": ["don't ask\Z"],
