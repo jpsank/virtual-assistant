@@ -292,6 +292,8 @@ RESPONSES = [
      "reply": ['I have no favorite <eval>self.match.group(1)</eval>',"I don't like to play favorites, NN"]},
 
     # HELP
+    {"input": ["help(?: on| for|) (?!me)(.+)"],
+     "reply": ["<eval>self.toolBox.getHelp(self.match.group(1))</eval>"]},
     {"input": [".*help",".+(should|can) i ask you",".*i (should|can) ask you"],
      "reply": ["<eval>self.toolBox.getHelp()</eval>"]},
 
@@ -464,7 +466,7 @@ for i in range(num):
      "reply": (["It's ","The year is ","It's the year of "],"<eval>time.asctime().split()[4]</eval>",", NN")},
 
     # EMAIL
-    {"input": [".*(check|show|display).* (mail|gmail|email)"],
+    {"input": [".*(check|show|display).* (mail|gmail|email|inbox)"],
      "reply": ("<eval>self.toolBox.doCheckMail()</eval>")},
     {"input": [".*send (?:an |)email to (.+)","email (.+)"],
      "reply": ["<eval>self.toolBox.doSendMail(self.match.group(1))</eval>"]},

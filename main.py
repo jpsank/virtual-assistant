@@ -639,11 +639,18 @@ class toolBox:
             webbrowser.open("https://xkcd.com/%s" % number)
             return random.choice(["Here's comic number %s" % number,"Opening comic number %s..." % number])
 
-    def getHelp(self):
+    def getHelp(self,key=None):
         with open("help.json", "r") as f:
             helpData = json.load(f)
-        for term, descrip in helpData.items():
-            print("{}: {}".format(term, descrip))
+        if key is None:
+            print("Here's what I can do:")
+            colspan = len(max(helpData,key=lambda k: len(k)))
+            for term, descrip in helpData.items():
+                print("{} - {}".format(term+" "*(colspan-len(term)), descrip))
+        elif key in helpData:
+            print("{}: {}".format(key, helpData[key]))
+        else:
+            print("No help entry for '{}'".format(key))
 
     def sendEmail(self, from_addr, to_addr_list, cc_addr_list, subject, message, login, password, smtpserver='smtp.gmail.com:587'):
         header = 'From: %s\nTo: %s\nCc: %s\nSubject: %s\n' % (from_addr,', '.join(to_addr_list),', '.join(cc_addr_list),subject)
