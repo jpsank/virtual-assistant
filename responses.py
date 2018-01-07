@@ -82,7 +82,7 @@ RESPONSES = [
     {"input": ["(?:it's|what|today's).* (a|an) (good|fine|great|amazing|wonderful|beautiful|terrific|awesome|nice) day"],
      "reply": ["If it were <eval>self.match.group(1)</eval> <eval>self.match.group(2)</eval> day I would know, NN",
                "<eval>self.match.group(1).title()</eval> <eval>self.match.group(2)</eval> day indeed, NN"]},
-    {"input": ["(.* %s\Z|%s)" % (s,s) for s in syn("hello")],
+    {"input": [r".*\b%s\b" % s for s in syn("hello")],
      "reply": (['hello','what up','howdy','hi','salutations','greetings',"hiya","hey"],", NN")},
 
     {"input": ["thanks","thank you","thanks you","my thanks"],
@@ -167,7 +167,7 @@ RESPONSES = [
      "reply": ["I have never tried <eval>self.match.group(1)</eval> before","I like whatever you like, NN","It depends, NN"]},
     {"input": ["read (.+)","say (.+)"],
      "reply": ["<eval>self.match.group(1)</eval>"]},
-    {"input": [".*copycat",".*copy cat"],
+    {"input": [".*copycat",".*copy cat","stop copying me"],
      "reply": ["<eval>self.text</eval>"]},
     {"input": [".*prank me"],
      "reply": (["Will do, NN","I would never","Don't give me any ideas"],["<eval>webbrowser.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ')</eval>","<eval>webbrowser.open('http://www.nyan.cat')</eval>"])},
@@ -182,6 +182,20 @@ RESPONSES = [
     {"input": [".*is (.+) (?:a palindrome|palindromic)",".*(.+) is (?:a palindrome|palindromic)",
                ".*is (.+) spelled the same (?:backward.*forward|forward.*backward)"],
      "reply": ["<eval>self.toolBox.doCheckPalindrome(self.match.group(1))</eval>"]},
+
+    # REMINDERS
+    {"input": [".*(?:add|make|create) reminder (.+)",".*add (.+) to my (?:reminders|todo|to-do)",".*remind me to (.+)"],
+     "reply": ["<eval>self.toolBox.addReminder(self.match.group(1))</eval>"]},
+    {"input": [".*add (?:a |)reminder"],
+     "reply": ["<eval>self.toolBox.addReminder()</eval>"]},
+    {"input": [".*(?:remove|delete) reminder (\d+)"],
+     "reply": ["<eval>self.toolBox.removeReminder(self.match.group(1))</eval>"]},
+    {"input": [".*(?:remove|delete) a reminder"],
+     "reply": ["<eval>self.toolBox.removeReminder()</eval>"]},
+    {"input": [".*(?:remove|delete)(?: all|) my reminders"],
+     "reply": ["<eval>self.toolBox.removeAllReminders()</eval>"]},
+    {"input": [".*my reminders","remind me"],
+     "reply": ["<eval>self.toolBox.listReminders()</eval>"]},
 
     # CHECK CONTACT INFO
     # str
@@ -424,6 +438,8 @@ for i in range(num):
      "reply": ["<eval>webbrowser.open('https://www.google.com/search?q=%s&tbm=vid' % self.match.group(1))</eval>"]},
     {"input": ["google (.+)","look up (.+)","search .*for (.+)"],
      "reply": ["<eval>self.toolBox.googleIt(self.match.group(1))</eval>"]},
+    {"input": [r".*\bsearch the web"],
+     "reply": ["<eval>self.toolBox.googleIt()</eval>"]},
 
     # dictionary stuff
     {"input": ["define (.+)",".+definition of (.+)",".+meaning of (.+)",".+ does (.+) mean"],
@@ -556,7 +572,7 @@ for i in range(num):
      "reply": ["A<eval>self.match.group(1)</eval>h"]},
 
     # laughing
-    {"input": [r"ha+\b","xd\Z","funny","lol"],
+    {"input": [r"(ha)+\b","xd\Z","funny","lol"],
      "reply": ["It's not funny, NN"]},
 
     # dude

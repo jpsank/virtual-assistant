@@ -47,7 +47,7 @@ if os.path.exists(currentDir+"/preferences.json"):
         PREFERENCES = json.load(f)
 else:
     print("Generating preferences...")
-    PREFERENCES = {"contacts":[default_contact], "mtime":mtime}
+    PREFERENCES = {"contacts":[default_contact], "mtime":mtime, "reminders":[]}
     # User initiation
     print("Welcome to virtual-assistant setup, friend")
     CONTACTS = PREFERENCES["contacts"]
@@ -78,10 +78,13 @@ with open(currentDir+"/preferences.json", "w") as f:
 CONTACTS = PREFERENCES["contacts"]
 
 
-def save_contacts():
-    PREFERENCES["contacts"] = CONTACTS
+def save_preferences():
     with open(currentDir + "/preferences.json", "w") as f:
         json.dump(PREFERENCES, f)
+
+def save_contacts():
+    PREFERENCES["contacts"] = CONTACTS
+    save_preferences()
 
 
 def printColumns(data):
@@ -848,9 +851,56 @@ class toolBox:
                 else:
                     print("Cancelled")
 
-    def googleIt(self,search):
+    def googleIt(self,search=None):
+        if search is None:
+            search = self.promptANY("Search the web for what?")
         webbrowser.open("https://www.google.com/search?q=%s" % search)
         return random.choice(["googling %s" % search,"searching for %s" % search, "accessing interwebs", "okay, NN, I'll google that"])
+
+    def addReminder(self,reminder=None):
+        if reminder is None:
+            reminder = self.promptANY("What should I add to your reminders? ")
+        if self.promptYN("Add '%s' to your reminders? " % reminder):
+            PREFERENCES["reminders"].append(reminder)
+            save_preferences()
+            return "I've added that to your reminders"
+        else:
+            return "I won't add that to your reminders"
+
+    def removeReminder(self,index=None):
+        if len(PREFERENCES["reminders"]) == 0:
+            return "No reminders to remove"
+        if index is not None:
+            index = int(index)
+            if not 0 <= index < len(PREFERENCES["reminders"]):
+                return "You do not have that many reminders"
+        else:
+            index = self.promptLIST(PREFERENCES["reminders"],"Which reminder to remove? (or 'cancel')",cancel="cancel")
+            if index is False:
+                return "Cancelled"
+        reminder = PREFERENCES["reminders"][index]
+        if self.promptYN("Remove '%s' from your reminders? " % reminder):
+            del PREFERENCES["reminders"][index]
+            save_preferences()
+            return "I've deleted your reminder '%s'" % reminder
+        else:
+            return "Okay, I won't remove that reminder"
+
+    def removeAllReminders(self):
+        if self.promptYN("Remove all reminders? "):
+            PREFERENCES["reminders"] = []
+            save_preferences()
+            return "I've deleted all your reminders"
+        else:
+            return "Okay, I won't remove your reminders"
+
+    def listReminders(self):
+        if PREFERENCES["reminders"]:
+            print("Here are your reminders:")
+            for i,r in enumerate(PREFERENCES["reminders"]):
+                print("%s. %s" % (i, r))
+        else:
+            return "You have no reminders, NN"
 
     def personLookup(self,name):
         name = re.sub(r"\?+\Z","",name)
@@ -1039,7 +1089,7 @@ class toolBox:
                             else:
                                 item = CONTACTS[contactNum][key][prompt]
                     elif action is 'add':
-                        item = self.promptANY("What to add?",cancel="cancel")
+                        item = self.promptANY("Enter new item:", cancel="cancel")
                         if item is False:
                             return "Cancelled"
                     elif action is 'update':
