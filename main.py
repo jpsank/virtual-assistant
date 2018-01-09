@@ -68,7 +68,7 @@ if os.path.exists(currentDir+'/response_data.p') and mtime == float(PREFERENCES[
 else:
     print("Generating response data...")
     from responses import RESPONSES
-    with open('response_data.p','wb') as f:
+    with open(currentDir + '/response_data.p','wb') as f:
         pickle.dump(RESPONSES,f)
     PREFERENCES["mtime"] = mtime
 
