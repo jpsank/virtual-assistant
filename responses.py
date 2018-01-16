@@ -82,8 +82,6 @@ RESPONSES = [
     {"input": ["(?:it's|what|today's).* (a|an) (good|fine|great|amazing|wonderful|beautiful|terrific|awesome|nice) day"],
      "reply": ["If it were <eval>self.match.group(1)</eval> <eval>self.match.group(2)</eval> day I would know, NN",
                "<eval>self.match.group(1).title()</eval> <eval>self.match.group(2)</eval> day indeed, NN"]},
-    {"input": [r".*\b%s\b" % s for s in syn("hello")],
-     "reply": (['hello','what up','howdy','hi','salutations','greetings',"hiya","hey"],", NN")},
 
     {"input": ["thanks","thank you","thanks you","my thanks"],
      "reply": ["You're welcome","So you finally thanked me for all my service, did you?","No problem, NN"]},
@@ -516,6 +514,9 @@ for i in range(num):
      "reply": ["<eval>self.toolBox.whatIsLookup(self.match.group(1))</eval>"]},
 
     # JUST IN CASE
+
+    {"input": [r".*\b%s\b" % s for s in syn("hello")],
+     "reply": (['hello','what up','howdy','hi','salutations','greetings',"hiya","hey"],", NN")},
 
     {"input": [".*why not"],
      "reply": ["because I said not"]},

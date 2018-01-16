@@ -643,7 +643,7 @@ class toolBox:
             return random.choice(["Here's comic number %s" % number,"Opening comic number %s..." % number])
 
     def getHelp(self,key=None):
-        with open("help.json", "r") as f:
+        with open(currentDir+"/help.json", "r") as f:
             helpData = json.load(f)
         if key is None:
             print("Here's what I can do:")
@@ -667,6 +667,22 @@ class toolBox:
         return problems
 
     def doSendMail(self,to=None):
+        emails = CONTACTS[0]["EMAILS"]
+        if emails:
+            if len(emails) == 1:
+                from_addr = emails[0]
+            else:
+                prompt = self.promptLIST(emails, "Choose the from address (or 'cancel')", cancel="cancel")
+                if prompt is False:
+                    return "Cancelled"
+                else:
+                    from_addr = emails[prompt]
+        else:
+            prompt = self.promptANY("From address: ")
+            if re.match("(.+)@(.+)\.(.+)", prompt) is None:
+                return "Email address '%s' invalid. Cancelled" % prompt
+            from_addr = prompt
+
         if to is None:
             to = input("To whom? ")
         index = self.parseContactString(to)
@@ -688,17 +704,6 @@ class toolBox:
         if re.match("(.+)@(.+)\.(.+)",to) is None:
             return "Email address '%s' invalid. Cancelled" % to
 
-        emails = CONTACTS[0]["EMAILS"]
-        from_addr = ""
-        if emails:
-            if len(emails) == 1:
-                from_addr = emails[0]
-            else:
-                prompt = self.promptLIST(emails, "Choose the from address (or 'cancel')",cancel="cancel")
-                if prompt is False:
-                    return "Cancelled"
-                else:
-                    from_addr = emails[prompt]
         password = getpass.getpass("Login to your email %s. Password: " % from_addr)
         print("MESSAGE")
         print("From: %s" % from_addr)
@@ -755,16 +760,20 @@ class toolBox:
 
     def doCheckMail(self):
         emails = CONTACTS[0]["EMAILS"]
-        username = ""
         if emails:
             if len(emails) == 1:
                 username = emails[0]
             else:
-                prompt = self.promptLIST(emails, "Choose the from address (or 'cancel')", cancel="cancel")
+                prompt = self.promptLIST(emails, "Choose the address to check (or 'cancel')", cancel="cancel")
                 if prompt is False:
                     return "Cancelled"
                 else:
                     username = emails[prompt]
+        else:
+            prompt = self.promptANY("Email address: ")
+            if re.match("(.+)@(.+)\.(.+)",prompt) is None:
+                return "Email address '%s' invalid. Cancelled" % prompt
+            username = prompt
         password = getpass.getpass("Login to %s. Password: " % username)
         messages = self.checkMail(username,password)
         if messages is not None:
