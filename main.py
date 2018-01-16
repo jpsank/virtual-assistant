@@ -643,7 +643,7 @@ class toolBox:
             return random.choice(["Here's comic number %s" % number,"Opening comic number %s..." % number])
 
     def getHelp(self,key=None):
-        with open("help.json", "r") as f:
+        with open(currentDir + "/help.json", "r") as f:
             helpData = json.load(f)
         if key is None:
             print("Here's what I can do:")
