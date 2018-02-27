@@ -49,6 +49,8 @@ if os.path.exists(currentDir+"/preferences.json"):
 else:
     print("Generating preferences...")
     PREFERENCES = {"contacts":[default_contact], "mtime":mtime, "reminders":[],"musicDir":""}
+    if platform.system() == "Darwin":
+        PREFERENCES += {"afplay":False}
     # User initiation
     print("Welcome to virtual-assistant setup, friend")
     CONTACTS = PREFERENCES["contacts"]
@@ -393,9 +395,10 @@ class toolBox:
             os.system("osascript -e 'tell Application \"iTunes\" to play previous track'")
 
     def musicControl(self, cmd):
-        global afplay
-        if cmd == "pause" and afplay:
-            afplay = False
+        if cmd == "pause" and PREFERENCES["afplay"]:
+            with open(currentDir+"/preferences.json","w") as f:
+                PREFERENCES["afplay"] = False
+                json.dump(PREFERENCES, f)
             return "Music set to pause"
 
         if platform.system() == "Linux":
@@ -448,13 +451,17 @@ class toolBox:
                 break
 
     def playSongMac(self, song):
-        global afplay
         self.musicControlMac("pause")
-        afplay = True
         p = subprocess.Popen(["afplay", song])
-        while self.processCheck(p) and afplay:
+        with open(currentDir + "/preferences.json", "w") as f:
+            PREFERENCES["afplay"] = True
+            json.dump(PREFERENCES, f)
+        while self.processCheck(p) and PREFERENCES["afplay"]:
             time.sleep(0.5)
-        p.kill()
+        try:
+            p.kill()
+        except:
+            os.system("killall afplay")
 
     def processCheck(self, process):
         if process.returncode is None:
