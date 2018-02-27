@@ -6,8 +6,6 @@ import math
 import random
 import webbrowser
 import platform
-if platform.system() == "Windows":
-    import winsound
 import re
 import os
 import subprocess
@@ -15,6 +13,7 @@ import html
 import threading
 import pickle
 import argparse
+import glob
 
 import smtplib
 import imaplib
@@ -23,7 +22,8 @@ import getpass
 
 import requests
 from bs4 import BeautifulSoup
-
+if platform.system() == "Windows":
+    import winsound
 
 home = os.path.expanduser("~")
 
@@ -47,7 +47,7 @@ if os.path.exists(currentDir+"/preferences.json"):
         PREFERENCES = json.load(f)
 else:
     print("Generating preferences...")
-    PREFERENCES = {"contacts":[default_contact], "mtime":mtime, "reminders":[]}
+    PREFERENCES = {"contacts":[default_contact], "mtime":mtime, "reminders":[],"musicDir":""}
     # User initiation
     print("Welcome to virtual-assistant setup, friend")
     CONTACTS = PREFERENCES["contacts"]
@@ -76,7 +76,6 @@ with open(currentDir+"/preferences.json", "w") as f:
     json.dump(PREFERENCES,f)
 
 CONTACTS = PREFERENCES["contacts"]
-
 
 def save_preferences():
     with open(currentDir + "/preferences.json", "w") as f:
@@ -407,6 +406,40 @@ class toolBox:
             return "Playing next track"
         elif cmd == "previous":
             return "Playing previous track"
+
+    def browseMusic(self, song):
+        if PREFERENCES["musicDir"] is "":
+            musicDir = input("Where is your music directory located?\nIf you want to browse your folders, type 'gui'")
+            if musicDir == "gui":
+                import tkinter as tk
+                from tkinter import filedialog
+
+                root = tk.Tk()
+                root.withdraw()
+
+                musicDir = filedialog.askopenfilename()
+            else:
+                musicDir = musicDir.replace("~", home)
+            with open(currentDir+"/preferences.json","w") as f:
+                PREFERENCES["musicDir"] = musicDir
+                json.dump(PREFERENCES, f)
+        musicDir = PREFERENCES["musicDir"]
+        songs = []
+        for root, dirs, files in os.walk(musicDir):
+            for name in files:
+                if name.endswith("mp3"):
+                    songs.append(root+"/"+name)
+        for i in songs:
+            if song.lower() in i.lower():
+                i = i.replace(" ", "\\ ").replace("(","\\(").replace(")","\\)")
+                if platform.system() == "Darwin":
+                    os.system("osascript -e 'tell Application \"iTunes\" to play track \"{}\"'".format(i))
+                elif platform.system() == "Linux":
+                        os.system("rhythmbox-client --play-uri=" + i)
+                else:
+                    return "Sorry, your platform isn't supported yet"
+                break
+
 
     def volumeControl(self, volume):
         if not re.match("(\d+(\.\d+|))",volume) or int(volume) > 100 or int(volume) < 0:

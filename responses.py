@@ -49,6 +49,8 @@ def regex_syn(word,amount=10):
 # ["hi","hello","howdy"] checks if any of the strings match the input
 # ["hi|hello|howdy","what's up"] - you can also use regex in the strings (https://docs.python.org/3/library/re.html)
 
+# All inputs must be lower case to work.
+
 RESPONSES = [
     # CONVERSATION
     {"input": [".*(you're (a|an)|you) (%s)" % regex_syn('idiot')],
@@ -386,12 +388,14 @@ for i in range(num):
      "reply": "<eval>self.toolBox.musicControl('play')</eval>"},
     {"input": [".*(?:stop|turn off|end|freeze|break|halt|kill|suspend|cease).* (?:track|song|music)"],
      "reply": "<eval>self.toolBox.musicControl('pause')</eval>"},
+    {"input": ["play (.+)"],
+     "reply":"<eval>self.toolBox.browseMusic(self.match.group(1))</eval>"},
 
     #volume control
     {"input": [".*(?:set |)volume(?: to|) (\d+(\.\d+|))"],
      "reply": "<eval>self.toolBox.volumeControl(self.match.group(1))</eval>"},
 
-    # reddit
+    # redditmusicTes
     {"input": [".*reddit for (.+)",".*reddit (.+)"],
      "reply": ['''<eval>self.toolBox.redditLookup(self.match.group(1))</eval>''']},
     {"input": ["(find|look up|look for|show me|open) (.+) on reddit"],
