@@ -395,7 +395,8 @@ class toolBox:
             os.system("osascript -e 'tell Application \"iTunes\" to play previous track'")
 
     def musicControl(self, cmd):
-        if cmd == "pause" and PREFERENCES["afplay"]:
+        if cmd == "pause" and PREFERENCES["afplay"] is not False:
+            subprocess.call(["kill", str(PREFERENCES["afplay"])])
             with open(currentDir+"/preferences.json","w") as f:
                 PREFERENCES["afplay"] = False
                 json.dump(PREFERENCES, f)
@@ -445,6 +446,7 @@ class toolBox:
                     Thread(target=self.playSongMac, args=(i.replace("\\",""),)).start()
                     return "Now playing {}".format(i.split("/")[-1].split(".")[0].replace("\\",""))
                 elif platform.system() == "Linux":
+                    #TODO switch to subprocess call to avoid i.replacing
                         os.system("rhythmbox-client --play-uri=" + i)
                 else:
                     return "Sorry, your platform isn't supported yet"
@@ -454,14 +456,18 @@ class toolBox:
         self.musicControlMac("pause")
         p = subprocess.Popen(["afplay", song])
         with open(currentDir + "/preferences.json", "w") as f:
-            PREFERENCES["afplay"] = True
+            PREFERENCES["afplay"] = p.pid
             json.dump(PREFERENCES, f)
+
+        global singo
+        if singo:
+            exit(0)
         while self.processCheck(p) and PREFERENCES["afplay"]:
             time.sleep(0.5)
         try:
             p.kill()
         except:
-            os.system("killall afplay")
+            os.system("kill {}".format(PREFERENCES["afplay"]))
 
     def processCheck(self, process):
         if process.returncode is None:
@@ -1376,12 +1382,15 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("cmd", nargs='*', type=str, default="", help="Run a single command instead of a session.")
     args = parser.parse_args()
+    global singo
+    singo = False
 
     args.cmd = " ".join(args.cmd)
 
     assistant = VirtAssistant()
 
     if len(args.cmd) > 0:
+        singo = True
         rep = assistant.reply(args.cmd)
         if rep is not '': print(rep)
     else:
