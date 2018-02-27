@@ -395,12 +395,13 @@ class toolBox:
             os.system("osascript -e 'tell Application \"iTunes\" to play previous track'")
 
     def musicControl(self, cmd):
-        if cmd == "pause" and PREFERENCES["afplay"] is not False:
-            subprocess.call(["kill", str(PREFERENCES["afplay"])])
-            with open(currentDir+"/preferences.json","w") as f:
-                PREFERENCES["afplay"] = False
-                json.dump(PREFERENCES, f)
-            return "Music set to pause"
+        if cmd == "pause" and platform.system() == "Darwin":
+            if PREFERENCES["afplay"] is not False:
+                subprocess.call(["kill", str(PREFERENCES["afplay"])])
+                with open(currentDir+"/preferences.json","w") as f:
+                    PREFERENCES["afplay"] = False
+                    json.dump(PREFERENCES, f)
+                return "Music set to pause"
 
         if platform.system() == "Linux":
             os.system("rhythmbox-client --{}".format(cmd))
