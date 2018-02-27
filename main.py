@@ -431,9 +431,11 @@ class toolBox:
                     songs.append(root+"/"+name)
         for i in songs:
             if song.lower() in i.lower():
-                i = i.replace(" ", "\\ ").replace("(","\\(").replace(")","\\)")
+                #i = i.replace(" ", "\\ ").replace("(","\\(").replace(")","\\)")
                 if platform.system() == "Darwin":
-                    os.system("osascript -e 'tell Application \"iTunes\" to play track \"{}\"'".format(i))
+                    print("osascript -e 'tell Application \"iTunes\" to play track \"{}\"'".format(
+                        i.split("/")[-1].split(".")[0].replace("01 ","")))
+                    os.system("osascript -e 'tell Application \"iTunes\" to play track \"{}\"'".format(i.split("/")[-1].split(".")[0]))
                 elif platform.system() == "Linux":
                         os.system("rhythmbox-client --play-uri=" + i)
                 else:
