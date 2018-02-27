@@ -14,6 +14,7 @@ import threading
 import pickle
 import argparse
 import glob
+from threading import Thread
 
 import smtplib
 import imaplib
@@ -392,6 +393,11 @@ class toolBox:
             os.system("osascript -e 'tell Application \"iTunes\" to play previous track'")
 
     def musicControl(self, cmd):
+        global afplay
+        if cmd == "pause" and afplay:
+            afplay = False
+            return "Music set to pause"
+
         if platform.system() == "Linux":
             os.system("rhythmbox-client --{}".format(cmd))
         elif platform.system() == "Darwin":
@@ -431,18 +437,29 @@ class toolBox:
                     songs.append(root+"/"+name)
         for i in songs:
             if song.lower() in i.lower():
-                i = i.replace(" ", "\\ ").replace("(","\\(").replace(")","\\)")
+                i = i.replace(" ", "\\ ").replace("(","\\(").replace(")","\\)").replace("\'","\\\'").replace("\"","\\\"")
                 if platform.system() == "Darwin":
-                    '''print("osascript -e 'tell Application \"iTunes\" to play track \"{}\"'".format(
-                        i.split("/")[-1].split(".")[0]))
-                    os.system("osascript -e 'tell Application \"iTunes\" to play track \"{}\"'".format(i.split("/")[-1].split(".")[0]))'''
-                    print("Place holder, support coming soon")
+                    Thread(target=self.playSongMac, args=(i.replace("\\",""),)).start()
+                    return "Now playing {}".format(i.split("/")[-1].split(".")[0].replace("\\",""))
                 elif platform.system() == "Linux":
                         os.system("rhythmbox-client --play-uri=" + i)
                 else:
                     return "Sorry, your platform isn't supported yet"
                 break
 
+    def playSongMac(self, song):
+        global afplay
+        self.musicControlMac("pause")
+        afplay = True
+        p = subprocess.Popen(["afplay", song])
+        while self.processCheck(p) and afplay:
+            time.sleep(0.5)
+        p.kill()
+
+    def processCheck(self, process):
+        if process.returncode is None:
+            return True
+        return False
 
     def volumeControl(self, volume):
         if not re.match("(\d+(\.\d+|))",volume) or int(volume) > 100 or int(volume) < 0:
