@@ -442,19 +442,17 @@ class toolBox:
                     songs.append(root+"/"+name)
         for i in songs:
             if song.lower() in i.lower():
-                i = i.replace(" ", "\\ ").replace("(","\\(").replace(")","\\)").replace("\'","\\\'").replace("\"","\\\"")
                 if platform.system() == "Darwin":
-                    Thread(target=self.playSongMac, args=(i.replace("\\",""),)).start()
-                    return "Now playing {}".format(i.split("/")[-1].split(".")[0].replace("\\",""))
+                    Thread(target=self.playSongMac, args=(i,)).start()
+                    return "Now playing {}".format(i.split("/")[-1].split(".")[0])
                 elif platform.system() == "Linux":
-                    #TODO switch to subprocess call to avoid i.replacing
-                        os.system("rhythmbox-client --play-uri=" + i)
+                        subprocess.call(["rhythmbox-client","--play-uri={}".format(i)])
                 else:
                     return "Sorry, your platform isn't supported yet"
                 break
 
     def playSongMac(self, song):
-        self.musicControlMac("pause")
+        self.musicControl("pause")
         p = subprocess.Popen(["afplay", song])
         with open(currentDir + "/preferences.json", "w") as f:
             PREFERENCES["afplay"] = p.pid
