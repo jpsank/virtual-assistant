@@ -447,6 +447,7 @@ class toolBox:
                     return "Now playing {}".format(i.split("/")[-1].split(".")[0])
                 elif platform.system() == "Linux":
                         subprocess.call(["rhythmbox-client","--play-uri={}".format(i)])
+                        return "Now playing {}".format(i.split("/")[-1].split(".")[0])
                 else:
                     return "Sorry, your platform isn't supported yet"
                 break
