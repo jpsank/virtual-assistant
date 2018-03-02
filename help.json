@@ -12,6 +12,7 @@
   "location": "Get your current location. Ex: 'where am i?', 'what country am i in'",
   "math":"Do some math. Ex: '2+2'",
   "maps":"Check Google Maps. Ex: 'get directions to North Korea', 'where's the nearest restaurant'",
+  "music":"Play a specific song in your music library. Ex: play my cloud"
   "music control":"Control the music. Ex: 'play my music', 'pause this track', 'start the next track', 'previous track'",
   "movies":"Check local movies. Ex: 'find movies near me', 'showtimes for Justice League'",
   "news": "Open news on Google News. Ex: 'News', 'news about cats'",
