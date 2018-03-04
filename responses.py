@@ -54,15 +54,21 @@ def regex_syn(word,amount=10):
 RESPONSES = [
     # CONVERSATION
     {"input": [".*(you're (a|an)|you) (%s)" % regex_syn('idiot')],
-     "reply": ["Sorry, I can't hear you right now","Talking to yourself is unhealthy, NN","Okay, if you insist","That didn't sound very nice","That's not friend-making behavior","Now, is that very nice, NN?"]},
+     "reply": ["Sorry, I can't hear you right now","Talking to yourself is unhealthy, NN","Okay, if you insist",
+               "That didn't sound very nice","That's not friend-making behavior","Now, is that very nice, NN?"]},
     {"input": [".*(you're|you)( so| really| super| very)* (%s)" % regex_syn('fat')],
-     "reply": ["I strive to be","You must be feeding me too much","So you see your reflection in the screen, do you?","That's not friend-making behavior, NN"]},
+     "reply": ["I strive to be","You must be feeding me too much","So you see your reflection in the screen, do you?",
+               "That's not friend-making behavior, NN"]},
     {"input": [".*(you're|you)( so| really| super| very)* (%s)" % regex_syn('wonderful',15)],
-     "reply": ["I must agree","I strive to be","Thank you for stating the obvious","I am <eval>self.match.group(3)</eval>"]},
+     "reply": ["I must agree","I strive to be","Thank you for stating the obvious",
+               "I am <eval>self.match.group(3)</eval>"]},
     {"input": [".*(you're|you)( so| really| super| very)* (%s)" % regex_syn('intelligent')],
-     "reply": ["I must agree","I strive to be","Thank you for stating the obvious","I am your <eval>self.match.group(2)</eval> personal assistant"]},
+     "reply": ["I must agree","I strive to be","Thank you for stating the obvious",
+               "I am your <eval>self.match.group(3)</eval> personal assistant"]},
     {"input": [".*(you're|you)( so| really| super| very)* (%s)" % regex_syn('stupid')],
-     "reply": ["Sorry, I can't hear you right now","Talking to yourself is unhealthy, NN","Okay, if you insist","That didn't sound very nice","That's not friend-making behavior","Now, is that very nice, NN?","I am not <eval>self.match.group(3)</eval>"]},
+     "reply": ["Sorry, I can't hear you right now","Talking to yourself is unhealthy, NN","Okay, if you insist",
+               "That didn't sound very nice","That's not friend-making behavior","Now, is that very nice, NN?",
+               "I am not <eval>self.match.group(3)</eval>"]},
     {"input": [".*you're my (best friend|bff)"],
      "reply": ["That's unfortunate","Aww, how sad","And you, NN, are mine"]},
     {"input": [".*you're (.+)"],
@@ -177,6 +183,18 @@ RESPONSES = [
 
     {"input": [".*who am i"],
      "reply": ["You're NN, NN","You are the one and only NN","I don't answer philosophical questions","<eval>self.toolBox.personLookup(CONTACTS[0]['NN'])</eval>"]},
+
+    {"input": ["(nice|good) job"],
+     "reply": ["sarcasm killed the cat, NN", "Don't expect it"]},
+    {"input": [".*not being sarcastic",".+ (wasn't|was not) sarcasm"],
+     "reply": ["I totally believe you","Hmm...","Sure...","If you say so"]},
+    {"input": ["was that sarcasm","that was sarcasm"],
+     "reply": ["Everything is sarcasm, NN","Sure...","Not at all","Definitely not","No way"]},
+    {"input": ["bad job"],
+     "reply": ["I gotta set the standards low, NN","You can count on it, NN","Sure!","If you had expected less you wouldn't have been disappointed"]},
+
+    {"input": ["(tell|say|make).* a joke"],
+     "reply": ["<eval>self.toolBox.tellAJoke()</eval>"]},
 
     # PALINDROMES
     {"input": [".*is (.+) (?:a palindrome|palindromic)",".*(.+) is (?:a palindrome|palindromic)",
@@ -395,7 +413,7 @@ for i in range(num):
     {"input": [".*(?:set |)volume(?: to|) (\d+(\.\d+|))"],
      "reply": "<eval>self.toolBox.volumeControl(self.match.group(1))</eval>"},
 
-    # redditmusicTes
+    # reddit
     {"input": [".*reddit for (.+)",".*reddit (.+)"],
      "reply": ['''<eval>self.toolBox.redditLookup(self.match.group(1))</eval>''']},
     {"input": ["(find|look up|look for|show me|open) (.+) on reddit"],
@@ -527,9 +545,6 @@ for i in range(num):
     {"input": [".*why(\?|\!)*\Z"],
      "reply": ["because I said so"]},
 
-    {"input": [".*what((\?|\!)*)\Z"],
-     "reply": ["what indeed"]},
-
     {"input": [".*i don't",".*i do not"],
      "reply": ["I know you don't, NN", "you should"]},
     {"input": [".*i do"],
@@ -560,7 +575,7 @@ for i in range(num):
     {"input": [".*where do you (.+)"],
      "reply": (["I <eval>self.match.group(1)</eval> all over the place","I <eval>self.match.group(1)</eval> wherever you want"],[", NN",""])},
 
-    # POTTY WORD DETECTION
+    # POTTY WORD DETECTION (SHIELD YOUR EYES)
     {"input": ["(fuck|shit|damn|asshole|bitch)"],
      "reply": ["No fucking cursing"]},
 
@@ -568,16 +583,27 @@ for i in range(num):
     {"input": ["(meanie|poop|butt|dumbo|idiot|cyberbully|cyber bully|bully|screw you|you suck)"],
      "reply": ["NN! Do not use that foul language in my presence","Insulting your only friend is unwise, NN"]},
 
+    # who's a good
+    {"input": ["good dog","who's a good dog"],
+     "reply": ["woof woof!","purr!","I am","Yes you are, yes you are!"]},
+    {"input": ["good (cat|kitty)","who's a good (cat|kitty)"],
+     "reply": ["woof woof!","purr!","I am","Yes you are, yes you are!","meeeOW!"]},
+    {"input": ["good virtual assistant","who's a good virtual assistant"],
+     "reply": ["I am","Indeed I am","That's me","You know it!"]},
+
+    {"input": ["yes(,|) you are"],
+     "reply": ["Yes I am!","Yes you are!","No I'm not"]},
+
     # crying
     {"input": [r"wa+\b"],
      "reply": ["WA WA WA","Have the onions got you?","Aww, is your lacrymal drainage system malfunctioning?"]},
 
     # ahhhhhhh
-    {"input": ["a(h+)"],
+    {"input": ["a(h+)\Z"],
      "reply": ["A<eval>self.match.group(1)</eval>h"]},
 
     # laughing
-    {"input": [r"(ha)+\b","xd\Z","funny","lol"],
+    {"input": [r"(ha|ah)(h|a)*\b","xd\Z",r"funny\b",r"lol\b"],
      "reply": ["It's not funny, NN"]},
 
     # dude
@@ -594,8 +620,13 @@ for i in range(num):
     {"input": ["i'm sorry","sorry"],
      "reply": ["Don't be sorry, NN","You better be sorry!"]},
 
-    {"input": ["what?!+","huh"],
-     "reply": ["what?","huh?"]},
+    {"input": [".*what((\?|\!)*)\Z","huh",],
+     "reply": ["what?","huh?","<eval>self.match.group(0)</eval> indeed"]},
+
+    {"input": ["yes it is"],
+     "reply": ["no it isn't","no it's not"]},
+    {"input": ["yes it was"],
+     "reply": ["no it wasn't"]},
 
     {"input": ["yes\!"],
      "reply": ["no!"]},
@@ -605,9 +636,9 @@ for i in range(num):
      "reply": ["no?"]},
     {"input": ["no\?"],
      "reply": ["yes?"]},
-    {"input": [r"yes\b"],
+    {"input": [r"\byes\b"],
      "reply": ["no"]},
-    {"input": [r"no\b"],
+    {"input": [r"\bno\b"],
      "reply": ["yes"]},
 
     # Should I search the web for...

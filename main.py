@@ -48,9 +48,9 @@ if os.path.exists(currentDir+"/preferences.json"):
         PREFERENCES = json.load(f)
 else:
     print("Generating preferences...")
-    PREFERENCES = {"contacts":[default_contact], "mtime":mtime, "reminders":[],"musicDir":""}
+    PREFERENCES = {"contacts":[default_contact], "mtime":mtime, "reminders":[], "musicDir": None}
     if platform.system() == "Darwin":
-        PREFERENCES += {"afplay":False}
+        PREFERENCES.update({"afplay":False})
     # User initiation
     print("Welcome to virtual-assistant setup, friend")
     CONTACTS = PREFERENCES["contacts"]
@@ -141,6 +141,13 @@ class toolBox:
                 winsound.Beep(400*m, int(beatlength * 2))
         else:
             print("Sorry, I can only sing on Windows computers")
+
+    def tellAJoke(self):
+        r = requests.get("https://www.reddit.com/r/cleanjokes.json?t=month&limit=100",headers={"user-agent":userAgent})
+        j = r.json()
+        jokes = ["{}\n{}".format(i["data"]["title"],i["data"]["selftext"]) for i in j["data"]["children"]]
+        return random.choice(jokes)
+
 
     def checkPalindrome(self,word):
         if word[::-1] == word:
@@ -398,9 +405,8 @@ class toolBox:
         if cmd == "pause" and platform.system() == "Darwin":
             if PREFERENCES["afplay"] is not False:
                 subprocess.call(["kill", str(PREFERENCES["afplay"])])
-                with open(currentDir+"/preferences.json","w") as f:
-                    PREFERENCES["afplay"] = False
-                    json.dump(PREFERENCES, f)
+                PREFERENCES["afplay"] = False
+                save_preferences()
                 return "Music set to pause"
 
         if platform.system() == "Linux":
@@ -419,9 +425,9 @@ class toolBox:
             return "Playing previous track"
 
     def browseMusic(self, song):
-        if PREFERENCES["musicDir"] is "":
-            musicDir = input("Where is your music directory located?\nIf you want to browse your folders, type 'gui'")
-            if musicDir == "gui":
+        if PREFERENCES["musicDir"] is None:
+            musicDir = self.promptANY("Please enter the location of your music directory (return to cancel, type 'browse' to browse)")
+            if musicDir == "browse":
                 import tkinter as tk
                 from tkinter import filedialog
 
@@ -429,35 +435,35 @@ class toolBox:
                 root.withdraw()
 
                 musicDir = filedialog.askopenfilename()
+                root.quit()
             else:
                 musicDir = musicDir.replace("~", home)
-            with open(currentDir+"/preferences.json","w") as f:
-                PREFERENCES["musicDir"] = musicDir
-                json.dump(PREFERENCES, f)
+            if musicDir is "":
+                return "Cancelled"
+            PREFERENCES["musicDir"] = musicDir
+            save_preferences()
         musicDir = PREFERENCES["musicDir"]
         songs = []
         for root, dirs, files in os.walk(musicDir):
             for name in files:
                 if name.endswith("mp3"):
                     songs.append(root+"/"+name)
-        for i in songs:
-            if song.lower() in i.lower():
+        for s in songs:
+            if song.lower() in s.lower():
                 if platform.system() == "Darwin":
-                    Thread(target=self.playSongMac, args=(i,)).start()
-                    return "Now playing {}".format(i.split("/")[-1].split(".")[0])
+                    Thread(target=self.playSongMac, args=(s,)).start()
+                    return "Now playing {}".format(s.split("/")[-1].split(".")[0])
                 elif platform.system() == "Linux":
-                        subprocess.call(["rhythmbox-client","--play-uri={}".format(i)])
-                        return "Now playing {}".format(i.split("/")[-1].split(".")[0])
+                    subprocess.call(["rhythmbox-client","--play-uri={}".format(s)])
+                    return "Now playing {}".format(s.split("/")[-1].split(".")[0])
                 else:
                     return "Sorry, your platform isn't supported yet"
-                break
 
     def playSongMac(self, song):
         self.musicControl("pause")
         p = subprocess.Popen(["afplay", song])
-        with open(currentDir + "/preferences.json", "w") as f:
-            PREFERENCES["afplay"] = p.pid
-            json.dump(PREFERENCES, f)
+        PREFERENCES["afplay"] = p.pid
+        save_preferences()
 
         global singo
         if singo:
@@ -635,8 +641,6 @@ class toolBox:
         page = requests.get(choices[keys[index]])
         result = self.wikiPageScrape(page,2)
         return '\n'.join(result)
-
-
 
     def searchAmazon(self,search):
         url = "https://www.amazon.com/s?keywords=%s" % search
