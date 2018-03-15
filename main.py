@@ -455,7 +455,8 @@ class toolBox:
                     return "Now playing {}".format(s.split("/")[-1].split(".")[0])
                 elif platform.system() == "Linux":
                     subprocess.call(["rhythmbox-client","--play-uri={}".format(s)])
-                    return "Now playing {}".format(s.split("/")[-1].split(".")[0])
+                    title = subprocess.Popen(["rhythmbox-client", "--print-playing"], stdout=subprocess.PIPE).stdout.read().decode().strip()
+                    return "Now playing {}".format(title)
                 else:
                     return "Sorry, your platform isn't supported yet"
 
@@ -1366,6 +1367,10 @@ class VirtAssistant:
 
     def reply(self,text):
         text = self.text2num(self.contractify(text.lower()))
+        if " and " in text:
+            texto = text.split(" and ")
+            for i in texto:
+                self.reply(i)
         self.text = text
         for r in RESPONSES:
             self.match = None
