@@ -876,10 +876,17 @@ class toolBox:
     def appCheck(self, thing):
         opSys = platform.system()
         if opSys == "Linux":
-            if os.path.exists("/usr/bin/{}".format(thing.lower())):
-                return "/usr/bin/{}".format(thing.lower())
-            elif thing.lower() == "steam" and os.path.exists("{}/.steam/steam.sh".format(home)):
-                return "{}/.steam/steam.sh".format(home)
+            if os.path.isfile("/usr/share/applications/{}.desktop".format(thing)):
+                return thing
+            elif len(thing.split(" ")) == 1:
+                for file in os.listdir("/usr/share/applications"):
+                    if "-" in file:
+                        for i in file.split("-"):
+                            if i == thing:
+                                return file.replace(".desktop","")
+            else:
+                if len(thing.split(" ")) > 1:
+                    return self.appCheck("-".join(thing.split(" ")))
         elif opSys == "Darwin":
             if os.path.exists("/Applications/{}.app".format(thing.title())) or os.path.exists("/Applications/{}.app".format(thing)):
                 return "/Applications/{}.app".format(thing.title())
@@ -895,6 +902,7 @@ class toolBox:
                 else:
                     if thing in os.path.splitext(app)[0].lower():
                         return fullpath
+        return None
 
     def openSomething(self,thing):
         if os.path.exists(r'"%s"' % thing):
@@ -909,7 +917,7 @@ class toolBox:
             if appcheck is not None:
                 opSys = platform.system()
                 if opSys == "Linux":
-                    threading.Thread(target=lambda: subprocess.call(appcheck, stdout=subprocess.DEVNULL)).start()
+                    threading.Thread(target=lambda: subprocess.call(["gtk-launch",appcheck], stdout=subprocess.DEVNULL)).start()
                 elif opSys == "Darwin":
                     threading.Thread(target=lambda: subprocess.call(["/usr/bin/open","-W","-n","-a",appcheck])).start()
                 elif opSys == "Windows":
