@@ -876,15 +876,17 @@ class toolBox:
     def appCheck(self, thing):
         opSys = platform.system()
         if opSys == "Linux":
-            if os.path.isfile("/usr/share/applications/{}.desktop".format(thing)):
-                return thing
-            elif len(thing.split(" ")) == 1:
-                for file in os.listdir("/usr/share/applications"):
-                    if "-" in file:
-                        for i in file.split("-"):
-                            if i == thing:
-                                return file.replace(".desktop","")
+            for path in ["/usr/share/applications/", "{}/.local/share/applications/".format(home)]:
+                if os.path.isfile("{}{}.desktop".format(path,thing)):
+                    return thing
+                elif len(thing.split(" ")) == 1:
+                    for file in os.listdir(path):
+                        if "-" in file:
+                            for i in file.split("-"):
+                                if i.replace(".desktop","") == thing:
+                                    return file.replace(".desktop","")
             else:
+                print("well then")
                 if len(thing.split(" ")) > 1:
                     return self.appCheck("-".join(thing.split(" ")))
         elif opSys == "Darwin":
