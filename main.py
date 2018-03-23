@@ -80,6 +80,7 @@ with open(currentDir+"/preferences.json", "w") as f:
 
 CONTACTS = PREFERENCES["contacts"]
 
+
 def save_preferences():
     with open(currentDir + "/preferences.json", "w") as f:
         json.dump(PREFERENCES, f)
@@ -1310,25 +1311,53 @@ class VirtAssistant:
         current = result = 0
         stringlist = []
         onnumber = False
-        for word in textnum.split():
-            if word in numwords and not (word == 'and' and stringlist and stringlist[-1] in noAnd) and not (word == 'and' and not onnumber):
-                scale, increment = numwords[word]
-                current = current * scale + increment
-                if scale > 100:
-                    result += current
-                    current = 0
-                onnumber = True
-            elif word.isdigit():
-                scale, increment = 1,int(word)
-                current = current * scale + increment
-                if scale > 100:
-                    result += current
-                    current = 0
-                onnumber = True
+        split = re.findall(r"(\w+['.]?\w*)|\w\.\s|\w,\s|\w!\s|\w\?\s|\w;\s",textnum)
+        for i,word in enumerate(split):
+            if word in numwords and not word == "and":
+                if numwords[word][0] == 1 or (numwords[word][0] > 1 and i-1 >= 0 and split[i-1][1] in "ni"):
+                    ext = "n"
+                else:
+                    ext = "w"
+            elif word == "and":
+                if (i-1 >= 0 and split[i-1][1] == "n") and \
+                        (i+1 < len(split) and split[i+1] in numwords) and \
+                        (numwords[split[i+1]][0] < numwords[split[i-1][0]][0]):
+                    ext = "a"
+                else:
+                    ext = "w"
+            elif word.isdigit() or re.match("\d*\.\d+",word):
+                ext = "i"
             else:
+                ext = "w"
+            split[i] = [word,ext]
+
+        for i,word in enumerate(split):
+            if word[1] in "nai":
+                if word[1] == "i":
+                    scale, increment = 1, float(word[0])
+                else:
+                    scale, increment = numwords[word[0]]
+
+                lastscale, lastinc = None, None
+                if i-1 >= 0 and split[i-1][1] in "ni":
+                    if split[i-1][1] == "i":
+                        lastscale, lastinc = 1,float(split[i-1][0])
+                    else:
+                        lastscale, lastinc = numwords[split[i-1][0]]
+
+                if lastinc and lastscale and lastinc < 20 and increment < 20 and lastscale == scale == 1:
+                    stringlist.append(repr(current))
+                    current = increment
+                else:
+                    current = current * scale + increment
+                    if scale > 100:
+                        result += current
+                        current = 0
+                onnumber = True
+            elif word[1] == "w":
                 if onnumber:
                     stringlist.append(repr(result + current))
-                stringlist.append(word)
+                stringlist.append(word[0])
                 result = current = 0
                 onnumber = False
 
@@ -1339,11 +1368,11 @@ class VirtAssistant:
 
     def contractify(self,text):
         dictionary = {
-            " was":"'s",
-            " is":"'s",
-            " were":"'re",
-            " are":"'re",
-            " did":"'d"
+            " was":  "'s",
+            " is":   "'s",
+            " were": "'re",
+            " are":  "'re",
+            " did":  "'d"
         }
         regex = r"(\w+)(%s) " % "|".join([d for d in dictionary])
         for m in re.finditer(regex,text):
@@ -1375,17 +1404,19 @@ class VirtAssistant:
             return self.process_reply(random.choice(text_blueprint))
         return text_blueprint
 
-    def reply(self,text):
-        text = self.text2num(self.contractify(text.lower()))
-        if " and " in text:
-            texto = text.split(" and ")
-            for i in texto:
-                self.reply(i)
-        self.text = text
+    def reply(self,text,oneline=False):
+        text = self.text2num(self.contractify(text))
+        if " and " in text and oneline:
+            texts = text.split(" and ")
+            replies = []
+            for t in texts:
+                self.text = t
+                replies.append(self.reply(t))
+            return "\n".join(replies)
         for r in RESPONSES:
             self.match = None
             for choice in r["input"]:
-                self.match = re.match(choice,text)
+                self.match = re.match(choice,text,re.IGNORECASE)
                 if self.match is not None:
                     try:
                         rep = ''.join(self.process_reply(r["reply"]))
@@ -1394,7 +1425,6 @@ class VirtAssistant:
                         string = random.choice(["Offline, connection failed","It looks like you're offline, NN",
                                                 "I could not connect to the interwebs, NN","Connection failed"])
                         return self.replaceify(string)
-        return None
 
 
 if __name__ == '__main__':
@@ -1410,7 +1440,7 @@ if __name__ == '__main__':
 
     if len(args.cmd) > 0:
         singo = True
-        rep = assistant.reply(args.cmd)
+        rep = assistant.reply(args.cmd, oneline=True)
         if rep is not '': print(rep)
     else:
         while True:

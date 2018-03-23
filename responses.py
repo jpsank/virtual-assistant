@@ -196,6 +196,14 @@ RESPONSES = [
     {"input": ["(tell|say|make).* a joke"],
      "reply": ["<eval>self.toolBox.tellAJoke()</eval>"]},
 
+    # who's a good
+    {"input": ["good dog","who's a good dog"],
+     "reply": ["woof woof!","purr!","I am","Yes you are, yes you are!"]},
+    {"input": ["good (cat|kitty)","who's a good (cat|kitty)"],
+     "reply": ["woof woof!","purr!","I am","Yes you are, yes you are!","meeeOW!"]},
+    {"input": ["good virtual assistant","who's a good virtual assistant"],
+     "reply": ["I am","Indeed I am","That's me","You know it!"]},
+
     # PALINDROMES
     {"input": [".*is (.+) (?:a palindrome|palindromic)",".*(.+) is (?:a palindrome|palindromic)",
                ".*is (.+) spelled the same (?:backward.*forward|forward.*backward)"],
@@ -582,14 +590,6 @@ for i in range(num):
     # VARIOUS INSULTS (sorry in advance for my potty language)
     {"input": ["(meanie|poop|butt|dumbo|idiot|cyberbully|cyber bully|bully|screw you|you suck)"],
      "reply": ["NN! Do not use that foul language in my presence","Insulting your only friend is unwise, NN"]},
-
-    # who's a good
-    {"input": ["good dog","who's a good dog"],
-     "reply": ["woof woof!","purr!","I am","Yes you are, yes you are!"]},
-    {"input": ["good (cat|kitty)","who's a good (cat|kitty)"],
-     "reply": ["woof woof!","purr!","I am","Yes you are, yes you are!","meeeOW!"]},
-    {"input": ["good virtual assistant","who's a good virtual assistant"],
-     "reply": ["I am","Indeed I am","That's me","You know it!"]},
 
     {"input": ["yes(,|) you are"],
      "reply": ["Yes I am!","Yes you are!","No I'm not"]},
