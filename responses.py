@@ -416,6 +416,8 @@ for i in range(num):
      "reply": "<eval>self.toolBox.musicControl('pause')</eval>"},
     {"input": ["play (.+)"],
      "reply":"<eval>self.toolBox.browseMusic(self.match.group(1))</eval>"},
+    {"input":["what(\'|)s playing", "song is this", "this song"],
+     "reply":"Currently Playing: <eval>self.toolBox.getCurrentSong()</eval>"},
 
     #volume control
     {"input": [".*(?:set |)volume(?: to|) (\d+(\.\d+|))"],

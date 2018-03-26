@@ -425,6 +425,14 @@ class toolBox:
         elif cmd == "previous":
             return "Playing previous track"
 
+    def getCurrentSong(self):
+        if platform.system() == "Linux":
+            title = subprocess.Popen(["rhythmbox-client", "--print-playing"],
+                                     stdout=subprocess.PIPE).stdout.read().decode().strip()
+            return "{}".format(title)
+        else:
+            return "Sorry, your platform doesn't support this feature"
+
     def browseMusic(self, song):
         if PREFERENCES["musicDir"] is None:
             musicDir = self.promptANY("Please enter the location of your music directory (return to cancel, type 'browse' to browse)")
@@ -456,8 +464,7 @@ class toolBox:
                     return "Now playing {}".format(s.split("/")[-1].split(".")[0])
                 elif platform.system() == "Linux":
                     subprocess.call(["rhythmbox-client","--play-uri={}".format(s)])
-                    title = subprocess.Popen(["rhythmbox-client", "--print-playing"], stdout=subprocess.PIPE).stdout.read().decode().strip()
-                    return "Now playing {}".format(title)
+                    return "Now playing "+self.getCurrentSong()
                 else:
                     return "Sorry, your platform isn't supported yet"
 
