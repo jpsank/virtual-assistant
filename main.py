@@ -70,7 +70,10 @@ if os.path.exists(currentDir+'/response_data.p') and mtime == float(PREFERENCES[
         RESPONSES = pickle.load(f)
 else:
     print("Generating response data...")
-    os.remove(currentDir+"/response_data.p")
+    try:
+        os.remove(currentDir+"/response_data.p")
+    except:
+        pass
     from responses import RESPONSES
     with open(currentDir + '/response_data.p','wb') as f:
         pickle.dump(RESPONSES,f)
