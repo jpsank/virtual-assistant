@@ -895,14 +895,18 @@ class toolBox:
                                 if i.replace(".desktop","") == thing:
                                     return file.replace(".desktop","")
             else:
-                print("well then")
                 if len(thing.split(" ")) > 1:
                     return self.appCheck("-".join(thing.split(" ")))
         elif opSys == "Darwin":
-            if os.path.exists("/Applications/{}.app".format(thing.title())) or os.path.exists("/Applications/{}.app".format(thing)):
-                return "/Applications/{}.app".format(thing.title())
-            elif os.path.exists("/Applications/Utilities/{}.app".format(thing)) or os.path.exists("/Applications/Utilities/{}.app".format(thing.title())):
-                return "/Applications/Utilities/{}.app".format(thing.title())
+            if os.path.exists("/Applications/{}.app".format(thing)):
+                return thing
+            if len(thing.split(" "))==1:
+                for i in thing.split(" "):
+                    for x in os.listdir("/Applications"):
+                        for z in x.split(" "):
+                            if z.lower().replace(".app","") == i:
+                                return x
+            return thing
         elif opSys == "Windows":
             for app in os.listdir(r"C:\ProgramData\Microsoft\Windows\Start Menu\Programs"):
                 fullpath = os.path.join("C:\ProgramData\Microsoft\Windows\Start Menu\Programs",app)
@@ -929,10 +933,10 @@ class toolBox:
                 opSys = platform.system()
                 if opSys == "Linux":
                     threading.Thread(target=lambda: subprocess.call(["gtk-launch",appcheck], stdout=subprocess.DEVNULL)).start()
-                elif opSys == "Darwin":
-                    threading.Thread(target=lambda: subprocess.call(["/usr/bin/open","-W","-n","-a",appcheck])).start()
                 elif opSys == "Windows":
                     subprocess.Popen('"%s"' % appcheck,shell=True)
+                elif opSys == "Darwin":
+                    threading.Thread(target=lambda: subprocess.call(["/usr/bin/open", "-a", appcheck])).start()
 
                 print("Attempting to open {}".format(appcheck))
             else:
