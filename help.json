@@ -14,6 +14,7 @@
   "maps":"Check Google Maps. Ex: 'get directions to North Korea', 'where's the nearest restaurant'",
   "music":"Play a specific song in your music library. Ex: play my cloud",
   "music control":"Control the music. Ex: 'play my music', 'pause this track', 'start the next track', 'previous track'",
+  "music query":"What song is playing? (Linux Exclusive)",
   "movies":"Check local movies. Ex: 'find movies near me', 'showtimes for Justice League'",
   "news": "Open news on Google News. Ex: 'News', 'news about cats'",
   "open":"Open a website, file, or application. Ex: 'go to google.com', 'open Steam'",

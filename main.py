@@ -70,6 +70,7 @@ if os.path.exists(currentDir+'/response_data.p') and mtime == float(PREFERENCES[
         RESPONSES = pickle.load(f)
 else:
     print("Generating response data...")
+    os.remove(currentDir+"/response_data.p")
     from responses import RESPONSES
     with open(currentDir + '/response_data.p','wb') as f:
         pickle.dump(RESPONSES,f)
@@ -954,6 +955,12 @@ class toolBox:
             search = self.promptANY("Search the web for what?")
         webbrowser.open("https://www.google.com/search?q=%s" % search)
         return random.choice(["googling %s" % search,"searching for %s" % search, "accessing interwebs", "okay, NN, I'll google that"])
+
+    def duckIt(self, search=None):
+        if search is None:
+            search = self.promptANY("Search the web for what?")
+        webbrowser.open("https://duckduckgo.com/?q={}".format(search))
+        return random.choice(["Searching Duck Duck Go for {}".format(search), "Ducking it!", "Searching for {}".format(search)])
 
     def addReminder(self,reminder=None):
         if reminder is None:

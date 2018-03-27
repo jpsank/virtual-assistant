@@ -471,6 +471,12 @@ for i in range(num):
     {"input": [r".*\bsearch the web"],
      "reply": ["<eval>self.toolBox.googleIt()</eval>"]},
 
+    #duck it
+    {"input": ["duck (.+)"],
+     "reply": ["<eval>self.toolBox.duckIt(self.match.group(1))</eval>"]},
+    {"input": ["duck"],
+     "reply": ["<eval>self.toolBox.duckIt()</eval>"]},
+
     # dictionary stuff
     {"input": ["define (.+)",".+definition of (.+)",".+meaning of (.+)",".+ does (.+) mean"],
      "reply": "<eval>self.toolBox.getDefinition(re.sub(r'[\W]', ' ', self.match.group(1)))</eval>"},
