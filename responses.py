@@ -39,11 +39,18 @@ def regex_syn(word,amount=10):
     else:
         return word
 
+
+floatregex = r"([+-]?(?:[0-9]+(?:\.[0-9]*)?|[0-9]*\.[0-9]+)(?:E\+[0-9]+)?)"
+mathbeforefloat = r"((?:the )?(?:sqrt|square root|cube root|cosine|cos|sine|sin|tangent|tan)(?: of)?\s)?"
+mathoperations = r"\+|plus|\*|times|multiplied by|\-|minus|\/|divided by|over|\*\*|\^|to the power of"
+mathafterfloat = r"(?:(?:\ssquared)?(?:\s(?:{})\s{})?)+".format(mathoperations, mathbeforefloat+floatregex)
+
 # GUIDE TO EDITING:
 
 # FOR REPLY:
 # ("something"," does"," something") to concatenate (output is "something does something")
 # ["something","something else","another thing"] to randomly choose or for replies accept any
+# e.g. (["that ","this "],["cat ","dog ","guy "],[["eats","enjoys","attacks"],["ate","enjoyed","attacked"]]," children")
 
 # FOR INPUT:
 # ["hi","hello","howdy"] checks if any of the strings match the input
@@ -338,9 +345,9 @@ RESPONSES = [
      "reply": ["<eval>self.toolBox.getHelp()</eval>"]},
 
     # MATH
-    {"input": [".*?(([+-]?(?:\d+(?:\.\d*)?|\d*\.\d+))(?: *(?:\+|plus|\*|times|multiplied by|\-|minus|\/|divided by|over|\*\*|\^|to the power of) *([+-]?(?:\d+(?:\.\d*)?|\d*\.\d+)))+)"],
-     "reply": ("<eval>print('%s = %s' %self.toolBox.basicMath(self.match.group(1)))</eval>")},
-    {"input": [".*(?:sqrt|square root)(?: of)? ([+-]?(?:\d+(?:\.\d*)?|\d*\.\d+))"],
+    {"input": [".*?({}{}{})".format(mathbeforefloat,floatregex,mathafterfloat)],
+     "reply": ("<eval>print('%s = %s' % self.toolBox.basicMath(self.match.group(1)))</eval>")},
+    {"input": [".*(?:sqrt|square root)(?: of)? {}".format(floatregex)],
      "reply": ("<eval>print('The square root of %s is %s' %(self.match.group(1),math.sqrt(float(self.match.group(1)))))</eval>")},
 
     # RANDOM DECISIONS
@@ -652,7 +659,7 @@ for i in range(num):
     # Should I search the web for...
 
     {"input": [r".*?(\b(how|where|when|what)( to| do|'s|'re| does|) .+)",r".*\b(why( do|'re|'s) .+)",
-               r".*\b((?:is|are) .+)",".*(do .+)"],
+               r".*\b((?:is|are) .+)",".*((do|can) .+)"],
      "reply": (["Ok then","If you say so"],'''<exec>tmp=self.match.group(1)
 if self.toolBox.promptYN(random.choice(['Should I search the web for "%s"?' % tmp,'Do web search for "%s"? ' % tmp])):
     webbrowser.open('https://www.google.com/search?q=%s' % tmp)</exec>''')},

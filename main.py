@@ -15,6 +15,7 @@ import pickle
 import argparse
 import glob
 from threading import Thread
+import decimal
 
 import smtplib
 import imaplib
@@ -30,6 +31,9 @@ home = os.path.expanduser("~")
 
 primaryCommandPrompt = '>> '
 secondaryCommandPrompt = '> '
+
+reNumIdentifier = r"[+-]?(?:[0-9]+(?:\.[0-9]*)?|[0-9]*\.[0-9]+)(?:[Ee]\+[0-9]+)?"
+reNumIdentifierNoPlus = r"-?(?:[0-9]+(?:\.[0-9]*)?|[0-9]*\.[0-9]+)(?:[Ee][+\-][0-9]+)"
 
 default_contact = {"BDAY": None, "GENDER": None, "NN": None, "FULLNAME": None, "PHONE": None, "EMAILS": []}
 
@@ -70,7 +74,6 @@ if os.path.exists(currentDir+'/response_data.p') and mtime == float(PREFERENCES[
         RESPONSES = pickle.load(f)
 else:
     print("Generating response data...")
-    os.remove(currentDir+"/response_data.p")
     from responses import RESPONSES
     with open(currentDir + '/response_data.p','wb') as f:
         pickle.dump(RESPONSES,f)
@@ -319,22 +322,41 @@ class toolBox:
             return random.choice(["Never heard of it", "I could not find sentences for %s, NN" % word])
 
     def basicMath(self,mathstr):
+        # roots = {
+        #     "**.5": "(?:the )?(?:square root of |square root |sqrt of |sqrt )",
+        #     "**(1/3)": "(?:the )?(?:cube root of |cube root )"
+        # }
+        # for r in roots:
+        #     iter = re.finditer("({}){}".format(roots[r], reNumIdentifier), mathstr)
+        #     mathstr = list(mathstr)
+        #     [mathstr.insert(m.end()+i,r) for i,m in enumerate(iter)]
+        #     mathstr = re.sub(roots[r], "", ''.join(mathstr))
         signs = {
-            "+":["plus"],
-            "-":["minus"],
-            "/":["over","divided by"],
-            "*":["times","multiplied by"],
-            "**": ["to the power of", "to the", "\^"]
+            "+": ["\s(plus)\s"],
+            "-": ["\s(minus)\s"],
+            "/": ["\s(over)\s","\s(divided by)\s"],
+            "*": ["\s(times)\s","\s(multiplied by)\s"],
+            "**": ["\s(to the power of)\s", "\s(to the)\s", "\s(\^)\s"],
+            "**2": [r"\s(squared)\b"]
         }
         for s in signs:
-            pattern = re.compile("\d+(\s*(?:%s)\s*)\d+" % '|'.join(signs[s]))
-            for m in re.finditer(pattern,mathstr):
-                match = m.group(1)
-                mathstr = mathstr.replace(match,s)
+            mathstr = re.sub("|".join(signs[s]),s,mathstr)
+        functions = {
+            r"math.cos(\2)": ["cosine of ", "cosine ", "cos of ", "cos "],
+            r"math.sin(\2)": ["sine of ", "sine ", "sin of ", "sin "],
+            r"math.tan(\2)": ["tangent of ", "tangent ", "tan of ", "tan "],
+            r"math.sqrt(\2)": ["square root of ", "square root ", "sqrt of ", "sqrt "],
+            r"(\2)**(1/3)": ["cube root of ", "cube root ", "cbrt of ", "cbrt "]
+        }
+        for f in functions:
+            while any(i in mathstr for i in functions[f]):
+                mathstr = re.sub(r"(?:the )?({})({})[)(]?".format("|".join(functions[f]),reNumIdentifier),f,mathstr)
         try:
             return mathstr, eval(mathstr)
         except NameError:
             return mathstr
+        except OverflowError as e:
+            return mathstr, e.args[1]
 
     def moviesNearMe(self):
         url = 'https://www.google.com/search?q=movies%20near%20me'
@@ -492,9 +514,9 @@ class toolBox:
         return False
 
     def volumeControl(self, volume):
-        if not re.match("(\d+(\.\d+|))",volume) or int(volume) > 100 or int(volume) < 0:
+        if not re.match("(\d+(\.\d+|))",volume) or float(volume) > 100 or float(volume) < 0:
             return "Invalid volume input. Please set volume to a number between 0 and 100."
-        volume = int(volume)
+        volume = float(volume)
         # TODO Linux needs testing
         if platform.system() == "Linux":
             os.system("amixer set Master {}%".format(volume))
@@ -1303,6 +1325,11 @@ class VirtAssistant:
         self.text = None
         self.toolBox = toolBox()
 
+    def float_to_str(self,f):
+        # dec = decimal.Context(prec=100).create_decimal(str(f))
+        # return '{0:.{prec}f}'.format(dec,prec=20,).rstrip('0').rstrip('.') or '0'
+        return str(f)
+
     def text2num(self, textnum, numwords={}):
         if not numwords:
             units = [
@@ -1319,19 +1346,23 @@ class VirtAssistant:
             for idx, word in enumerate(tens):    numwords[word] = (1, idx * 10)
             for idx, word in enumerate(scales):  numwords[word] = (10 ** (idx * 3 or 2), 0)
 
-        noAnd = ['between','from']
+        # noAnd = ['between','from']
 
-        pattern = re.compile("(?<=[a-zA-Z])+(-)(?=[a-zA-Z])+")
-        textnum = re.sub(pattern, ' ', textnum)
+        # pattern = re.compile("(?<=[a-zA-Z])+(-)(?=[a-zA-Z])+")
+        # textnum = re.sub(pattern, ' ', textnum)
 
-        pattern = re.compile("(?!\s)(-)(?!\s)")
-        textnum = re.sub(pattern,' - ',textnum)
+        # pattern = re.compile("(?!\s)(-)(?!\s)")
+        # textnum = re.sub(pattern,' - ',textnum)
 
         current = result = 0
         stringlist = []
         onnumber = False
-        split = re.findall(r"(\w+['.]?\w*)|\w\.\s|\w,\s|\w!\s|\w\?\s|\w;\s",textnum)
-        for i,word in enumerate(split):
+        puncs = '|'.join([r"\w\%s\s" % p for p in ".,!?;)("])
+        symbols = "|".join(["\{0}+\s?".format(s) for s in "*/+"])
+        symbols += r"|\-+\s|(?<=\d)\-+(?=\d)"
+        split = re.findall(r"({}\s?|{}|{}|\w+['.]?\w*\s?)".format(reNumIdentifierNoPlus,puncs,symbols),textnum)
+        for i,origw in enumerate(split):
+            word = origw.strip()
             if word in numwords and not word == "and":
                 if numwords[word][0] == 1 or (numwords[word][0] > 1 and i-1 >= 0 and split[i-1][1] in "ni"):
                     ext = "n"
@@ -1344,18 +1375,20 @@ class VirtAssistant:
                     ext = "a"
                 else:
                     ext = "w"
-            elif word.isdigit() or re.match("\d*\.\d+",word):
+            elif word.isdigit() or re.match(reNumIdentifier,word):
                 ext = "i"
             else:
                 ext = "w"
             split[i] = [word,ext]
 
-        for i,word in enumerate(split):
-            if word[1] in "nai":
-                if word[1] == "i":
-                    scale, increment = 1, float(word[0])
+        for i,origw in enumerate(split):
+            word = origw[0]
+            ext = origw[1]
+            if ext in "nai":
+                if ext == "i":
+                    scale, increment = 1, float(word)
                 else:
-                    scale, increment = numwords[word[0]]
+                    scale, increment = numwords[word]
 
                 lastscale, lastinc = None, None
                 if i-1 >= 0 and split[i-1][1] in "ni":
@@ -1365,7 +1398,7 @@ class VirtAssistant:
                         lastscale, lastinc = numwords[split[i-1][0]]
 
                 if lastinc and lastscale and lastinc < 20 and increment < 20 and lastscale == scale == 1:
-                    stringlist.append(repr(current))
+                    stringlist.append(self.float_to_str(current) + " ")
                     current = increment
                 else:
                     current = current * scale + increment
@@ -1373,17 +1406,17 @@ class VirtAssistant:
                         result += current
                         current = 0
                 onnumber = True
-            elif word[1] == "w":
+            elif ext == "w":
                 if onnumber:
-                    stringlist.append(repr(result + current))
-                stringlist.append(word[0])
+                    stringlist.append(self.float_to_str(result + current) + " ")
+                stringlist.append(word+" ")
                 result = current = 0
                 onnumber = False
 
         if onnumber:
-            stringlist.append(repr(result + current))
+            stringlist.append(self.float_to_str(result + current) + " ")
 
-        return ' '.join(stringlist)
+        return ''.join([str(f)[:-2] if str(f).endswith(".0") else str(f) for f in stringlist])
 
     def contractify(self,text):
         dictionary = {
