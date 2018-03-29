@@ -415,14 +415,15 @@ class toolBox:
             print('Failed to find showtimes')
 
     def musicControlMac(self, cmd):
-        if cmd == "play":
-            os.system("osascript -e 'tell Application \"iTunes\" to play'")
-        elif cmd == "pause":
-            os.system("osascript -e 'tell Application \"iTunes\" to pause'")
-        elif cmd == "next":
-            os.system("osascript -e 'tell Application \"iTunes\" to play next track'")
-        elif cmd == "previous":
-            os.system("osascript -e 'tell Application \"iTunes\" to play previous track'")
+        if len(str(subprocess.call(["pgrep","iTunes"])))>0:
+            if cmd == "play":
+                os.system("osascript -e 'tell Application \"iTunes\" to play'")
+            elif cmd == "pause":
+                os.system("osascript -e 'tell Application \"iTunes\" to pause'")
+            elif cmd == "next":
+                os.system("osascript -e 'tell Application \"iTunes\" to play next track'")
+            elif cmd == "previous":
+                os.system("osascript -e 'tell Application \"iTunes\" to play previous track'")
 
     def musicControl(self, cmd):
         if cmd == "pause" and platform.system() == "Darwin":
