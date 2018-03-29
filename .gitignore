@@ -203,5 +203,6 @@ ENV/
 
 # personal info
 contacts.json
-response_data.p
 preferences.json
+
+response_data.p
