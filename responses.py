@@ -423,6 +423,8 @@ for i in range(num):
      "reply": "<eval>self.toolBox.musicControl('pause')</eval>"},
     {"input": ["play (.+)"],
      "reply":"<eval>self.toolBox.browseMusic(self.match.group(1))</eval>"},
+    {"input":["what(\'|)s playing", "song is this", "this song"],
+     "reply":"Currently Playing: <eval>self.toolBox.getCurrentSong()</eval>"},
 
     #volume control
     {"input": [".*(?:set |)volume(?: to|) (\d+(\.\d+|))"],
@@ -475,6 +477,12 @@ for i in range(num):
      "reply": ["<eval>self.toolBox.googleIt(self.match.group(1))</eval>"]},
     {"input": [r".*\bsearch the web"],
      "reply": ["<eval>self.toolBox.googleIt()</eval>"]},
+
+    #duck it
+    {"input": ["duck (.+)"],
+     "reply": ["<eval>self.toolBox.duckIt(self.match.group(1))</eval>"]},
+    {"input": ["duck"],
+     "reply": ["<eval>self.toolBox.duckIt()</eval>"]},
 
     # dictionary stuff
     {"input": ["define (.+)",".+definition of (.+)",".+meaning of (.+)",".+ does (.+) mean"],

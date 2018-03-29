@@ -70,6 +70,10 @@ if os.path.exists(currentDir+'/response_data.p') and mtime == float(PREFERENCES[
         RESPONSES = pickle.load(f)
 else:
     print("Generating response data...")
+    try:
+        os.remove(currentDir+"/response_data.p")
+    except:
+        pass
     from responses import RESPONSES
     with open(currentDir + '/response_data.p','wb') as f:
         pickle.dump(RESPONSES,f)
@@ -443,6 +447,14 @@ class toolBox:
         elif cmd == "previous":
             return "Playing previous track"
 
+    def getCurrentSong(self):
+        if platform.system() == "Linux":
+            title = subprocess.Popen(["rhythmbox-client", "--print-playing"],
+                                     stdout=subprocess.PIPE).stdout.read().decode().strip()
+            return "{}".format(title)
+        else:
+            return "Sorry, your platform doesn't support this feature"
+
     def browseMusic(self, song):
         if PREFERENCES["musicDir"] is None:
             musicDir = self.promptANY("Please enter the location of your music directory (return to cancel, type 'browse' to browse)")
@@ -474,8 +486,7 @@ class toolBox:
                     return "Now playing {}".format(s.split("/")[-1].split(".")[0])
                 elif platform.system() == "Linux":
                     subprocess.call(["rhythmbox-client","--play-uri={}".format(s)])
-                    title = subprocess.Popen(["rhythmbox-client", "--print-playing"], stdout=subprocess.PIPE).stdout.read().decode().strip()
-                    return "Now playing {}".format(title)
+                    return "Now playing "+self.getCurrentSong()
                 else:
                     return "Sorry, your platform isn't supported yet"
 
@@ -501,9 +512,9 @@ class toolBox:
         return False
 
     def volumeControl(self, volume):
-        if not re.match("(\d+(\.\d+|))",volume) or int(volume) > 100 or int(volume) < 0:
+        if not re.match("(\d+(\.\d+|))",volume) or float(volume) > 100 or float(volume) < 0:
             return "Invalid volume input. Please set volume to a number between 0 and 100."
-        volume = int(volume)
+        volume = float(volume)
         # TODO Linux needs testing
         if platform.system() == "Linux":
             os.system("amixer set Master {}%".format(volume))
@@ -908,10 +919,15 @@ class toolBox:
                 if len(thing.split(" ")) > 1:
                     return self.appCheck("-".join(thing.split(" ")))
         elif opSys == "Darwin":
-            if os.path.exists("/Applications/{}.app".format(thing.title())) or os.path.exists("/Applications/{}.app".format(thing)):
-                return "/Applications/{}.app".format(thing.title())
-            elif os.path.exists("/Applications/Utilities/{}.app".format(thing)) or os.path.exists("/Applications/Utilities/{}.app".format(thing.title())):
-                return "/Applications/Utilities/{}.app".format(thing.title())
+            if os.path.exists("/Applications/{}.app".format(thing)):
+                return thing
+            if len(thing.split(" "))==1:
+                for i in thing.split(" "):
+                    for x in os.listdir("/Applications"):
+                        for z in x.split(" "):
+                            if z.lower().replace(".app","") == i:
+                                return x
+            return thing
         elif opSys == "Windows":
             for app in os.listdir(r"C:\ProgramData\Microsoft\Windows\Start Menu\Programs"):
                 fullpath = os.path.join("C:\ProgramData\Microsoft\Windows\Start Menu\Programs",app)
@@ -938,10 +954,10 @@ class toolBox:
                 opSys = platform.system()
                 if opSys == "Linux":
                     threading.Thread(target=lambda: subprocess.call(["gtk-launch",appcheck], stdout=subprocess.DEVNULL)).start()
-                elif opSys == "Darwin":
-                    threading.Thread(target=lambda: subprocess.call(["/usr/bin/open","-W","-n","-a",appcheck])).start()
                 elif opSys == "Windows":
                     subprocess.Popen('"%s"' % appcheck,shell=True)
+                elif opSys == "Darwin":
+                    threading.Thread(target=lambda: subprocess.call(["/usr/bin/open", "-a", appcheck])).start()
 
                 print("Attempting to open {}".format(appcheck))
             else:
@@ -964,6 +980,12 @@ class toolBox:
             search = self.promptANY("Search the web for what?")
         webbrowser.open("https://www.google.com/search?q=%s" % search)
         return random.choice(["googling %s" % search,"searching for %s" % search, "accessing interwebs", "okay, NN, I'll google that"])
+
+    def duckIt(self, search=None):
+        if search is None:
+            search = self.promptANY("Search the web for what?")
+        webbrowser.open("https://duckduckgo.com/?q={}".format(search))
+        return random.choice(["Searching Duck Duck Go for {}".format(search), "Ducking it!", "Searching for {}".format(search)])
 
     def addReminder(self,reminder=None):
         if reminder is None:
