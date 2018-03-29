@@ -470,7 +470,8 @@ class toolBox:
                     return "Sorry, your platform isn't supported yet"
 
     def playSongMac(self, song):
-        self.musicControl("pause")
+        if len(str(subprocess.call(["pgrep","iTunes"]))) > 0:
+            self.musicControl("pause")
         p = subprocess.Popen(["afplay", song])
         PREFERENCES["afplay"] = p.pid
         save_preferences()
