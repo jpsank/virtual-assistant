@@ -344,12 +344,6 @@ RESPONSES = [
     {"input": [".*help",".+(should|can) i ask you",".*i (should|can) ask you"],
      "reply": ["<eval>self.toolBox.getHelp()</eval>"]},
 
-    # MATH
-    {"input": [".*?({}{}{})".format(mathbeforefloat,floatregex,mathafterfloat)],
-     "reply": ("<eval>print('%s = %s' % self.toolBox.basicMath(self.match.group(1)))</eval>")},
-    {"input": [".*(?:sqrt|square root)(?: of)? {}".format(floatregex)],
-     "reply": ("<eval>print('The square root of %s is %s' %(self.match.group(1),math.sqrt(float(self.match.group(1)))))</eval>")},
-
     # RANDOM DECISIONS
     {"input": [".*number between (\d+) and (\d+)",".*pick a number from (\d+) to (\d+)"],
      "reply": (["it's ","that would be "],"<eval>str(random.randint(int(self.match.group(1)),int(self.match.group(2))))</eval>")},
@@ -359,6 +353,12 @@ RESPONSES = [
      "reply": (["it's ","rolling... it's ","OK, it's "],"<eval>str(random.randint(1,int(self.match.group(1))))</eval>",[" this time",""])},
     {"input": ["roll a (?:die|dice)"],
      "reply": (["it's ","rolling... it's ","OK, it's "],"<eval>str(random.randint(1,6))</eval>",[" this time",""])},
+
+    # MATH
+    {"input": [".*?({}{}{})".format(mathbeforefloat,floatregex,mathafterfloat)],
+     "reply": ("<eval>print('%s = %s' % self.toolBox.basicMath(self.match.group(1)))</eval>")},
+    {"input": [".*(?:sqrt|square root)(?: of)? {}".format(floatregex)],
+     "reply": ("<eval>print('The square root of %s is %s' %(self.match.group(1),math.sqrt(float(self.match.group(1)))))</eval>")},
 
     # TIMER/COUNTDOWN
     {"input": [".*(countdown|count down from (\d+))"],
