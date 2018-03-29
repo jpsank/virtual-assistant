@@ -13,9 +13,7 @@ import html
 import threading
 import pickle
 import argparse
-import glob
 from threading import Thread
-import decimal
 
 import smtplib
 import imaplib
@@ -74,6 +72,7 @@ if os.path.exists(currentDir+'/response_data.p') and mtime == float(PREFERENCES[
         RESPONSES = pickle.load(f)
 else:
     print("Generating response data...")
+    if os.path.exists(currentDir + '/response_data.p'): os.rmdir(currentDir + '/response_data.p')
     from responses import RESPONSES
     with open(currentDir + '/response_data.p','wb') as f:
         pickle.dump(RESPONSES,f)
@@ -492,8 +491,7 @@ class toolBox:
                     return "Sorry, your platform isn't supported yet"
 
     def playSongMac(self, song):
-        if len(str(subprocess.call(["pgrep","iTunes"]))) > 0:
-            self.musicControl("pause")
+        self.musicControl("pause")
         p = subprocess.Popen(["afplay", song])
         PREFERENCES["afplay"] = p.pid
         save_preferences()
@@ -1326,8 +1324,6 @@ class VirtAssistant:
         self.toolBox = toolBox()
 
     def float_to_str(self,f):
-        # dec = decimal.Context(prec=100).create_decimal(str(f))
-        # return '{0:.{prec}f}'.format(dec,prec=20,).rstrip('0').rstrip('.') or '0'
         s = str(f)
         if s.endswith(".0"): s = s[:-2]
         return s
