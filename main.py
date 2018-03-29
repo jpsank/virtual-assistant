@@ -15,6 +15,7 @@ import pickle
 import argparse
 import glob
 from threading import Thread
+import decimal
 
 import smtplib
 import imaplib
@@ -30,6 +31,9 @@ home = os.path.expanduser("~")
 
 primaryCommandPrompt = '>> '
 secondaryCommandPrompt = '> '
+
+reNumIdentifier = r"[+-]?(?:[0-9]+(?:\.[0-9]*)?|[0-9]*\.[0-9]+)(?:[Ee]\+[0-9]+)?"
+reNumIdentifierNoPlus = r"-?(?:[0-9]+(?:\.[0-9]*)?|[0-9]*\.[0-9]+)(?:[Ee][+\-][0-9]+)"
 
 default_contact = {"BDAY": None, "GENDER": None, "NN": None, "FULLNAME": None, "PHONE": None, "EMAILS": []}
 
@@ -70,10 +74,6 @@ if os.path.exists(currentDir+'/response_data.p') and mtime == float(PREFERENCES[
         RESPONSES = pickle.load(f)
 else:
     print("Generating response data...")
-    try:
-        os.remove(currentDir+"/response_data.p")
-    except:
-        pass
     from responses import RESPONSES
     with open(currentDir + '/response_data.p','wb') as f:
         pickle.dump(RESPONSES,f)
@@ -322,13 +322,12 @@ class toolBox:
             return random.choice(["Never heard of it", "I could not find sentences for %s, NN" % word])
 
     def basicMath(self,mathstr):
-        numre = r"([+-]?(?:[0-9]+(?:\.[0-9]*)?|[0-9]*\.[0-9]+))"
         # roots = {
         #     "**.5": "(?:the )?(?:square root of |square root |sqrt of |sqrt )",
         #     "**(1/3)": "(?:the )?(?:cube root of |cube root )"
         # }
         # for r in roots:
-        #     iter = re.finditer("({}){}".format(roots[r], numre), mathstr)
+        #     iter = re.finditer("({}){}".format(roots[r], reNumIdentifier), mathstr)
         #     mathstr = list(mathstr)
         #     [mathstr.insert(m.end()+i,r) for i,m in enumerate(iter)]
         #     mathstr = re.sub(roots[r], "", ''.join(mathstr))
@@ -351,11 +350,13 @@ class toolBox:
         }
         for f in functions:
             while any(i in mathstr for i in functions[f]):
-                mathstr = re.sub(r"(?:the )?({})({})[)(]?".format("|".join(functions[f]),numre),f,mathstr)
+                mathstr = re.sub(r"(?:the )?({})({})[)(]?".format("|".join(functions[f]),reNumIdentifier),f,mathstr)
         try:
             return mathstr, eval(mathstr)
         except NameError:
             return mathstr
+        except OverflowError as e:
+            return mathstr, e.args[1]
 
     def moviesNearMe(self):
         url = 'https://www.google.com/search?q=movies%20near%20me'
@@ -1323,6 +1324,11 @@ class VirtAssistant:
         self.text = None
         self.toolBox = toolBox()
 
+    def float_to_str(self,f):
+        # dec = decimal.Context(prec=100).create_decimal(str(f))
+        # return '{0:.{prec}f}'.format(dec,prec=20,).rstrip('0').rstrip('.') or '0'
+        return str(f)
+
     def text2num(self, textnum, numwords={}):
         if not numwords:
             units = [
@@ -1339,7 +1345,7 @@ class VirtAssistant:
             for idx, word in enumerate(tens):    numwords[word] = (1, idx * 10)
             for idx, word in enumerate(scales):  numwords[word] = (10 ** (idx * 3 or 2), 0)
 
-        noAnd = ['between','from']
+        # noAnd = ['between','from']
 
         # pattern = re.compile("(?<=[a-zA-Z])+(-)(?=[a-zA-Z])+")
         # textnum = re.sub(pattern, ' ', textnum)
@@ -1353,7 +1359,7 @@ class VirtAssistant:
         puncs = '|'.join([r"\w\%s\s" % p for p in ".,!?;)("])
         symbols = "|".join(["\{0}+\s?".format(s) for s in "*/+"])
         symbols += r"|\-+\s|(?<=\d)\-+(?=\d)"
-        split = re.findall(r"({}|{}|\w+['.]?\w*\s?|-?\d*\.?\d+\s?)".format(puncs,symbols),textnum)
+        split = re.findall(r"({}\s?|{}|{}|\w+['.]?\w*\s?)".format(reNumIdentifierNoPlus,puncs,symbols),textnum)
         for i,origw in enumerate(split):
             word = origw.strip()
             if word in numwords and not word == "and":
@@ -1368,7 +1374,7 @@ class VirtAssistant:
                     ext = "a"
                 else:
                     ext = "w"
-            elif word.isdigit() or re.match("\d*\.\d+",word):
+            elif word.isdigit() or re.match(reNumIdentifier,word):
                 ext = "i"
             else:
                 ext = "w"
@@ -1391,7 +1397,7 @@ class VirtAssistant:
                         lastscale, lastinc = numwords[split[i-1][0]]
 
                 if lastinc and lastscale and lastinc < 20 and increment < 20 and lastscale == scale == 1:
-                    stringlist.append(repr(current) + " ")
+                    stringlist.append(self.float_to_str(current) + " ")
                     current = increment
                 else:
                     current = current * scale + increment
@@ -1401,13 +1407,13 @@ class VirtAssistant:
                 onnumber = True
             elif ext == "w":
                 if onnumber:
-                    stringlist.append(repr(result + current) + " ")
+                    stringlist.append(self.float_to_str(result + current) + " ")
                 stringlist.append(word+" ")
                 result = current = 0
                 onnumber = False
 
         if onnumber:
-            stringlist.append(repr(result + current))
+            stringlist.append(self.float_to_str(result + current) + " ")
 
         return ''.join([str(f)[:-2] if str(f).endswith(".0") else str(f) for f in stringlist])
 

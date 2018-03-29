@@ -40,7 +40,7 @@ def regex_syn(word,amount=10):
         return word
 
 
-floatregex = r"([+-]?(?:\d+(?:\.\d*)?|\d*\.\d+))"
+floatregex = r"([+-]?(?:[0-9]+(?:\.[0-9]*)?|[0-9]*\.[0-9]+)(?:E\+[0-9]+)?)"
 mathbeforefloat = r"((?:the )?(?:sqrt|square root|cube root|cosine|cos|sine|sin|tangent|tan)(?: of)?\s)?"
 mathoperations = r"\+|plus|\*|times|multiplied by|\-|minus|\/|divided by|over|\*\*|\^|to the power of"
 mathafterfloat = r"(?:(?:\ssquared)?(?:\s(?:{})\s{})?)+".format(mathoperations, mathbeforefloat+floatregex)
@@ -54,7 +54,7 @@ mathafterfloat = r"(?:(?:\ssquared)?(?:\s(?:{})\s{})?)+".format(mathoperations, 
 
 # FOR INPUT:
 # ["hi","hello","howdy"] checks if any of the strings match the input
-# ["hi|hello|howdy","what's up"] - you can also use regex in the strings (https://docs.python.org/3/library/re.html)v
+# ["hi|hello|howdy","what's up"] - you can also use regex in the strings (https://docs.python.org/3/library/re.html)
 
 # All inputs must be lower case to work.
 
