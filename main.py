@@ -33,7 +33,7 @@ primaryCommandPrompt = '>> '
 secondaryCommandPrompt = '> '
 
 reNumIdentifier = r"[+-]?(?:[0-9]+(?:\.[0-9]*)?|[0-9]*\.[0-9]+)(?:[Ee]\+[0-9]+)?"
-reNumIdentifierNoPlus = r"-?(?:[0-9]+(?:\.[0-9]*)?|[0-9]*\.[0-9]+)(?:[Ee][+\-][0-9]+)"
+reNumIdentifierNoPlus = r"-?(?:[0-9]*\.[0-9]+|[0-9]+(?:\.[0-9]*)?)(?:[Ee][+\-][0-9]+)?"
 
 default_contact = {"BDAY": None, "GENDER": None, "NN": None, "FULLNAME": None, "PHONE": None, "EMAILS": []}
 
@@ -1328,7 +1328,9 @@ class VirtAssistant:
     def float_to_str(self,f):
         # dec = decimal.Context(prec=100).create_decimal(str(f))
         # return '{0:.{prec}f}'.format(dec,prec=20,).rstrip('0').rstrip('.') or '0'
-        return str(f)
+        s = str(f)
+        if s.endswith(".0"): s = s[:-2]
+        return s
 
     def text2num(self, textnum, numwords={}):
         if not numwords:
