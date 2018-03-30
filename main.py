@@ -1415,7 +1415,9 @@ class VirtAssistant:
         if onnumber:
             stringlist.append(self.float_to_str(result + current) + " ")
 
-        return ''.join([str(f)[:-2] if str(f).endswith(".0") else str(f) for f in stringlist])
+        string = ''.join(stringlist)
+
+        return string[:-1] if string.endswith(" ") else string
 
     def contractify(self,text):
         dictionary = {

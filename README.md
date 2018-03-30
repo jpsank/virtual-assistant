@@ -45,7 +45,7 @@ And much more!
 
 You can also type ```help``` and it'll display all of its features.
 
-Virtual-assistant is also 100% mobile compatible! Install in on Pythonista on iOS or whatever Android uses!
+Virtual-assistant is also mostly mobile compatible! Install in on Pythonista on iOS or whatever Android uses!
 
 ## Contribution
 You can contribute by opening issues and reporting bugs, and you can also help by making pull requests to improve or add new dialog and features. I welcome anything that could help make your virtual assistant better.
