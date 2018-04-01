@@ -30,8 +30,23 @@ home = os.path.expanduser("~")
 primaryCommandPrompt = '>> '
 secondaryCommandPrompt = '> '
 
-reNumIdentifier = r"[+-]?(?:[0-9]+(?:\.[0-9]*)?|[0-9]*\.[0-9]+)(?:[Ee]\+[0-9]+)?"
-reNumIdentifierNoPlus = r"-?(?:[0-9]*\.[0-9]+|[0-9]+(?:\.[0-9]*)?)(?:[Ee][+\-][0-9]+)?"
+# <!-- MATH
+
+floatRegexNoPlus = r"-?(?:[0-9]*\.[0-9]+|[0-9]+(?:\.[0-9]*)?)(?:[Ee][+\-][0-9]+)?"
+floatRegex = r"[+-]?(?:[0-9]+(?:\.[0-9]*)?|[0-9]*\.[0-9]+)(?:[Ee]\+[0-9]+)?"
+
+mathBeforeFloat = r"(?:(?:the )?(?:sqrt|square root|cube root|cosine|cos|sine|sin|tangent|tan)(?: of)?\s)*"
+mathOps = r"\+|plus|\*|times|multiplied by|\-|minus|\/|divided by|over|\*\*|\^|to the power of"
+mathAfterFloat = r"(?:(?:\ssquared)?(?:\s?(?:{})\s?{}{})?)+".format(mathOps, mathBeforeFloat, floatRegex)
+
+mathFullNomial = (mathBeforeFloat + floatRegex + mathAfterFloat)
+
+mathBetweenNomials = r" and "
+mathBeforeNomialOp = "(?:the )?(?:sum|quotient|difference|difference between)(?: of)? "
+
+mathFull = "(?:{}|{})".format(mathBeforeNomialOp + mathFullNomial + mathBetweenNomials + mathFullNomial, mathFullNomial)
+
+# MATH -->
 
 default_contact = {"BDAY": None, "GENDER": None, "NN": None, "FULLNAME": None, "PHONE": None, "EMAILS": []}
 
@@ -321,15 +336,16 @@ class toolBox:
             return random.choice(["Never heard of it", "I could not find sentences for %s, NN" % word])
 
     def basicMath(self,mathstr):
-        # roots = {
-        #     "**.5": "(?:the )?(?:square root of |square root |sqrt of |sqrt )",
-        #     "**(1/3)": "(?:the )?(?:cube root of |cube root )"
-        # }
-        # for r in roots:
-        #     iter = re.finditer("({}){}".format(roots[r], reNumIdentifier), mathstr)
-        #     mathstr = list(mathstr)
-        #     [mathstr.insert(m.end()+i,r) for i,m in enumerate(iter)]
-        #     mathstr = re.sub(roots[r], "", ''.join(mathstr))
+
+        andfunctions = {
+            r"(\1)+(\2)": ["sum of ","sum "],
+            r"(\1)-(\2)": ["difference of ", "difference between ","difference "],
+            r"(\1)/(\2)": ["quotient of ","quotient "]
+        }
+        for f in andfunctions:
+            while any(i in mathstr for i in andfunctions[f]):
+                mathstr = re.sub(r"(?:the )?(?:{0})({1}){2}({1})(?=[)(])?".format("|".join(andfunctions[f]), mathFullNomial,mathBetweenNomials), f, mathstr)
+
         signs = {
             "+": ["\s(plus)\s"],
             "-": ["\s(minus)\s"],
@@ -340,6 +356,7 @@ class toolBox:
         }
         for s in signs:
             mathstr = re.sub("|".join(signs[s]),s,mathstr)
+
         functions = {
             r"math.cos(\2)": ["cosine of ", "cosine ", "cos of ", "cos "],
             r"math.sin(\2)": ["sine of ", "sine ", "sin of ", "sin "],
@@ -349,7 +366,8 @@ class toolBox:
         }
         for f in functions:
             while any(i in mathstr for i in functions[f]):
-                mathstr = re.sub(r"(?:the )?({})({})[)(]?".format("|".join(functions[f]),reNumIdentifier),f,mathstr)
+                mathstr = re.sub(r"(?:the )?({})({})(?=[)(])?".format("|".join(functions[f]),mathFullNomial),f,mathstr)
+
         try:
             return mathstr, eval(mathstr)
         except NameError:
@@ -1356,48 +1374,53 @@ class VirtAssistant:
         current = result = 0
         stringlist = []
         onnumber = False
-        puncs = '|'.join([r"\w\%s\s" % p for p in ".,!?;)("])
+        puncs = '|'.join([r"\%s\s?" % p for p in ".,!?;)(@"])
         symbols = "|".join(["\{0}+\s?".format(s) for s in "*/+"])
         symbols += r"|\-+\s|(?<=\d)\-+(?=\d)"
-        split = re.findall(r"({}\s?|{}|{}|\w+['.]?\w*\s?)".format(reNumIdentifierNoPlus,puncs,symbols),textnum)
-        for i,origw in enumerate(split):
-            word = origw.strip()
-            if word in numwords and not word == "and":
-                if numwords[word][0] == 1 or (numwords[word][0] > 1 and i-1 >= 0 and split[i-1][1] in "ni"):
+        split = re.findall(r"({}\s?|{}|{}|\w+['.]?\w*\s?)".format(floatRegexNoPlus,puncs,symbols),textnum)
+
+        class Word:
+            def __init__(self,origw):
+                self.origw = origw
+                self.w = self.origw.strip()
+                self.ext = ""
+
+        split = [Word(w) for w in split]
+        for i,word in enumerate(split):
+            if word.w in numwords and not word.w == "and":
+                if numwords[word.w][0] == 1 or (numwords[word.w][0] > 1 and i-1 >= 0 and split[i-1].ext in "ni"):
                     ext = "n"
                 else:
                     ext = "w"
             elif word == "and":
-                if (i-1 >= 0 and split[i-1][1] == "n") and \
-                        (i+1 < len(split) and split[i+1] in numwords) and \
-                        (numwords[split[i+1]][0] < numwords[split[i-1][0]][0]):
+                if (i-1 >= 0 and split[i-1].ext == "n") and \
+                        (i+1 < len(split) and split[i+1].w in numwords) and \
+                        (numwords[split[i+1].w][0] < numwords[split[i-1].w][0]):
                     ext = "a"
                 else:
                     ext = "w"
-            elif word.isdigit() or re.match(reNumIdentifier,word):
+            elif word.w.isdigit() or re.match(floatRegex,word.w):
                 ext = "i"
             else:
                 ext = "w"
-            split[i] = [word,ext]
+            split[i].ext = ext
 
-        for i,origw in enumerate(split):
-            word = origw[0]
-            ext = origw[1]
-            if ext in "nai":
-                if ext == "i":
-                    scale, increment = 1, float(word)
+        for i,word in enumerate(split):
+            if word.ext in "nai":
+                if word.ext == "i":
+                    scale, increment = 1, float(word.w)
                 else:
-                    scale, increment = numwords[word]
+                    scale, increment = numwords[word.w]
 
                 lastscale, lastinc = None, None
-                if i-1 >= 0 and split[i-1][1] in "ni":
-                    if split[i-1][1] == "i":
-                        lastscale, lastinc = 1,float(split[i-1][0])
+                if i-1 >= 0 and split[i-1].ext in "ni":
+                    if split[i-1].ext == "i":
+                        lastscale, lastinc = 1,float(split[i-1].w)
                     else:
-                        lastscale, lastinc = numwords[split[i-1][0]]
+                        lastscale, lastinc = numwords[split[i-1].w]
 
                 if lastinc and lastscale and lastinc < 20 and increment < 20 and lastscale == scale == 1:
-                    stringlist.append(self.float_to_str(current) + " ")
+                    stringlist.append(self.float_to_str(current) + (" " if word.origw.endswith(" ") else ""))
                     current = increment
                 else:
                     current = current * scale + increment
@@ -1405,19 +1428,17 @@ class VirtAssistant:
                         result += current
                         current = 0
                 onnumber = True
-            elif ext == "w":
+            elif word.ext == "w":
                 if onnumber:
-                    stringlist.append(self.float_to_str(result + current) + " ")
-                stringlist.append(word+" ")
+                    stringlist.append(self.float_to_str(result + current) + (" " if split[i-1].origw.endswith(" ") else ""))
+                stringlist.append(word.origw)
                 result = current = 0
                 onnumber = False
 
         if onnumber:
-            stringlist.append(self.float_to_str(result + current) + " ")
+            stringlist.append(self.float_to_str(result + current))
 
-        string = ''.join(stringlist)
-
-        return string[:-1] if string.endswith(" ") else string
+        return ''.join(stringlist)
 
     def contractify(self,text):
         dictionary = {

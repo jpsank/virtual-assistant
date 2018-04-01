@@ -40,10 +40,18 @@ def regex_syn(word,amount=10):
         return word
 
 
-floatregex = r"([+-]?(?:[0-9]+(?:\.[0-9]*)?|[0-9]*\.[0-9]+)(?:E\+[0-9]+)?)"
-mathbeforefloat = r"((?:the )?(?:sqrt|square root|cube root|cosine|cos|sine|sin|tangent|tan)(?: of)?\s)?"
-mathoperations = r"\+|plus|\*|times|multiplied by|\-|minus|\/|divided by|over|\*\*|\^|to the power of"
-mathafterfloat = r"(?:(?:\ssquared)?(?:\s(?:{})\s{})?)+".format(mathoperations, mathbeforefloat+floatregex)
+floatRegex = r"[+-]?(?:[0-9]+(?:\.[0-9]*)?|[0-9]*\.[0-9]+)(?:[Ee]\+[0-9]+)?"
+
+mathBeforeFloat = r"(?:(?:the )?(?:sqrt|square root|cube root|cosine|cos|sine|sin|tangent|tan)(?: of)?\s)*"
+mathOps = r"\+|plus|\*|times|multiplied by|\-|minus|\/|divided by|over|\*\*|\^|to the power of"
+mathAfterFloat = r"(?:(?:\ssquared)?(?:\s?(?:{})\s?{}{})?)+".format(mathOps, mathBeforeFloat, floatRegex)
+
+mathFullNomial = (mathBeforeFloat + floatRegex + mathAfterFloat)
+
+mathBetweenNomials = r" and "
+mathBeforeNomialOp = "(?:the )?(?:sum|quotient|difference|difference between)(?: of)? "
+
+mathFull = "(?:{}|{})".format(mathBeforeNomialOp + mathFullNomial + mathBetweenNomials + mathFullNomial, mathFullNomial)
 
 # GUIDE TO EDITING:
 
@@ -278,11 +286,10 @@ RESPONSES = [
                ".*?(?P<who>i|.+)'s (?:born on|birthed on|born) (?P<val>.+)"],
      "reply": "<eval>self.toolBox.changeContactInfoSTR(self.match.group('who'),'BDAY',self.match.group('val'))</eval>"},
 
-    {"input": [".*?(?P<who>i'm|.+'s) (?:female|a girl|a woman)",
-               ".*?(?P<who>my|.+'s) gender's female"],
+    {"input": [".*?(?P<who>my|.+'s) gender's female",
+               ".*?(?P<who>i'm|.+'s) (?:female|a girl|a woman)"],
      "reply": "<eval>self.toolBox.changeContactInfoSTR(self.match.group('who'),'GENDER','female')</eval>"},
-    {"input": [".*?(?P<who>i'm|.+'s) (?:male|a boy|a man)",
-               ".*?(?P<who>my|.+'s) gender's male"],
+    {"input": [".*?(?P<who>my|.+'s) gender's male",".*?(?P<who>i'm|.+'s) (?:male|a boy|a man)"],
      "reply": "<eval>self.toolBox.changeContactInfoSTR(self.match.group('who'),'GENDER','male')</eval>"},
 
     {"input": [".*?(?P<who>my|.+'s)(?: phone|) number(?:'s| to) (?P<val>(?:\d{3,4}(?:| |-))+)"],
@@ -355,10 +362,8 @@ RESPONSES = [
      "reply": (["it's ","rolling... it's ","OK, it's "],"<eval>str(random.randint(1,6))</eval>",[" this time",""])},
 
     # MATH
-    {"input": [".*?({}{}{})".format(mathbeforefloat,floatregex,mathafterfloat)],
+    {"input": ["(?:what's |calculate |tell me |determine |solve )?({})".format(mathFull)],
      "reply": ("<eval>print('%s = %s' % self.toolBox.basicMath(self.match.group(1)))</eval>")},
-    {"input": [".*(?:sqrt|square root)(?: of)? {}".format(floatregex)],
-     "reply": ("<eval>print('The square root of %s is %s' %(self.match.group(1),math.sqrt(float(self.match.group(1)))))</eval>")},
 
     # TIMER/COUNTDOWN
     {"input": [".*(countdown|count down from (\d+))"],
@@ -608,6 +613,10 @@ for i in range(num):
 
     {"input": ["yes(,|) you are"],
      "reply": ["Yes I am!","Yes you are!","No I'm not"]},
+
+    # celebration
+    {"input": ["yay(!*)\Z","hooray(!*)\Z"],
+     "reply": [r"self.celebrate()<eval>self.match.group(1)</eval>","yay<eval>self.match.group(1)</eval>"]},
 
     # crying
     {"input": [r"wa+\b"],
