@@ -58,7 +58,7 @@ LANGUAGES = {'malayalam': 'ml', 'telugu': 'te', 'armenian': 'hy', 'finnish': 'fi
 currentDir = os.path.dirname(os.path.realpath(__file__))
 
 mtime = os.path.getmtime(currentDir+"/responses.py")
-# Load preferences
+# Load preferences.
 if os.path.exists(currentDir+"/preferences.json"):
     # print("Fetching preferences...")
     with open(currentDir+"/preferences.json", "r") as f:
