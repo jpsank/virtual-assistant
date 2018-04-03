@@ -298,6 +298,13 @@ class toolBox:
         else:
             return "Sorry, I don't know that word."
 
+    def battery(self):
+        if platform.system() == "Darwin":
+            subprocess.call(["pmset", "-g", "batt"])
+        elif platform.system() == "Linux":
+            os.system(
+                "upower -i $(upower -e | grep BAT) | grep --color=never -E \"state|to\ full|to\ empty|percentage\"")
+
     def translate(self, text, src="en", dest="zh-TW"):
         url = "https://www.translate.com/translator/ajax_translate"
         headers = {"user-agent": userAgent}
