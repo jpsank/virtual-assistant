@@ -953,7 +953,7 @@ class toolBox:
                         for z in x.split(" "):
                             if z.lower().replace(".app","") == i:
                                 return x
-            return thing
+            return None
         elif opSys == "Windows":
             for app in os.listdir(r"C:\ProgramData\Microsoft\Windows\Start Menu\Programs"):
                 fullpath = os.path.join("C:\ProgramData\Microsoft\Windows\Start Menu\Programs",app)
