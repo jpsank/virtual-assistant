@@ -391,6 +391,9 @@ for i in range(num):
     print(num-i)
     </exec>''')},
 
+    {"input":"battery",
+     "reply":"<eval>self.toolBox.battery()</eval>"},
+
     # TERMINAL COMMANDS
     {"input": ["run (.+) in .*(terminal|command prompt|cmd|shell)","run (.+)"],
      "reply": "<exec>self.toolBox.runTerminal(self.match.group(1))</exec>"},

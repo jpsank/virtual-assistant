@@ -300,6 +300,13 @@ class toolBox:
         else:
             return "Sorry, I don't know that word."
 
+    def battery(self):
+        if platform.system() == "Darwin":
+            subprocess.call(["pmset", "-g", "batt"])
+        elif platform.system() == "Linux":
+            os.system(
+                "upower -i $(upower -e | grep BAT) | grep --color=never -E \"state|to\ full|to\ empty|percentage\"")
+
     def translate(self, text, src="en", dest="zh-TW"):
         url = "https://www.translate.com/translator/ajax_translate"
         headers = {"user-agent": userAgent}
@@ -950,7 +957,7 @@ class toolBox:
                         for z in x.split(" "):
                             if z.lower().replace(".app","") == i:
                                 return x
-            return thing
+            return None
         elif opSys == "Windows":
             for app in os.listdir(r"C:\ProgramData\Microsoft\Windows\Start Menu\Programs"):
                 fullpath = os.path.join("C:\ProgramData\Microsoft\Windows\Start Menu\Programs",app)
