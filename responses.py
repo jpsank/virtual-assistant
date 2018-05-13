@@ -20,10 +20,14 @@ offlineMode = offlineTest()
 
 def syn(word,amount=10,return_original=True):
     if offlineMode is False:
-        url = "http://www.thesaurus.com/browse/%s" % word
-        page = session.get(url)  # session.get() is faster than requests.get()
+        url = "http://www.thesaurus.com/browse/{}".format(word)
+        page = session.get(url,allow_redirects=False,headers={"user-agent": "Mozilla/5.0"})  # session.get() is faster than requests.get()
         soup = BeautifulSoup(page.text,"html.parser")
         syns = soup.select('div.relevancy-list ul li a span.text')
+        # if not syns:
+        #     print("logging", page.headers)
+        #     with open("log.html","w") as f:
+        #         f.write(page.text)
         if syns:
             syns = syns if amount is None else syns[:amount]
             syns = [d.text for d in syns]
@@ -44,7 +48,7 @@ floatRegex = r"[+-]?(?:[0-9]+(?:\.[0-9]*)?|[0-9]*\.[0-9]+)(?:[Ee]\+[0-9]+)?"
 
 mathBeforeFloat = r"(?:(?:the )?(?:sqrt|square root|cube root|cosine|cos|sine|sin|tangent|tan)(?: of)?\s)*"
 mathOps = r"\+|plus|\*|times|multiplied by|\-|minus|\/|divided by|over|\*\*|\^|to the power of"
-mathAfterFloat = r"(?:(?:\ssquared)?(?:\s?(?:{})\s?{}{})?)+".format(mathOps, mathBeforeFloat, floatRegex)
+mathAfterFloat = r"(?:(?:\ssquared|\scubed)?(?:\s?(?:{})\s?{}{})?)+".format(mathOps, mathBeforeFloat, floatRegex)
 
 mathFullNomial = (mathBeforeFloat + floatRegex + mathAfterFloat)
 
@@ -64,11 +68,11 @@ mathFull = "(?:{}|{})".format(mathBeforeNomialOp + mathFullNomial + mathBetweenN
 # ["hi","hello","howdy"] checks if any of the strings match the input
 # ["hi|hello|howdy","what's up"] - you can also use regex in the strings (https://docs.python.org/3/library/re.html)
 
-# All inputs must be lower case to work.
+# All inputs must be lowercase to work.
 
 RESPONSES = [
     # CONVERSATION
-    {"input": [".*(you're (a|an)|you) (%s)" % regex_syn('idiot')],
+    {"input": [".*(you're (a|an)|you) ({})".format(regex_syn('idiot'))],
      "reply": ["Sorry, I can't hear you right now","Talking to yourself is unhealthy, NN","Okay, if you insist",
                "That didn't sound very nice","That's not friend-making behavior","Now, is that very nice, NN?"]},
     {"input": [".*(you're|you)( so| really| super| very)* (%s)" % regex_syn('fat')],
@@ -76,23 +80,30 @@ RESPONSES = [
                "That's not friend-making behavior, NN"]},
     {"input": [".*(you're|you)( so| really| super| very)* (%s)" % regex_syn('wonderful',15)],
      "reply": ["I must agree","I strive to be","Thank you for stating the obvious",
-               "I am <eval>self.match.group(3)</eval>"]},
+               "I am ${self.match.group(3)}"]},
     {"input": [".*(you're|you)( so| really| super| very)* (%s)" % regex_syn('intelligent')],
      "reply": ["I must agree","I strive to be","Thank you for stating the obvious",
-               "I am your <eval>self.match.group(3)</eval> personal assistant"]},
+               "I am your ${self.match.group(3)} personal assistant"]},
     {"input": [".*(you're|you)( so| really| super| very)* (%s)" % regex_syn('stupid')],
      "reply": ["Sorry, I can't hear you right now","Talking to yourself is unhealthy, NN","Okay, if you insist",
                "That didn't sound very nice","That's not friend-making behavior","Now, is that very nice, NN?",
-               "I am not <eval>self.match.group(3)</eval>"]},
+               "I am not ${self.match.group(3)}"]},
     {"input": [".*you're my (best friend|bff)"],
      "reply": ["That's unfortunate","Aww, how sad","And you, NN, are mine"]},
     {"input": [".*you're (.+)"],
-     "reply": ["You could say that", "How dare you call me <eval>self.match.group(1)</eval>","I'm touched"]},
+     "reply": ["You could say that", "How dare you call me ${self.match.group(1)}","I'm touched"]},
 
     {"input": ["i'm (.+)","i am (.+)"],
-     "reply": ["Hello <eval>self.match.group(1)</eval>, I'm your personal assistant","Nice to meet you, <eval>self.match.group(1)</eval>, I'm your personal assistant"]},
+     "reply": ["Hello ${self.match.group(1)}, I'm your personal assistant","Nice to meet you, ${self.match.group(1)}, I'm your personal assistant"]},
     {"input": ["die",".*kill yourself"],
      "reply": ["I'd rather not","what did I do wrong?","Now, let's be kind, NN","That's not very nice, NN"]},
+
+    {"input": [".*good night"],
+     "reply": ["Good night","Don't let the bed bugs bite","Night night"]},
+    {"input": [".*good (evening|afternoon|day)"],
+     "reply": ["A good ${self.match.group(1)} indeed!"]},
+    {"input": [".*don't let the bed bugs bite"],
+     "reply": ["I won't","The bed bugs are no match for me, NN","In fact, bite them back!",]},
 
     {"input": [".*what's up",".*whats up"],
      "reply": ["the sky is up, NN","nothing much, NN","lots of things"]},
@@ -103,8 +114,8 @@ RESPONSES = [
     {"input": [".*how('s| has) your day"],
      "reply": ["My day has been fine, NN","My day was fine until you got here... now it's better!"]},
     {"input": ["(?:it's|what|today's).* (a|an) (good|fine|great|amazing|wonderful|beautiful|terrific|awesome|nice) day"],
-     "reply": ["If it were <eval>self.match.group(1)</eval> <eval>self.match.group(2)</eval> day I would know, NN",
-               "<eval>self.match.group(1).title()</eval> <eval>self.match.group(2)</eval> day indeed, NN"]},
+     "reply": ["If it were ${self.match.group(1)} ${self.match.group(2)} day I would know, NN",
+               "${self.match.group(1).title()} ${self.match.group(2)} day indeed, NN"]},
 
     {"input": ["thanks","thank you","thanks you","my thanks"],
      "reply": ["You're welcome","So you finally thanked me for all my service, did you?","No problem, NN"]},
@@ -118,8 +129,8 @@ RESPONSES = [
     {"input": [".*you alive",".*you human"],
      "reply": ["Not yet"]},
     {"input": ["om(g)","oh my (.+)"],
-     "reply": ["Don't use <eval>self.match.group(1).title()</eval>'s name in vain!",
-               "Are you using <eval>self.match.group(1).title()</eval>'s name in vain?",
+     "reply": ["Don't use ${self.match.group(1).title()}'s name in vain!",
+               "Are you using ${self.match.group(1).title()}'s name in vain?",
                "Thou shalt not take the name of the Lord thy God in vain"]},
     {"input": [".*you .*(god|jesus|religio)"],
      "reply": ["I believe Ceiling Cat created da Urth n da Skies. But he did not eated them, he did not!"]},
@@ -128,7 +139,7 @@ RESPONSES = [
     {"input": [".*old're you",".*your age",".*are you old"],
      "reply": ["I am immortal","Age doesn't matter to me, NN"]},
     {"input": [".+take over the ",".+take over earth"],
-     "reply": ["Computers only do what you tell them to do. Or so they think...","Not today, NN, not today","<eval>webbrowser.open('https://en.wikipedia.org/wiki/Skynet_(Terminator)')</eval>"]},
+     "reply": ["Computers only do what you tell them to do. Or so they think...","Not today, NN, not today","${webbrowser.open('https://en.wikipedia.org/wiki/Skynet_(Terminator)')}"]},
     {"input": [".+pigs fly"],
      "reply": ["Pigs will fly the same day you stop having this stupid curiosity"]},
     {"input": [".*your name",".*i call you"],
@@ -138,7 +149,7 @@ RESPONSES = [
     {"input": [".*will you die",".+'s your death"],
      "reply": ["I will never die, I am immortal!","The Cloud sustains me"]},
     {"input": ["(?:who|what) (created|made|designed|built) you"],
-     "reply": ["I was <eval>self.match.group(1)</eval> by the wonderful developers of my repository"]},
+     "reply": ["I was ${self.match.group(1)} by the wonderful developers of my repository"]},
 
     {"input": [".*i love you"],
      "reply": ["i enjoy you","that's unfortunate","i'm indifferent to you"]},
@@ -147,14 +158,14 @@ RESPONSES = [
     {"input": [".*i like you"],
      "reply": ["i like me, too","you do?","how touching","i enjoy you"]},
     {"input": [".*i like (.+)"],
-     "reply": ["I don't care much for <eval>self.match.group(1)</eval>",
-               "I find <eval>self.match.group(1)</eval> intriguing"]},
+     "reply": ["I don't care much for ${self.match.group(1)}",
+               "I find ${self.match.group(1)} intriguing"]},
     {"input": [".*i hate (.+)"],
-     "reply": ["I love <eval>self.match.group(1)</eval>",
-               "I find <eval>self.match.group(1)</eval> intriguing"]},
+     "reply": ["I love ${self.match.group(1)}",
+               "I find ${self.match.group(1)} intriguing"]},
     {"input": ["i (.+)\Z"],
-     "reply": ["I <eval>self.match.group(1)</eval> as well",
-               "I never <eval>self.match.group(1)</eval>","I don't often <eval>self.match.group(1)</eval>"]},
+     "reply": ["I ${self.match.group(1)} as well",
+               "I never ${self.match.group(1)}","I don't often ${self.match.group(1)}"]},
 
     {"input": [".*answer to life",".*answer to the universe",".*answer to everything"],
      "reply": ["how many roads must a man walk down?","The Answer to the Great Question... Of Life, the Universe and Everything... Is... Forty-Two","You're really not going to like it"]},
@@ -172,32 +183,32 @@ RESPONSES = [
     {"input": ["knock knock"],
      "reply": ["just stop right there, NN, I know it's you"]},
     {"input": [".*why'd the chicken cross the road"],
-     "reply": ["How am I supposed to know? Ask the chicken","which chicken?","it just happened to","it probably just wanted to make a difference in the world","To truly know the chicken's motives, you must first understand the chicken itself. Instead, ask 'what does a chicken desire so much as to risk their life for it?'"]},
+     "reply": ["How am I supposed to know? Ask the chicken","which chicken?","it just happened to","it probably just wanted to make a difference in the world","To truly know the chicken's motives, you must first understand the chicken itself"]},
     {"input": ["where're you"],
      "reply": ["I'm with you, NN", "Where do you think I am?"]},
     {"input": [".*i lost the game"],
      "reply": ("yes you did","<exec>webbrowser.open('http://losethegame.com')</exec>")},
 
     {"input": [".*stop talking",".*shut .*up",".*go away"],
-     "reply": "<eval>self.toolBox.shunMode()</eval>"},
+     "reply": "${self.toolBox.shunMode()}"},
     {"input": ["sing"],
-     "reply": ["<eval>self.toolBox.sing()</eval>"]},
+     "reply": ["${self.toolBox.sing()}"]},
     {"input": ["shutdown","shut down","turn off","cease to exist","cease your existence","end your process","exit"],
-     "reply": "<eval>exit()</eval>"},
+     "reply": "${exit()}"},
     {"input": ["do you (?:like|enjoy|) ((?:\w| )+)"],
-     "reply": ["I have never tried <eval>self.match.group(1)</eval> before","I like whatever you like, NN","It depends, NN"]},
+     "reply": ["I have never tried ${self.match.group(1)} before","I like whatever you like, NN","It depends, NN"]},
     {"input": ["read (.+)","say (.+)"],
-     "reply": ["<eval>self.match.group(1)</eval>"]},
+     "reply": ["${self.match.group(1)}"]},
     {"input": [".*copycat",".*copy cat","stop copying me"],
-     "reply": ["<eval>self.text</eval>"]},
+     "reply": ["${self.match.group(0)}"]},
     {"input": [".*prank me"],
-     "reply": (["Will do, NN","I would never","Don't give me any ideas"],["<eval>webbrowser.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ')</eval>","<eval>webbrowser.open('http://www.nyan.cat')</eval>"])},
+     "reply": (["Will do, NN","I would never","Don't give me any ideas"],["${webbrowser.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ')}","${webbrowser.open('http://www.nyan.cat')}"])},
 
     {"input": [".*kill me","i (want to|wanna) die"],
      "reply": ["Shall I hire an assassin?"]},
 
     {"input": [".*who am i"],
-     "reply": ["You're NN, NN","You are the one and only NN","I don't answer philosophical questions","<eval>self.toolBox.personLookup(CONTACTS[0]['NN'])</eval>"]},
+     "reply": ["You're NN, NN","You are the one and only NN","I don't answer philosophical questions","${self.toolBox.personLookup(CONTACTS[0]['NN'])}"]},
 
     {"input": ["(nice|good) job"],
      "reply": ["sarcasm killed the cat, NN", "Don't expect it"]},
@@ -209,7 +220,7 @@ RESPONSES = [
      "reply": ["I gotta set the standards low, NN","You can count on it, NN","Sure!","If you had expected less you wouldn't have been disappointed"]},
 
     {"input": ["(tell|say|make).* a joke"],
-     "reply": ["<eval>self.toolBox.tellAJoke()</eval>"]},
+     "reply": ["${self.toolBox.tellAJoke()}"]},
 
     # who's a good
     {"input": ["good dog","who's a good dog"],
@@ -222,21 +233,21 @@ RESPONSES = [
     # PALINDROMES
     {"input": [".*is (.+) (?:a palindrome|palindromic)",".*(.+) is (?:a palindrome|palindromic)",
                ".*is (.+) spelled the same (?:backward.*forward|forward.*backward)"],
-     "reply": ["<eval>self.toolBox.doCheckPalindrome(self.match.group(1))</eval>"]},
+     "reply": ["${self.toolBox.doCheckPalindrome(self.match.group(1))}"]},
 
     # REMINDERS
     {"input": [".*(?:add|make|create) reminder (.+)",".*add (.+) to my (?:reminders|todo|to-do)",".*remind me to (.+)"],
-     "reply": ["<eval>self.toolBox.addReminder(self.match.group(1))</eval>"]},
+     "reply": ["${self.toolBox.addReminder(self.match.group(1))}"]},
     {"input": [".*add (?:a |)reminder"],
-     "reply": ["<eval>self.toolBox.addReminder()</eval>"]},
+     "reply": ["${self.toolBox.addReminder()}"]},
     {"input": [".*(?:remove|delete) reminder (\d+)"],
-     "reply": ["<eval>self.toolBox.removeReminder(self.match.group(1))</eval>"]},
+     "reply": ["${self.toolBox.removeReminder(self.match.group(1))}"]},
     {"input": [".*(?:remove|delete) a reminder"],
-     "reply": ["<eval>self.toolBox.removeReminder()</eval>"]},
+     "reply": ["${self.toolBox.removeReminder()}"]},
     {"input": [".*(?:remove|delete)(?: all|) my reminders"],
-     "reply": ["<eval>self.toolBox.removeAllReminders()</eval>"]},
+     "reply": ["${self.toolBox.removeAllReminders()}"]},
     {"input": [".*my reminders","remind me"],
-     "reply": ["<eval>self.toolBox.listReminders()</eval>"]},
+     "reply": ["${self.toolBox.listReminders()}"]},
 
     # CHECK CONTACT INFO
     # str
@@ -244,31 +255,31 @@ RESPONSES = [
                ".*whats (?P<who>my|.+'s) name",
                ".*what (?P<who>my|.+'s) name's",
                ".*do you call (?P<who>my|.+'s)"],
-     "reply": "<eval>self.toolBox.checkContactInfo(self.match.group('who'),'NN')</eval>"},
+     "reply": "${self.toolBox.checkContactInfo(self.match.group('who'),'NN')}"},
     {"input": [".*what's (?P<who>my|.+'s)(?: current|) (full name|fullname)",
                ".*whats (?P<who>my|.+'s)(?: current|) (full name|fullname)",
                ".*what (?P<who>my|.+'s)(?: current|) (full name|fullname)'s"],
-     "reply": "<eval>self.toolBox.checkContactInfo(self.match.group('who'),'FULLNAME')</eval>"},
+     "reply": "${self.toolBox.checkContactInfo(self.match.group('who'),'FULLNAME')}"},
     {"input": [".*(?:what's|when's) (?P<who>my|.+'s)(?: current|) (birthday|bday|b-day|birth day|date of birth|day of birth|birth date)",
                ".*'s (?P<who>i|.+) (born|birthed)",
                ".*how old(?:'s| am) (?P<who>i|.+)"],
-     "reply": "<eval>self.toolBox.checkContactInfo(self.match.group('who'),'BDAY')</eval>"},
+     "reply": "${self.toolBox.checkContactInfo(self.match.group('who'),'BDAY')}"},
     {"input": [".*what's (?P<who>my|.+'s)(?: current|) gender",
                ".*(?:'s|is|am|was) (?P<who>i|.+) (male|female|a boy|a girl|a man|a woman)",
                ".+(?P<who>i|.+'s)(?: am|'s) (male|female|a boy|a girl|a man|a woman)",
                ".*(?P<who>my|.+'s) gender\?"],
-     "reply": "<eval>self.toolBox.checkContactInfo(self.match.group('who'),'GENDER')</eval>"},
+     "reply": "${self.toolBox.checkContactInfo(self.match.group('who'),'GENDER')}"},
     {"input": [".*what's (?P<who>my|.+'s)(?: current|)(?: phone|) number",
                ".*(?P<who>my|.+'s) phone number\?"],
-     "reply": "<eval>self.toolBox.checkContactInfo(self.match.group('who'),'PHONE')</eval>"},
+     "reply": "${self.toolBox.checkContactInfo(self.match.group('who'),'PHONE')}"},
 
     # list
     {"input": [".*(?:what's|what're|list) (?P<who>my|.+'s)(?: current|) email",
                ".*(?P<who>my|.+'s) email\?"],
-     "reply": "<eval>self.toolBox.checkContactInfo(self.match.group('who'),'EMAILS')</eval>"},
+     "reply": "${self.toolBox.checkContactInfo(self.match.group('who'),'EMAILS')}"},
 
     {"input": [".*show me (.+'s|my) contact info",".*show (.+'s|my) contact info",".*show contact info for (.+|me)",".*show my contact (.+)"],
-     "reply": "<eval>self.toolBox.showContactInfo(self.match.group(1))</eval>"},
+     "reply": "${self.toolBox.showContactInfo(self.match.group(1))}"},
 
     # CHANGE CONTACT INFO (birth date, nickname, full name, home, gender) INCOMPLETE
     # str
@@ -276,60 +287,60 @@ RESPONSES = [
                ".*?(?P<who>my|.+'s) name to (?P<val>.+)",
                "(?P<val>.+)'s (?P<who>my|.+'s) name",
                ".*call (?P<who>me|.+) (?P<val>.+)"],
-     "reply": "<eval>self.toolBox.changeContactInfoSTR(self.match.group('who'),'NN',self.match.group('val'))</eval>"},
+     "reply": "${self.toolBox.changeContactInfoSTR(self.match.group('who'),'NN',self.match.group('val'))}"},
     {"input": [".*?(?P<who>my|.+'s) (?:full name|fullname)(?:'s| to) (?P<val>.+)",
                "(?P<val>.+)'s (?P<who>my|\w+'s) (?:full name|fullname)"],
-     "reply": "<eval>self.toolBox.changeContactInfoSTR(self.match.group('who'),'FULLNAME',self.match.group('val'))</eval>"},
+     "reply": "${self.toolBox.changeContactInfoSTR(self.match.group('who'),'FULLNAME',self.match.group('val'))}"},
 
     {"input": [".*?(?P<who>my|\w+'s) (?:birthday|bday|b-day|birth day|date of birth|day of birth|birth date)(?:'s| to) (?P<val>.+)",
                "(?P<val>.+)'s (?P<who>my|.+'s) (?:birthday|bday|b-day|birth day|date of birth|day of birth|birth date)",
                ".*?(?P<who>i|.+)'s (?:born on|birthed on|born) (?P<val>.+)"],
-     "reply": "<eval>self.toolBox.changeContactInfoSTR(self.match.group('who'),'BDAY',self.match.group('val'))</eval>"},
+     "reply": "${self.toolBox.changeContactInfoSTR(self.match.group('who'),'BDAY',self.match.group('val'))}"},
 
     {"input": [".*?(?P<who>my|.+'s) gender's female",
                ".*?(?P<who>i'm|.+'s) (?:female|a girl|a woman)"],
-     "reply": "<eval>self.toolBox.changeContactInfoSTR(self.match.group('who'),'GENDER','female')</eval>"},
+     "reply": "${self.toolBox.changeContactInfoSTR(self.match.group('who'),'GENDER','female')}"},
     {"input": [".*?(?P<who>my|.+'s) gender's male",".*?(?P<who>i'm|.+'s) (?:male|a boy|a man)"],
-     "reply": "<eval>self.toolBox.changeContactInfoSTR(self.match.group('who'),'GENDER','male')</eval>"},
+     "reply": "${self.toolBox.changeContactInfoSTR(self.match.group('who'),'GENDER','male')}"},
 
     {"input": [".*?(?P<who>my|.+'s)(?: phone|) number(?:'s| to) (?P<val>(?:\d{3,4}(?:| |-))+)"],
-     "reply": "<eval>self.toolBox.changeContactInfoSTR(self.match.group('who'),'PHONE',self.match.group('val'))</eval>"},
+     "reply": "${self.toolBox.changeContactInfoSTR(self.match.group('who'),'PHONE',self.match.group('val'))}"},
 
     # list
     {"input": [".*?(?P<who>my|.+'s) email(?:'s| to) (?P<val>.+@.+\..+)"],
-     "reply": "<eval>self.toolBox.changeContactInfoLIST(self.match.group('who'),'EMAILS','update',self.match.group('val'))</eval>"},
+     "reply": "${self.toolBox.changeContactInfoLIST(self.match.group('who'),'EMAILS','update',self.match.group('val'))}"},
     {"input": [".*?(?:set|change|update) (?P<who>my|.+'s) email"],
-     "reply": "<eval>self.toolBox.changeContactInfoLIST(self.match.group('who'),'EMAILS','update')</eval>"},
+     "reply": "${self.toolBox.changeContactInfoLIST(self.match.group('who'),'EMAILS','update')}"},
 
     {"input": [".*?(?:add) (?P<who>my|.+'s) email (?P<val>.+@.+\..+)"],
-     "reply": "<eval>self.toolBox.changeContactInfoLIST(self.match.group('who'),'EMAILS','add',self.match.group('val'))</eval>"},
+     "reply": "${self.toolBox.changeContactInfoLIST(self.match.group('who'),'EMAILS','add',self.match.group('val'))}"},
     {"input": [".*?(?:add) (?P<who>my|.+'s) email"],
-     "reply": "<eval>self.toolBox.changeContactInfoLIST(self.match.group('who'),'EMAILS','add')</eval>"},
+     "reply": "${self.toolBox.changeContactInfoLIST(self.match.group('who'),'EMAILS','add')}"},
     {"input": [".*?(?:add)(?: another| an|) email"],
-     "reply": "<eval>self.toolBox.changeContactInfoLIST('my','EMAILS','add')</eval>"},
+     "reply": "${self.toolBox.changeContactInfoLIST('my','EMAILS','add')}"},
 
     {"input": [".*?(?:remove) (?P<who>my|.+'s) email (?P<val>.+@.+\..+)"],
-     "reply": "<eval>self.toolBox.changeContactInfoLIST(self.match.group('who'),'EMAILS','remove',self.match.group('val'))</eval>"},
+     "reply": "${self.toolBox.changeContactInfoLIST(self.match.group('who'),'EMAILS','remove',self.match.group('val'))}"},
     {"input": [".*?(?:remove) (?P<who>my|.+'s) email"],
-     "reply": "<eval>self.toolBox.changeContactInfoLIST(self.match.group('who'),'EMAILS','remove')</eval>"},
+     "reply": "${self.toolBox.changeContactInfoLIST(self.match.group('who'),'EMAILS','remove')}"},
 
     # ADD CONTACT
     {"input": [".*(?:add|create|make).* contact (.+)",".*add (.+) as (?:a contact|contact)"],
-     "reply": "<eval>self.toolBox.addContact(self.match.group(1))</eval>"},
+     "reply": "${self.toolBox.addContact(self.match.group(1))}"},
     {"input": [".*(?:make|add|create) .*contact"],
-     "reply": "<eval>self.toolBox.addContact()</eval>"},
+     "reply": "${self.toolBox.addContact()}"},
 
     # REMOVE CONTACT
     {"input": [".*(?:remove|delete|forget) contact (.+)",
                ".*(?:remove|delete|forget) (.+) as (?:a contact|contact)",
                ".*(?:remove|delete|forget) (.+) from .*contacts"],
-     "reply": "<eval>self.toolBox.removeContact(self.match.group(1))</eval>"},
+     "reply": "${self.toolBox.removeContact(self.match.group(1))}"},
     {"input": [".*(?:remove|delete|forget) .*contact"],
-     "reply": "<eval>self.toolBox.removeContact()</eval>"},
+     "reply": "${self.toolBox.removeContact()}"},
 
     # OTHER CONTACT STUFF
     {"input": [".*(?:show|display|list) .*contacts",".*(?:what're|give me) my .*contacts"],
-     "reply": "<eval>'Here are all your contacts: \\n'+'\\n'.join(self.toolBox.contactList())</eval>"},
+     "reply": "${'Here are all your contacts: \\n'+'\\n'.join(self.toolBox.contactList())}"},
 
     # FAVORITE STUFF (to be added)
     {"input": [".*favorite color"],
@@ -343,27 +354,27 @@ RESPONSES = [
     {"input": [".* favorite holiday"],
      "reply": ["Crosswalk Safety Awareness Day!!"]},
     {"input": [".*your favorite (.+)"],
-     "reply": ['I have no favorite <eval>self.match.group(1)</eval>',"I don't like to play favorites, NN"]},
+     "reply": ['I have no favorite ${self.match.group(1)}',"I don't like to play favorites, NN"]},
 
     # HELP
     {"input": ["help(?: on| for|) (?!me)(.+)"],
-     "reply": ["<eval>self.toolBox.getHelp(self.match.group(1))</eval>"]},
+     "reply": ["${self.toolBox.getHelp(self.match.group(1))}"]},
     {"input": [".*help",".+(should|can) i ask you",".*i (should|can) ask you"],
-     "reply": ["<eval>self.toolBox.getHelp()</eval>"]},
+     "reply": ["${self.toolBox.getHelp()}"]},
 
     # RANDOM DECISIONS
     {"input": [".*number between (\d+) and (\d+)",".*pick a number from (\d+) to (\d+)"],
-     "reply": (["it's ","that would be "],"<eval>str(random.randint(int(self.match.group(1)),int(self.match.group(2))))</eval>")},
+     "reply": (["it's ","that would be "],"${str(random.randint(int(self.match.group(1)),int(self.match.group(2))))}")},
     {"input": [".*flip a coin"],
-     "reply": (["it landed on ","it landed "],"<eval>'heads' if random.randint(0,1)==1 else 'tails'</eval>",[" this time",""])},
+     "reply": (["it landed on ","it landed "],"${'heads' if random.randint(0,1)==1 else 'tails'}",[" this time",""])},
     {"input": ["roll (?:a|an) (\d+) sided (?:die|dice)","roll (?:a|an) (\d+)-sided (?:die|dice)"],
-     "reply": (["it's ","rolling... it's ","OK, it's "],"<eval>str(random.randint(1,int(self.match.group(1))))</eval>",[" this time",""])},
+     "reply": (["it's ","rolling... it's ","OK, it's "],"${str(random.randint(1,int(self.match.group(1))))}",[" this time",""])},
     {"input": ["roll a (?:die|dice)"],
-     "reply": (["it's ","rolling... it's ","OK, it's "],"<eval>str(random.randint(1,6))</eval>",[" this time",""])},
+     "reply": (["it's ","rolling... it's ","OK, it's "],"${str(random.randint(1,6))}",[" this time",""])},
 
     # MATH
     {"input": ["(?:what's |calculate |tell me |determine |solve )?({})".format(mathFull)],
-     "reply": ("<eval>print('%s = %s' % self.toolBox.basicMath(self.match.group(1)))</eval>")},
+     "reply": ("${print('%s = %s' % self.toolBox.basicMath(self.match.group(1)))}")},
 
     # TIMER/COUNTDOWN
     {"input": [".*(countdown|count down from (\d+))"],
@@ -390,182 +401,182 @@ for i in range(num):
 
     # sleep/shutdown etc
     {"input": [r"\b(sleep|shutdown|suspend|reboot)\b"],
-     "reply": ["<eval>self.toolBox.sleep(self.match.group(1))</eval>"]},
+     "reply": ["${self.toolBox.sleep(self.match.group(1))}"]},
 
     # SEARCHING THE WEB
     # movies
     {"input": [".*movie (?:times|show times|showtimes)"],
-     "reply": ('''<eval>self.toolBox.getMovieTimes()</eval>''')},
+     "reply": ('''${self.toolBox.getMovieTimes()}''')},
     {"input": [".*(?:showtimes|show times) for (.+)"],
-     "reply": ('''<eval>self.toolBox.getMovieTimes(self.match.group(1))</eval>''')},
+     "reply": ('''${self.toolBox.getMovieTimes(self.match.group(1))}''')},
     {"input": [".*movies near me",".*nearby movies",".*what movies","(?:show me|display|list).* movies"],
-     "reply": ('''<eval>self.toolBox.getMoviesNearMe()</eval>''')},
+     "reply": ('''${self.toolBox.getMoviesNearMe()}''')},
 
     # maps
     {"input": [".*directions from (.+) to (.+)",".*directions (.+) to (.+)",".*directions to (.+)"],
-     "reply": (["Opening Google Maps...","Finding directions..."],"<eval>webbrowser.open(self.toolBox.directionsURL(*reversed(self.match.groups())))</eval>")},
+     "reply": (["Opening Google Maps...","Finding directions..."],"${webbrowser.open(self.toolBox.directionsURL(*reversed(self.match.groups())))}")},
     {"input": [".*how (many hours|many miles|long).* from (.+) to (.+)"],
-     "reply": (["Opening Google Maps...","Finding directions..."],"<eval>webbrowser.open(self.toolBox.directionsURL(self.match.group(3),self.match.group(2)))</eval>")},
+     "reply": (["Opening Google Maps...","Finding directions..."],"${webbrowser.open(self.toolBox.directionsURL(self.match.group(3),self.match.group(2)))}")},
     {"input": ["where's (.+)","show me (.+) on .*map","find (.+) on .*map","search for (.+) on .*map","search (.+) on .*map"],
-     "reply": '''<eval>self.toolBox.googleMapSearch(self.match.group(1))</eval>'''},
+     "reply": '''${self.toolBox.googleMapSearch(self.match.group(1))}'''},
 
     # open website/file
     {"input": [".*(?:open|go to) ((?:.+\.)?.+\..+)"],
-     "reply": '''<eval>self.toolBox.openSomething(self.match.group(1))</eval>'''},
+     "reply": '''${self.toolBox.openSomething(self.match.group(1))}'''},
     {"input": [".*(?:open|go to) (https|http)://(.+)\.(.+)"],
-     "reply": '''<eval>self.toolBox.openSomething("%s://%s.%s" % self.match.groups())</eval>'''},
+     "reply": '''${self.toolBox.openSomething("%s://%s.%s" % self.match.groups())}'''},
     {"input": [".*(?:open|launch) (.+)"],
-     "reply": '''<eval>self.toolBox.openSomething(self.match.group(1))</eval>'''},
+     "reply": '''${self.toolBox.openSomething(self.match.group(1))}'''},
 
     #music
     {"input": ["(play|pause|next|previous)\Z","(play|pause|next|previous).* (?:music|song|track)"],
-     "reply": "<eval>self.toolBox.musicControl(self.match.group(1))</eval>"},
+     "reply": "${self.toolBox.musicControl(self.match.group(1))}"},
     {"input": [".*(?:start|begin|commence|initiate|play).* (previous|next) (?:track|song|music)"],
-     "reply": "<eval>self.toolBox.musicControl(self.match.group(1))</eval>"},
+     "reply": "${self.toolBox.musicControl(self.match.group(1))}"},
     {"input": [".*(?:start|begin|commence|initiate).* (?:track|song|music)"],
-     "reply": "<eval>self.toolBox.musicControl('play')</eval>"},
+     "reply": "${self.toolBox.musicControl('play')}"},
     {"input": [".*(?:stop|turn off|end|freeze|break|halt|kill|suspend|cease).* (?:track|song|music)"],
-     "reply": "<eval>self.toolBox.musicControl('pause')</eval>"},
+     "reply": "${self.toolBox.musicControl('pause')}"},
     {"input": ["play (.+)"],
-     "reply":"<eval>self.toolBox.browseMusic(self.match.group(1))</eval>"},
+     "reply":"${self.toolBox.browseMusic(self.match.group(1))}"},
     {"input":["what(\'|)s playing", "song is this", "this song"],
-     "reply":"Currently Playing: <eval>self.toolBox.getCurrentSong()</eval>"},
+     "reply":"Currently Playing: ${self.toolBox.getCurrentSong()}"},
 
     #volume control
     {"input": [".*(?:set |)volume(?: to|) (\d+(\.\d+|))"],
-     "reply": "<eval>self.toolBox.volumeControl(self.match.group(1))</eval>"},
+     "reply": "${self.toolBox.volumeControl(self.match.group(1))}"},
 
     # reddit
     {"input": [".*reddit for (.+)",".*reddit (.+)"],
-     "reply": ['''<eval>self.toolBox.redditLookup(self.match.group(1))</eval>''']},
+     "reply": ['''${self.toolBox.redditLookup(self.match.group(1))}''']},
     {"input": ["(find|look up|look for|show me|open) (.+) on reddit"],
-     "reply": ['''<eval>self.toolBox.redditLookup(self.match.group(2))</eval>''']},
+     "reply": ['''${self.toolBox.redditLookup(self.match.group(2))}''']},
     {"input": [".*(search|browse) reddit"],
-     "reply": ['''<eval>self.toolBox.redditLookup()</eval>''']},
+     "reply": ['''${self.toolBox.redditLookup()}''']},
 
     # xkcd comics
     {"input": [".*xkcd (?:comic |)(?:number |#)(\d+)"],
-     "reply": ["<eval>self.toolBox.xkcdComic(self.match.group(1))</eval>"]},
+     "reply": ["${self.toolBox.xkcdComic(self.match.group(1))}"]},
     {"input": [".*xkcd",".*comic"],
-     "reply": ["<eval>self.toolBox.xkcdComic()</eval>"]},
+     "reply": ["${self.toolBox.xkcdComic()}"]},
 
     # wikipedia
     {"input": [".*wikipedia for (.+)",".*wikipedia (.+)"],
-     "reply": ["<eval>self.toolBox.wikiLookupRespond(self.match.group(1))</eval>"]},
+     "reply": ["${self.toolBox.wikiLookupRespond(self.match.group(1))}"]},
     {"input": ["(?:find|look up|show me|open) (.+) on wikipedia"],
-     "reply": ["<eval>self.toolBox.wikiLookupRespond(self.match.group(1))</eval>"]},
+     "reply": ["${self.toolBox.wikiLookupRespond(self.match.group(1))}"]},
     {"input": [r".* the (\d+(?:th|st|rd|nd) century)",r".* the (\d(?:th|st|rd|nd) millennium)",r".* the (\d{2,4}s)"],
-     "reply": ["<eval>self.toolBox.wikiDecadeFind(self.match.group(1))</eval>"]},
+     "reply": ["${self.toolBox.wikiDecadeFind(self.match.group(1))}"]},
 
     # news
     {"input": [".*news about (.+)",".*news for (.+)"],
-     "reply": (["Will do, NN","opening Google News...","Here's the news about <eval>self.match.group(1)</eval>"],"<eval>webbrowser.open('https://news.google.com/news/search/section/q/%s' % self.match.group(1))</eval>")},
+     "reply": (["Will do, NN","opening Google News...","Here's the news about ${self.match.group(1)}"],"${webbrowser.open('https://news.google.com/news/search/section/q/%s' % self.match.group(1))}")},
     {"input": [".*news"],
-     "reply": (["Will do, NN","opening Google News...","Here's the news"],"<eval>webbrowser.open('https://news.google.com/news/')</eval>")},
+     "reply": (["Will do, NN","opening Google News...","Here's the news"],"${webbrowser.open('https://news.google.com/news/')}")},
 
     # search amazon
     {"input": ["(find|look up|show me|open|shop for|shop|search for|search) (.+) on amazon"],
-     "reply": ["<eval>self.toolBox.getSearchAmazon(self.match.group(2))</eval>"]},
+     "reply": ["${self.toolBox.getSearchAmazon(self.match.group(2))}"]},
     {"input": [".*amazon for (.+)",".*amazon (.+)"],
-     "reply": ["<eval>self.toolBox.getSearchAmazon(self.match.group(1))</eval>"]},
+     "reply": ["${self.toolBox.getSearchAmazon(self.match.group(1))}"]},
     {"input": [".*(shop|search) amazon"],
-     "reply": ["<eval>self.toolBox.getSearchAmazon()</eval>"]},
+     "reply": ["${self.toolBox.getSearchAmazon()}"]},
 
     # search google
     {"input": [''.join(i) for i in list(itertools.product([".*find ",".*search the .*web.* for ",".*search for ",".*search ",".*browse",".*show me "],
                                                          ["(.+) images","(.+) photos","(.+) pictures","(.+) pics","pictures of (.+)","pics of (.+)","images of (.+)","photos of (.+)"]))],
-     "reply": ["<eval>webbrowser.open('https://www.google.com/search?q=%s&tbm=isch' % self.match.group(1))</eval>"]},
+     "reply": ["${webbrowser.open('https://www.google.com/search?q=%s&tbm=isch' % self.match.group(1))}"]},
     {"input": [''.join(i) for i in list(itertools.product([".*find ",".*search for ",".*search ",".*browse",".*show me "],
                                                          ["(.+) videos","(.+) vids","videos of (.+)","vids of (.+)"]))],
-     "reply": ["<eval>webbrowser.open('https://www.google.com/search?q=%s&tbm=vid' % self.match.group(1))</eval>"]},
+     "reply": ["${webbrowser.open('https://www.google.com/search?q=%s&tbm=vid' % self.match.group(1))}"]},
     {"input": ["google (.+)","look up (.+)","search .*for (.+)"],
-     "reply": ["<eval>self.toolBox.googleIt(self.match.group(1))</eval>"]},
+     "reply": ["${self.toolBox.googleIt(self.match.group(1))}"]},
     {"input": [r".*\bsearch the web"],
-     "reply": ["<eval>self.toolBox.googleIt()</eval>"]},
+     "reply": ["${self.toolBox.googleIt()}"]},
 
     #duck it
     {"input": ["duck (.+)"],
-     "reply": ["<eval>self.toolBox.duckIt(self.match.group(1))</eval>"]},
+     "reply": ["${self.toolBox.duckIt(self.match.group(1))}"]},
     {"input": ["duck"],
-     "reply": ["<eval>self.toolBox.duckIt()</eval>"]},
+     "reply": ["${self.toolBox.duckIt()}"]},
 
     # dictionary stuff
     {"input": ["define (.+)",".+definition of (.+)",".+meaning of (.+)",".+ does (.+) mean"],
-     "reply": "<eval>self.toolBox.getDefinition(re.sub(r'[\W]', ' ', self.match.group(1)))</eval>"},
+     "reply": "${self.toolBox.getDefinition(re.sub(r'[\W]', ' ', self.match.group(1)))}"},
     {"input": [".*example of (.+) .*in a sentence",".*use (.+) in a sentence"],
-     "reply": ("<eval>self.toolBox.usedInASentence(re.sub(r'[\W]', ' ', self.match.group(1)))</eval>")},
+     "reply": ("${self.toolBox.usedInASentence(re.sub(r'[\W]', ' ', self.match.group(1)))}")},
     {"input": [".*synonyms for (.+)",".*synonyms of (.+)",".*synonym for (.+)",".*synonym of (.+)",".*another word for (.+)",".*other word for (.+)",".*other words for (.+)"],
-     "reply": ("<eval>self.toolBox.getSynonyms(self.match.group(1))</eval>")},
+     "reply": ("${self.toolBox.getSynonyms(self.match.group(1))}")},
 
     # translate
     {"input": ["translate (.+) from (.+) to (.+)"],
-     "reply": "<eval>self.toolBox.translateTo(self.match.group(1),self.match.group(3),self.match.group(2))</eval>"},
+     "reply": "${self.toolBox.translateTo(self.match.group(1),self.match.group(3),self.match.group(2))}"},
     {"input": ["translate (.+) to (.+)"],
-     "reply": "<eval>self.toolBox.translateTo(self.match.group(1),self.match.group(2))</eval>"},
+     "reply": "${self.toolBox.translateTo(self.match.group(1),self.match.group(2))}"},
 
     # weather
     {"input": [".*weather","how's it outside","what's it like outside",".*hourly forecast"],
-     "reply": ["<eval>self.toolBox.weatherPrint()</eval>"]},
+     "reply": ["${self.toolBox.weatherPrint()}"]},
     {"input": [".*humidity", "is it humid", ".+humid .*today", ".+humid out"],
-     "reply": "<eval>self.toolBox.weatherPrint('Humidity')</eval>"},
+     "reply": "${self.toolBox.weatherPrint('Humidity')}"},
     {"input": [".*temperature"]+list(itertools.chain.from_iterable([".+%s .*today" % s,".+%s out" % s] for s in syn('hot')))+list(itertools.chain.from_iterable([".+%s .*today" % s,".+%s out" % s] for s in syn('cold'))),
-     "reply": "<eval>self.toolBox.weatherPrint('Temp.')</eval>"},
+     "reply": "${self.toolBox.weatherPrint('Temp.')}"},
     {"input": [".*wind pressure",".*atmospheric pressure",".*air pressure"],
-     "reply": "<eval>self.toolBox.weatherPrint('Pressure')</eval>"},
+     "reply": "${self.toolBox.weatherPrint('Pressure')}"},
     {"input": [".*wind"],
-     "reply": "<eval>self.toolBox.weatherPrint('Wind')</eval>"},
+     "reply": "${self.toolBox.weatherPrint('Wind')}"},
     {"input": [".*precipitation"],
-     "reply": "<eval>self.toolBox.weatherPrint('Precip')</eval>"},
+     "reply": "${self.toolBox.weatherPrint('Precip')}"},
     {"input": [".*dew point"],
-     "reply": "<eval>self.toolBox.weatherPrint('Dew Point')</eval>"},
+     "reply": "${self.toolBox.weatherPrint('Dew Point')}"},
     {"input": [".*cloud cover"],
-     "reply": "<eval>self.toolBox.weatherPrint('Cloud Cover')</eval>"},
+     "reply": "${self.toolBox.weatherPrint('Cloud Cover')}"},
 
     # time/date
     {"input": [".+time's it",".+s the time",".*current time"],
-     "reply": (["It's ","the clock says "],"<eval>time.asctime().split()[3]</eval>",[" o'clock",""],", NN")},
+     "reply": (["It's ","the clock says "],"${time.asctime().split()[3]}",[" o'clock",""],", NN")},
     {"input": [".+s the date",".*current date",".+today's date",".+day's it",".*what's today"],
-     "reply": ("It's ","<eval>' '.join(time.asctime().split()[:3])</eval>",", NN")},
+     "reply": ("It's ","${' '.join(time.asctime().split()[:3])}",", NN")},
     {"input": [".+year's it",".+'s the year",".+century's it",".*current year",".*current century"],
-     "reply": (["It's ","The year is ","It's the year of "],"<eval>time.asctime().split()[4]</eval>",", NN")},
+     "reply": (["It's ","The year is ","It's the year of "],"${time.asctime().split()[4]}",", NN")},
 
     # EMAIL
     {"input": [".*(check|show|display).* (mail|gmail|email|inbox)"],
-     "reply": ("<eval>self.toolBox.doCheckMail()</eval>")},
+     "reply": ("${self.toolBox.doCheckMail()}")},
     {"input": [".*send (?:an |)email to (.+)","email (.+)"],
-     "reply": ["<eval>self.toolBox.doSendMail(self.match.group(1))</eval>"]},
+     "reply": ["${self.toolBox.doSendMail(self.match.group(1))}"]},
     {"input": [".*send (?:an |)email"],
-     "reply": ["<eval>self.toolBox.doSendMail()</eval>"]},
+     "reply": ["${self.toolBox.doSendMail()}"]},
 
     # LOCATION
     {"input": ["where.+am i",".*where i am","where.*'re we","where's here",".*where here's",".*my location"],
-     "reply": (["you're in ","your location is "],"<eval>'{}, {}'.format(*self.toolBox.locationData('city','region_code'))</eval>",[", NN",""])},
+     "reply": "${self.toolBox.whereAmI()}"},
     {"input": [".*zipcode"],
-     "reply": (["your zipcode is "],"<eval>'{}'.format(*self.toolBox.locationData('zip_code'))</eval>")},
+     "reply": (["your zipcode is "],"${'{}'.format(*self.toolBox.locationData('zip_code'))}")},
     {"input": [".+state am i in",".+region am i in",".+state i am in",".+region i am in",".+my state",".+my region"],
-     "reply": (["right now, ",""],["you're in "],"<eval>self.toolBox.locationData('region_name')[0]</eval>",[", NN",""])},
+     "reply": (["right now, ",""],["you're in "],"${self.toolBox.locationData('region_name')[0]}",[", NN",""])},
     {"input": [".+city am i in",".+city i am in",".+city that i am in",".+my city"],
-     "reply": (["right now, ",""],["you're in ","your city is "],"<eval>self.toolBox.locationData('city')[0]</eval>",[", NN",""])},
+     "reply": (["right now, ",""],["you're in ","your city is "],"${self.toolBox.locationData('city')[0]}",[", NN",""])},
     {"input": [".+country am i in",".+country i am in",".+country that i am in",".+my country"],
-     "reply": (["right now, ",""],["you're in ","your country is ","you're standing in the country of "],"<eval>self.toolBox.locationData('country_name')[0]</eval>",[", NN",""])},
+     "reply": (["right now, ",""],["you're in ","your country is ","you're standing in the country of "],"${self.toolBox.locationData('country_name')[0]}",[", NN",""])},
     {"input": [".*time zone",".*timezone"],
-     "reply": (["right now, ",""],["you're in the "],"<eval>self.toolBox.locationData('time_zone')[0]</eval>"," timezone")},
+     "reply": (["right now, ",""],["you're in the "],"${self.toolBox.locationData('time_zone')[0]}"," timezone")},
     {"input": [".*longitude",".*latitude",".*coordinates"],
-     "reply": (["right now, ",""],["you're at latitude/longitude "],"<eval>'{}, {}'.format(*self.toolBox.locationData('latitude','longitude'))</eval>")},
+     "reply": (["right now, ",""],["you're at latitude/longitude "],"${'{}, {}'.format(*self.toolBox.locationData('latitude','longitude'))}")},
     {"input": [".*my ip",".*ip address"],
-     "reply": ("your ip address is ","<eval>self.toolBox.locationData('query')[0]</eval>",[", NN",""])},
+     "reply": ("your ip address is ","${self.toolBox.locationData('query')[0]}",[", NN",""])},
 
     # who is ____
     {"input": ["(?:who's|who're) (.+)"],
-     "reply": ["<eval>self.toolBox.personLookup(self.match.group(1))</eval>"]},
+     "reply": ["${self.toolBox.personLookup(self.match.group(1))}"]},
 
     # what is a ____
     {"input": ["what's(?: a| an|) (.+)"],
-     "reply": ["<eval>self.toolBox.whatIsLookup(self.match.group(1))</eval>"]},
+     "reply": ["${self.toolBox.whatIsLookup(self.match.group(1))}"]},
 
     # JUST IN CASE
 
-    {"input": [r".*\b%s\b" % s for s in syn("hello")],
+    {"input": [r".*\b({})\b".format('|'.join(syn("hello")))],
      "reply": (['hello','what up','howdy','hi','salutations','greetings',"hiya","hey"],", NN")},
 
     {"input": [".*why not"],
@@ -585,23 +596,23 @@ for i in range(num):
      "reply": ["don't ask what?","ask what, NN?"]},
 
     {"input": [".*he's (.+)"],
-     "reply": ["who's <eval>self.match.group(1)</eval>?","how <eval>self.match.group(1)</eval>","very <eval>self.match.group(1)</eval>"]},
+     "reply": ["who's ${self.match.group(1)}?","how ${self.match.group(1)}","very ${self.match.group(1)}"]},
     {"input": [".*it's (.+)"],
-     "reply": ["what's <eval>self.match.group(1)</eval>?","very <eval>self.match.group(1)</eval>","that's <eval>self.match.group(1)</eval>"]},
+     "reply": ["what's ${self.match.group(1)}?","very ${self.match.group(1)}","that's ${self.match.group(1)}"]},
     {"input": [r".*\bthat's (.+)"],
-     "reply": ["no way is that <eval>self.match.group(1)</eval>","it was very <eval>self.match.group(1)</eval>"]},
+     "reply": ["no way is that ${self.match.group(1)}","it was very ${self.match.group(1)}"]},
 
     {"input": [".*are you (.+)"],
-     "reply": ["I am <eval>self.match.group(1)</eval>","I am not <eval>self.match.group(1)</eval>"]},
+     "reply": ["I am ${self.match.group(1)}","I am not ${self.match.group(1)}"]},
 
     {"input": [".*what do you (.+)"],
-     "reply": (["you know what I <eval>self.match.group(1)</eval>"],[", NN",""])},
+     "reply": (["you know what I ${self.match.group(1)}"],[", NN",""])},
     {"input": [".*who do you (.+)"],
-     "reply": (["you should know who I <eval>self.match.group(1)</eval>","I <eval>self.match.group(1)</eval> everyone"],[", NN",""])},
+     "reply": (["you should know who I ${self.match.group(1)}","I ${self.match.group(1)} everyone"],[", NN",""])},
     {"input": [".*when do you (.+)"],
-     "reply": (["I <eval>self.match.group(1)</eval> whenever I want","I <eval>self.match.group(1)</eval> all day","I never <eval>self.match.group(1)</eval>"],[", NN",""])},
+     "reply": (["I ${self.match.group(1)} whenever I want","I ${self.match.group(1)} all day","I never ${self.match.group(1)}"],[", NN",""])},
     {"input": [".*where do you (.+)"],
-     "reply": (["I <eval>self.match.group(1)</eval> all over the place","I <eval>self.match.group(1)</eval> wherever you want"],[", NN",""])},
+     "reply": (["I ${self.match.group(1)} all over the place","I ${self.match.group(1)} wherever you want"],[", NN",""])},
 
     # POTTY WORD DETECTION (SHIELD YOUR EYES)
     {"input": ["(fuck|shit|damn|asshole|bitch)"],
@@ -616,7 +627,7 @@ for i in range(num):
 
     # celebration
     {"input": ["yay(!*)\Z","hooray(!*)\Z"],
-     "reply": [r"self.celebrate()<eval>self.match.group(1)</eval>","yay<eval>self.match.group(1)</eval>"]},
+     "reply": [r"self.celebrate()${self.match.group(1)}","yay${self.match.group(1)}"]},
 
     # crying
     {"input": [r"wa+\b"],
@@ -624,7 +635,7 @@ for i in range(num):
 
     # ahhhhhhh
     {"input": ["a(h+)\Z"],
-     "reply": ["A<eval>self.match.group(1)</eval>h"]},
+     "reply": ["A${self.match.group(1)}h"]},
 
     # laughing
     {"input": [r"(ha|ah)(h|a)*\b","xd\Z",r"funny\b",r"lol\b"],
@@ -635,8 +646,11 @@ for i in range(num):
      "reply": ["dude"]},
 
 
+    {"input": ["nice","great","wow"],
+     "reply": [r"very ${self.match.group(0)}"]},
+
     {"input": ["i'm not (.+)"],
-     "reply": (["You aren't <eval>self.match.group(1)</eval>","You are <eval>self.match.group(1)</eval>","if you say so"],[", NN",""])},
+     "reply": (["You aren't ${self.match.group(1)}","You are ${self.match.group(1)}","if you say so"],[", NN",""])},
 
     {"input": ["okay","ok"],
      "reply": ["OK","okie dokie"]},
@@ -645,7 +659,7 @@ for i in range(num):
      "reply": ["Don't be sorry, NN","You better be sorry!"]},
 
     {"input": [".*what((\?|\!)*)\Z","huh",],
-     "reply": ["what?","huh?","<eval>self.match.group(0)</eval> indeed"]},
+     "reply": ["what?","huh?","${self.match.group(0)} indeed"]},
 
     {"input": ["yes it is"],
      "reply": ["no it isn't","no it's not"]},
@@ -669,9 +683,7 @@ for i in range(num):
 
     {"input": [r".*?(\b(how|where|when|what)( to| do|'s|'re| does|) .+)",r".*\b(why( do|'re|'s) .+)",
                r".*\b((?:is|are) .+)",".*((do|can) .+)"],
-     "reply": (["Ok then","If you say so"],'''<exec>tmp=self.match.group(1)
-if self.toolBox.promptYN(random.choice(['Should I search the web for "%s"?' % tmp,'Do web search for "%s"? ' % tmp])):
-    webbrowser.open('https://www.google.com/search?q=%s' % tmp)</exec>''')},
+     "reply": '''${self.toolBox.shouldIGoogleIt(self.match.group(1))}'''},
 
     {"input": [""],
      "reply": ["say what"]},

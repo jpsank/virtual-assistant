@@ -14,6 +14,7 @@ import threading
 import pickle
 import argparse
 from threading import Thread
+import readline
 
 import smtplib
 import imaplib
@@ -37,7 +38,7 @@ floatRegex = r"[+-]?(?:[0-9]+(?:\.[0-9]*)?|[0-9]*\.[0-9]+)(?:[Ee]\+[0-9]+)?"
 
 mathBeforeFloat = r"(?:(?:the )?(?:sqrt|square root|cube root|cosine|cos|sine|sin|tangent|tan)(?: of)?\s)*"
 mathOps = r"\+|plus|\*|times|multiplied by|\-|minus|\/|divided by|over|\*\*|\^|to the power of"
-mathAfterFloat = r"(?:(?:\ssquared)?(?:\s?(?:{})\s?{}{})?)+".format(mathOps, mathBeforeFloat, floatRegex)
+mathAfterFloat = r"(?:(?:\ssquared|\scubed)?(?:\s?(?:{})\s?{}{})?)+".format(mathOps, mathBeforeFloat, floatRegex)
 
 mathFullNomial = (mathBeforeFloat + floatRegex + mathAfterFloat)
 
@@ -52,9 +53,6 @@ default_contact = {"BDAY": None, "GENDER": None, "NN": None, "FULLNAME": None, "
 
 userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (Klxml.html, like Gecko) Chrome/61.0.3163.100 Safari/537.36 OPR/48.0.2685.39"
 
-LANGUAGES = {'malayalam': 'ml', 'telugu': 'te', 'armenian': 'hy', 'finnish': 'fi', 'urdu': 'ur', 'thai': 'th', 'georgian': 'ka', 'lao': 'lo', 'scots gaelic': 'gd', 'lithuanian': 'lt', 'italian': 'it', 'hmong daw': 'mww', 'auto detect': 'auto_detect', 'belarusian': 'be', 'hebrew': 'iw', 'sesotho': 'st', 'estonian': 'et', 'czech': 'cs', 'basque': 'eu', 'russian': 'ru', 'luxembourgish': 'lb', 'filipino': 'tl', 'welsh': 'cy', 'korean': 'ko', 'sindhi': 'sd', 'persian': 'fa', 'german': 'de', 'samoan': 'sm', 'icelandic': 'is', 'maltese': 'mt', 'somali': 'so', 'malay': 'ms', 'indonesian': 'id', 'spanish': 'es', 'latin': 'la', 'hindi': 'hi', 'hungarian': 'hu', 'danish': 'da', 'xhosa': 'xh', 'sundanese': 'su', 'uzbek': 'uz', 'ukrainian': 'uk', 'slovak': 'sk', 'kannada': 'kn', 'hmong': 'hmn', 'yucatec maya': 'yua', 'afrikaans': 'af', 'albanian': 'sq', 'vietnamese': 'vi', 'croatian': 'hr', 'galician': 'gl', 'bengali': 'bn', 'zulu': 'zu', 'nepali': 'ne', 'slovenian': 'sl', 'cebuano': 'ceb', 'shona': 'sn', 'tamil': 'ta', 'portuguese': 'pt', 'chichewa': 'ny', 'french': 'fr', 'greek': 'el', 'kazakh': 'kk', 'mongolian': 'mn', 'sinhala': 'si', 'tajik': 'tg', 'polish': 'pl', 'malagasy': 'mg', 'chinese (simplified)': 'zh', 'pashto': 'ps', 'marathi': 'mr', 'kyrgyz': 'ky', 'arabic': 'ar', 'hawaiian': 'haw', 'latvian': 'lv', 'igbo': 'ig', 'yiddish': 'yi', 'kurdish': 'ku', 'khmer': 'km', 'punjabi': 'pa', 'esperanto': 'eo', 'javanese': 'jw', 'serbian (latin)': 'sr-La', 'hausa': 'ha', 'amharic': 'am', 'bosnian (latin)': 'bs', 'japanese': 'ja', 'burmese': 'my', 'bulgarian': 'bg', 'turkish': 'tr', 'klingon': 'tlh', 'irish': 'ga', 'catalan': 'ca', 'gujarati': 'gu', 'macedonian': 'mk', 'chinese (traditional)': 'zh-TW', 'maori': 'mi', 'dutch': 'nl', 'frisian': 'fy', 'swedish': 'sv', 'norwegian': 'no', 'english': 'en', 'haitian creole': 'ht', 'swahili': 'sw', 'yoruba': 'yo', 'romanian': 'ro', 'azerbaijani': 'az', 'serbian (cyrillic)': 'sr'}
-
-
 currentDir = os.path.dirname(os.path.realpath(__file__))
 
 mtime = os.path.getmtime(currentDir+"/responses.py")
@@ -65,7 +63,7 @@ if os.path.exists(currentDir+"/preferences.json"):
         PREFERENCES = json.load(f)
 else:
     print("Generating preferences...")
-    PREFERENCES = {"contacts":[default_contact], "mtime":mtime, "reminders":[], "musicDir": None}
+    PREFERENCES = {"contacts":[default_contact], "mtime":mtime, "reminders": [], "musicDir": None}
     if platform.system() == "Darwin":
         PREFERENCES.update({"afplay":False})
     # User initiation
@@ -167,7 +165,6 @@ class toolBox:
         jokes = ["{}\n{}".format(i["data"]["title"],i["data"]["selftext"]) for i in j["data"]["children"]]
         return random.choice(jokes)
 
-
     def checkPalindrome(self,word):
         if word[::-1] == word:
             return True
@@ -262,6 +259,11 @@ class toolBox:
         j = json.loads(r.text)
         return [j[k] if k in j else None for k in keys]
 
+    def whereAmI(self):
+        city, region = self.locationData('city','region_name')
+        loc = ("" if city is "" else city+", ") + region
+        return random.choice(["you're in ","your location is "])+loc+random.choice([", NN",""])
+
     def googleMapSearch(self,search):
         search = re.sub(r"\?+\Z", "", search)
         if self.promptYN(random.choice(['Find "%s" on Google Maps? ' % search, 'Search for "%s" on Google Maps? ' % search])):
@@ -311,6 +313,7 @@ class toolBox:
             return html.unescape(j["translated_text"]).encode('utf-8')
 
     def translateTo(self,text,dest,src="auto detect"):
+        LANGUAGES = {'malayalam': 'ml', 'telugu': 'te', 'armenian': 'hy', 'finnish': 'fi', 'urdu': 'ur', 'thai': 'th', 'georgian': 'ka', 'lao': 'lo', 'scots gaelic': 'gd', 'lithuanian': 'lt', 'italian': 'it', 'hmong daw': 'mww', 'auto detect': 'auto_detect', 'belarusian': 'be', 'hebrew': 'iw', 'sesotho': 'st', 'estonian': 'et', 'czech': 'cs', 'basque': 'eu', 'russian': 'ru', 'luxembourgish': 'lb', 'filipino': 'tl', 'welsh': 'cy', 'korean': 'ko', 'sindhi': 'sd', 'persian': 'fa', 'german': 'de', 'samoan': 'sm', 'icelandic': 'is', 'maltese': 'mt', 'somali': 'so', 'malay': 'ms', 'indonesian': 'id', 'spanish': 'es', 'latin': 'la', 'hindi': 'hi', 'hungarian': 'hu', 'danish': 'da', 'xhosa': 'xh', 'sundanese': 'su', 'uzbek': 'uz', 'ukrainian': 'uk', 'slovak': 'sk', 'kannada': 'kn', 'hmong': 'hmn', 'yucatec maya': 'yua', 'afrikaans': 'af', 'albanian': 'sq', 'vietnamese': 'vi', 'croatian': 'hr', 'galician': 'gl', 'bengali': 'bn', 'zulu': 'zu', 'nepali': 'ne', 'slovenian': 'sl', 'cebuano': 'ceb', 'shona': 'sn', 'tamil': 'ta', 'portuguese': 'pt', 'chichewa': 'ny', 'french': 'fr', 'greek': 'el', 'kazakh': 'kk', 'mongolian': 'mn', 'sinhala': 'si', 'tajik': 'tg', 'polish': 'pl', 'malagasy': 'mg', 'chinese (simplified)': 'zh', 'pashto': 'ps', 'marathi': 'mr', 'kyrgyz': 'ky', 'arabic': 'ar', 'hawaiian': 'haw', 'latvian': 'lv', 'igbo': 'ig', 'yiddish': 'yi', 'kurdish': 'ku', 'khmer': 'km', 'punjabi': 'pa', 'esperanto': 'eo', 'javanese': 'jw', 'serbian (latin)': 'sr-La', 'hausa': 'ha', 'amharic': 'am', 'bosnian (latin)': 'bs', 'japanese': 'ja', 'burmese': 'my', 'bulgarian': 'bg', 'turkish': 'tr', 'klingon': 'tlh', 'irish': 'ga', 'catalan': 'ca', 'gujarati': 'gu', 'macedonian': 'mk', 'chinese (traditional)': 'zh-TW', 'maori': 'mi', 'dutch': 'nl', 'frisian': 'fy', 'swedish': 'sv', 'norwegian': 'no', 'english': 'en', 'haitian creole': 'ht', 'swahili': 'sw', 'yoruba': 'yo', 'romanian': 'ro', 'azerbaijani': 'az', 'serbian (cyrillic)': 'sr'}
         if src in LANGUAGES and dest in LANGUAGES:
             translation = self.translate(text,LANGUAGES[src],LANGUAGES[dest])
             if translation is not None:
@@ -352,7 +355,8 @@ class toolBox:
             "/": ["\s(over)\s","\s(divided by)\s"],
             "*": ["\s(times)\s","\s(multiplied by)\s"],
             "**": ["\s(to the power of)\s", "\s(to the)\s", "\s(\^)\s"],
-            "**2": [r"\s(squared)\b"]
+            "**2": [r"\s(squared)\b"],
+            "**3": [r"\s(cubed)\b"]
         }
         for s in signs:
             mathstr = re.sub("|".join(signs[s]),s,mathstr)
@@ -1000,21 +1004,125 @@ class toolBox:
         webbrowser.open("https://www.google.com/search?q=%s" % search)
         return random.choice(["googling %s" % search,"searching for %s" % search, "accessing interwebs", "okay, NN, I'll google that"])
 
+    def shouldIGoogleIt(self,search):
+        if self.promptYN(random.choice(['Should I search the web for "%s"?' % search, 'Do web search for "%s"? ' % search])):
+            return self.googleIt(search)
+        else:
+            return random.choice(["Ok then", "If you say so"])
+
     def duckIt(self, search=None):
         if search is None:
             search = self.promptANY("Search the web for what?")
         webbrowser.open("https://duckduckgo.com/?q={}".format(search))
         return random.choice(["Searching Duck Duck Go for {}".format(search), "Ducking it!", "Searching for {}".format(search)])
 
+    def getReminderDate(self,reminder):
+        patterns = [r"\s?(?:at |on )?(?:!in )((\d{1,2}(:\d{2})?) ?(pm|am|))",
+                    r"next (?:week|month)",
+                    r"(?:january|jan|february|feb|march|mar|april|apr|may|june|jun|july|jul|august|aug|september|sept|october|oct|november|nov|december|dec)(?:\d{1,2}(?:, \d{4})?)?",
+                    r"(?:teatime|midnight|noon)",
+                    r"(?:monday|mon|tuesday|tues|wednesday|wed|thursday|thurs|friday|fri|saturday|sat|sunday|sun)",
+                    r"in (\d+ (?:minute|hour|day|week|month|year)s?)"]
+        timeday = None
+        timedate = None
+        if re.search(patterns[0], reminder):
+            m = re.search(patterns[0], reminder)
+            # hrs, mins = m.group(1).split(":")
+            # hrs, mins = int(hrs), int(mins)
+            # timeday = "{:02}:{:02}".format(hrs,mins)
+            timeday = m.group(1)
+        elif re.search(patterns[3], reminder):
+            m = re.search(patterns[3], reminder)
+            if m.group(0) == "teatime":
+                timeday = "04:00 pm"
+            elif m.group(0) == "midnight":
+                timeday = "12:00 am"
+            elif m.group(0) == "noon":
+                timeday = "12:00 pm"
+        if re.search(patterns[1], reminder):
+            m = re.search(patterns[1], reminder)
+            timedate = m.group(0)
+        elif re.search(patterns[2], reminder):
+            m = re.search(patterns[2], reminder)
+            timedate = m.group(0)
+        elif re.search(patterns[4], reminder):
+            m = re.search(patterns[4], reminder)
+            timedate = m.group(0)
+        elif re.search(patterns[5], reminder):
+            m = re.search(patterns[5], reminder)
+            timedate = "now + " + m.group(1)
+        if timeday is None and timedate is None:
+            prompt = self.promptANY("When should I remind you? (or 'cancel') ", cancel="cancel")
+            return self.getReminderDate(prompt)
+        result = []
+        if timeday is not None: result.append(timeday)
+        if timedate is not None: result.append(timedate)
+        for p in patterns:
+            reminder = re.sub(p,"",reminder)
+        return result, reminder
+
+    def getReminderDatePAM(self,reminder):
+        rdate, reminder = self.getReminderDate(reminder)
+        if rdate:
+            if not rdate[0].endswith("pm") and not rdate[0].endswith("am") and (":" in rdate[0] or rdate[0].isdigit()):
+                if ":" in rdate[0]:
+                    hrs, mins = rdate[0].split(":")
+                    hrs, mins = int(hrs), int(mins)
+                elif rdate[0].isdigit():
+                    hrs, mins = int(rdate[0]),0
+                # rdate[0] = "{:02}:{:02}".format(hrs, mins)
+                if hrs <= 12:
+                    currenthr = datetime.today().hour
+                    if currenthr > 12:
+                        choice = "pm"
+                    else:
+                        choice = "am"
+                    if self.promptYN(random.choice(["Is that {:02}:{:02} {}? y/n ".format(hrs, mins, choice.upper()),
+                                                    "Do you mean {:02}:{:02} {}? y/n ".format(hrs, mins, choice.upper())])):
+                        rdate[0] += choice
+                    else:
+                        rdate[0] += "am" if choice == "pm" else "pm"
+            rdate = ' '.join(rdate)
+        return rdate, reminder
+
+    def checkForAtRun(self):
+        p = subprocess.Popen('launchctl list | grep "com.apple.atrun"', stdout=subprocess.PIPE, shell=True)
+        output = p.stdout.read()
+        print("OUTPUT",output)
+        return False if output == "" else True
+
     def addReminder(self,reminder=None):
+        # sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.atrun.plist
+
         if reminder is None:
             reminder = self.promptANY("What should I add to your reminders? ")
         if self.promptYN("Add '%s' to your reminders? " % reminder):
-            PREFERENCES["reminders"].append(reminder)
+            PREFERENCES["reminders"].append([reminder,None])
             save_preferences()
-            return "I've added that to your reminders"
+            print("I've added that to your reminders")
+            if platform.system() == "Darwin":
+                if self.checkForAtRun():
+                    if self.promptYN("Should I also make a scheduled popup for that? "):
+                        rdate, reminder = self.getReminderDatePAM(reminder)
+                        if rdate:
+                            command = '''osascript -e 'tell app "System Events" to display dialog "{}" with title "Reminder from Virtual Assistant"' '''.format(reminder)
+                            with open("tmp.sh","w") as f:
+                                f.write(command)
+                            fullc = '''at -f tmp.sh %s 2>&1 | awk '/job/ {print $2}' ''' % rdate
+                            p = subprocess.Popen(fullc, stdout=subprocess.PIPE, shell=True)
+                            job = int(p.stdout.read().strip())
+                            os.remove("tmp.sh")
+
+                            PREFERENCES["reminders"][-1][1] = job
+                            save_preferences()
+                            print(random.choice(["Okay. I scheduled to remind you at {} (job {})".format(rdate,job)]))
+                    else:
+                        print(random.choice(["Okay, I won't make a popup reminder."]))
+                else:
+                    print('Tip: to allow for scheduled reminders, run:')
+                    print('    sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.atrun.plist')
         else:
-            return "I won't add that to your reminders"
+            print("I won't add that to your reminders")
 
     def removeReminder(self,index=None):
         if len(PREFERENCES["reminders"]) == 0:
@@ -1027,16 +1135,23 @@ class toolBox:
             index = self.promptLIST(PREFERENCES["reminders"],"Which reminder to remove? (or 'cancel')",cancel="cancel")
             if index is False:
                 return "Cancelled"
-        reminder = PREFERENCES["reminders"][index]
+        reminder,job = PREFERENCES["reminders"][index]
         if self.promptYN("Remove '%s' from your reminders? " % reminder):
             del PREFERENCES["reminders"][index]
             save_preferences()
-            return "I've deleted your reminder '%s'" % reminder
+            print("I've deleted your reminder '%s'" % reminder)
+            if job is not None and self.promptYN("Also delete the scheduled popup for this reminder? "):
+                os.system("atrm %s" % job)
+                print("deleted job {}".format(job))
         else:
-            return "Okay, I won't remove that reminder"
+            print("Okay, I won't remove that reminder")
 
     def removeAllReminders(self):
         if self.promptYN("Remove all reminders? "):
+            jobs = [str(r[1]) for r in PREFERENCES["reminders"] if r[1] is not None]
+            if jobs:
+                os.system("atrm {}".format(' '.join(jobs)))
+                print("deleted {} {}".format("jobs" if len(jobs) > 1 else "job", ', '.join(jobs)))
             PREFERENCES["reminders"] = []
             save_preferences()
             return "I've deleted all your reminders"
@@ -1047,7 +1162,7 @@ class toolBox:
         if PREFERENCES["reminders"]:
             print("Here are your reminders:")
             for i,r in enumerate(PREFERENCES["reminders"]):
-                print("%s. %s" % (i, r))
+                print(("%s. %s" % (i, r[0]))+(" ({})".format(r[1]) if r[1] is not None else ""))
         else:
             return "You have no reminders, NN"
 
@@ -1374,10 +1489,11 @@ class VirtAssistant:
         current = result = 0
         stringlist = []
         onnumber = False
-        puncs = '|'.join([r"\%s\s?" % p for p in ".,!?;)(@"])
+        puncs = '|'.join([r"\%s\s?" % p for p in ".,!?;)(@:;"])
         symbols = "|".join(["\{0}+\s?".format(s) for s in "*/+"])
         symbols += r"|\-+\s|(?<=\d)\-+(?=\d)"
-        split = re.findall(r"({}\s?|{}|{}|\w+['.]?\w*\s?)".format(floatRegexNoPlus,puncs,symbols),textnum)
+        timeRe = r"\d{1,2}:\d{2}"
+        split = re.findall(r"({}\s?|{}\s?|{}|{}|\w+['.]?\w*\s?)".format(timeRe,floatRegexNoPlus,puncs,symbols),textnum)
 
         class Word:
             def __init__(self,origw):
@@ -1399,7 +1515,7 @@ class VirtAssistant:
                     ext = "a"
                 else:
                     ext = "w"
-            elif word.w.isdigit() or re.match(floatRegex,word.w):
+            elif ":" not in word.w and (word.w.isdigit() or re.match(floatRegex,word.w)):
                 ext = "i"
             else:
                 ext = "w"
@@ -1454,7 +1570,7 @@ class VirtAssistant:
         return text
 
     def evaluate(self,text):
-        regex = re.compile(r"<eval>(.+?)</eval>",re.DOTALL)
+        regex = re.compile(r"\${(.+?)}",re.DOTALL)
         for m in re.finditer(regex,text):
             result = eval(m.group(1))
             text = text.replace(m.group(0),result if isinstance(result,str) else '')
