@@ -86,9 +86,10 @@ if os.path.exists(currentDir+'/response_data.p') and mtime == float(PREFERENCES[
 else:
     print("Generating response data...")
     if os.path.exists(currentDir + '/response_data.p'): os.remove(currentDir + '/response_data.p')
-    from responses import RESPONSES
-    with open(currentDir + '/response_data.p','wb') as f:
-        pickle.dump(RESPONSES,f)
+    from responses import RESPONSES,offlineMode
+    if not offlineMode:
+        with open(currentDir + '/response_data.p','wb') as f:
+            pickle.dump(RESPONSES,f)
     PREFERENCES["mtime"] = mtime
 
 with open(currentDir+"/preferences.json", "w") as f:
@@ -164,6 +165,34 @@ class toolBox:
         j = r.json()
         jokes = ["{}\n{}".format(i["data"]["title"],i["data"]["selftext"]) for i in j["data"]["children"]]
         return random.choice(jokes)
+
+    def insultMe(self):
+        part1 = ["unable","bunch-backed","loathsome","cream-faced","elvish-mark’d","foul","sodden-witted","dried",
+                 "ill-roasted"]
+        part2 = ["pretzel nugget","egg","biscuit","worm","toad","mountain goat","deformity","fiend"]
+
+        stem = ["You {}!",
+                "You are a {}!",
+                "You're a {}!",
+                "Away, you {}!",
+                "Thou {}!",
+                "Go, you {}!"]
+
+        extra = ["Thou hast no more brain than I have in mine elbows!",
+                 "There’s no more faith in thee than in a stewed prune.",
+                 "The tartness of thy face sours ripe grapes.",
+                 "More of your conversation would infect my brain.",
+                 "I am sick when I do look on thee!",
+                 "If only thou wert clean enough to spit upon!",
+                 "I’ll tickle your catastrophe!",
+                 "Your brain is as dry as the remainder biscuit after voyage.",
+                 "You are not worth the dust which the rude wind blows in your face.",
+                 "You are as a candle, the better part burnt out."]
+
+        full = random.choice(stem).format(random.choice(part1) + " " + random.choice(part2))
+        if random.random() < .5:
+            full += " " + random.choice(extra)
+        return full
 
     def checkPalindrome(self,word):
         if word[::-1] == word:
@@ -304,8 +333,7 @@ class toolBox:
         if platform.system() == "Darwin":
             subprocess.call(["pmset", "-g", "batt"])
         elif platform.system() == "Linux":
-            os.system(
-                "upower -i $(upower -e | grep BAT) | grep --color=never -E \"state|to\ full|to\ empty|percentage\"")
+            os.system("upower -i $(upower -e | grep BAT) | grep --color=never -E \"state|to\ full|to\ empty|percentage\"")
 
     def translate(self, text, src="en", dest="zh-TW"):
         url = "https://www.translate.com/translator/ajax_translate"

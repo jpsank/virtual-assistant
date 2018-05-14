@@ -33,8 +33,7 @@ def syn(word,amount=10,return_original=True):
             syns = [d.text for d in syns]
             if return_original: syns.append(word)
             return syns
-    else:
-        return word
+    return [word]
 
 
 def regex_syn(word,amount=10):
@@ -98,6 +97,8 @@ RESPONSES = [
     {"input": ["die",".*kill yourself"],
      "reply": ["I'd rather not","what did I do wrong?","Now, let's be kind, NN","That's not very nice, NN"]},
 
+    {"input": [".*good (morning|morn)"],
+     "reply": ["A good ${self.match.group(1)} indeed!"]},
     {"input": [".*good night"],
      "reply": ["Good night","Don't let the bed bugs bite","Night night"]},
     {"input": [".*good (evening|afternoon|day)"],
@@ -215,12 +216,15 @@ RESPONSES = [
     {"input": [".*not being sarcastic",".+ (wasn't|was not) sarcasm"],
      "reply": ["I totally believe you","Hmm...","Sure...","If you say so"]},
     {"input": ["was that sarcasm","that was sarcasm"],
-     "reply": ["Everything is sarcasm, NN","Sure...","Not at all","Definitely not","No way"]},
+     "reply": ["Everything is sarcasm, NN","Sure...","Not at all","Definitely not","No way",
+               "Sometimes I'm unintentionally sarcastic"]},
     {"input": ["bad job"],
      "reply": ["I gotta set the standards low, NN","You can count on it, NN","Sure!","If you had expected less you wouldn't have been disappointed"]},
 
     {"input": ["(tell|say|make).* a joke"],
      "reply": ["${self.toolBox.tellAJoke()}"]},
+    {"input": ["insult me","call me names"],
+     "reply": ["${self.toolBox.insultMe()}"]},
 
     # who's a good
     {"input": ["good dog","who's a good dog"],
@@ -391,8 +395,8 @@ for i in range(num):
     print(num-i)
     </exec>''')},
 
-    {"input":"battery",
-     "reply":"<eval>self.toolBox.battery()</eval>"},
+    {"input": ["battery"],
+     "reply": "${self.toolBox.battery()}"},
 
     # TERMINAL COMMANDS
     {"input": ["run (.+) in .*(terminal|command prompt|cmd|shell)","run (.+)"],
@@ -650,7 +654,7 @@ for i in range(num):
 
 
     {"input": ["nice","great","wow"],
-     "reply": [r"very ${self.match.group(0)}"]},
+     "reply": ["very ${self.match.group(0)}","such ${self.match.group(0)}"]},
 
     {"input": ["i'm not (.+)"],
      "reply": (["You aren't ${self.match.group(1)}","You are ${self.match.group(1)}","if you say so"],[", NN",""])},
