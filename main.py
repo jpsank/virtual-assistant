@@ -121,7 +121,8 @@ def printColumns(data):
 
 
 class toolBox:
-    def __init__(self):
+    def __init__(self, single):
+        self.single=single
         return
 
     def sing(self):
@@ -554,8 +555,7 @@ class toolBox:
         PREFERENCES["afplay"] = p.pid
         save_preferences()
 
-        global singo
-        if singo:
+        if self.single:
             exit(0)
         while self.processCheck(p) and PREFERENCES["afplay"]:
             time.sleep(0.5)
@@ -1487,10 +1487,10 @@ class toolBox:
 
 
 class VirtAssistant:
-    def __init__(self):
+    def __init__(self, single=False):
         self.match = None
         self.text = None
-        self.toolBox = toolBox()
+        self.toolBox = toolBox(single)
 
     def float_to_str(self,f):
         s = str(f)
@@ -1643,6 +1643,8 @@ class VirtAssistant:
             for choice in r["input"]:
                 self.match = re.match(choice,text,re.IGNORECASE)
                 if self.match is not None:
+                    print(choice)
+                    print(self.match)
                     try:
                         rep = ''.join(self.process_reply(r["reply"]))
                         return self.replaceify(self.evaluate(rep))
@@ -1656,18 +1658,15 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("cmd", nargs='*', type=str, default="", help="Run a single command instead of a session.")
     args = parser.parse_args()
-    global singo
-    singo = False
 
     args.cmd = " ".join(args.cmd)
 
-    assistant = VirtAssistant()
-
     if len(args.cmd) > 0:
-        singo = True
+        assistant = VirtAssistant(single=True)
         rep = assistant.reply(args.cmd, oneline=True)
         if rep is not '': print(rep)
     else:
+        assistant = VirtAssistant()
         while True:
             text = input(primaryCommandPrompt)
             rep = assistant.reply(text)
