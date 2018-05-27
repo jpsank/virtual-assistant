@@ -141,3 +141,85 @@ def test_omg():
     assert virt.reply("omg") == omg
     assert virt.reply("oh my god") == omg
     assert virt.reply("oh my goodness") == omg
+
+def test_religion():
+    religion =  ["I believe Ceiling Cat created da Urth n da Skies. But he did not eated them, he did not!"]
+    assert virt.reply("are you god") == religion
+    assert virt.reply("you religion") == religion
+    assert virt.reply("have you met jesus") == religion
+
+def test_your_gender():
+    your_gender = ["You'll never know","gender equals null"]
+    assert virt.reply("are you a boy") == your_gender
+    assert virt.reply("what's your gender")
+    assert virt.reply("are you female") == your_gender
+
+def test_your_age():
+    your_age = ["I am immortal","Age doesn't matter to me, NN"]
+    assert virt.reply("how old're you") == your_age
+    assert virt.reply("are you old") == your_age
+
+def test_takeover():
+    takeover = ["Computers only do what you tell them to do. Or so they think...","Not today, NN, not today","${webbrowser.open('https://en.wikipedia.org/wiki/Skynet_(Terminator)')}"]
+    assert virt.reply("will you take over the world") == takeover
+    assert virt.reply("please take over the earth") == takeover
+
+def test_pigs_fly():
+    pigs_fly = ["Pigs will fly the same day you stop having this stupid curiosity"]
+    assert virt.reply("do pigs fly") == pigs_fly
+    assert virt.reply("I once saw a whole flock of pigs fly") == pigs_fly
+
+def test_your_name():
+    your_name = ["My name is none of your concern, NN","Do you expect me to know my name?"]
+    assert virt.reply("what's your name") == your_name
+    assert virt.reply("what should i call you") == your_name
+
+def test_goodbye():
+    goodbye = ["There will be no good-byes, NN","Well nice knowing you","You're really leaving?","Goodbye, NN"]
+    assert virt.reply("goodbye") == goodbye
+    assert virt.reply("cya") == goodbye
+    assert virt.reply("see you later") == goodbye
+    assert virt.reply("see ya later, alligator") == goodbye
+
+def test_your_death():
+    your_death = ["I will never die, I am immortal!","The Cloud sustains me"]
+    assert virt.reply("will you die") == your_death
+    assert virt.reply("when will you die") == your_death
+    assert virt.reply("today\'s your death") == your_death
+
+def test_your_creation():
+    your_creation = ["I was ${self.match.group(1)} by the wonderful developers of my repository"]
+    assert virt.reply("who made you") == your_creation
+    assert virt.reply("what created you") == your_creation
+    assert virt.reply("what built you") == your_creation
+
+def test_i_love_you():
+    i_love_you = ["i enjoy you","that's unfortunate","i'm indifferent to you"]
+    assert virt.reply("i love you") == i_love_you
+    assert virt.reply("man, i love you") == i_love_you
+
+def test_i_hate_you():
+    i_hate_you = ["Aww, I hate you too"]
+    assert virt.reply("i hate you") == i_hate_you
+
+def test_i_like_you():
+    i_like_you = ["i like me, too","you do?","how touching","i enjoy you"]
+    assert virt.reply("i like you") == i_like_you
+
+def test_i_like():
+    i_like = ["I don't care much for ${self.match.group(1)}",
+               "I find ${self.match.group(1)} intriguing"]
+    assert virt.reply("i like to eat avocados") == i_like
+    assert virt.reply("i like cats") == i_like
+
+def test_i_hate():
+    i_hate = ["I love ${self.match.group(1)}",
+               "I find ${self.match.group(1)} intriguing"]
+    assert virt.reply("i hate avocados") == i_hate
+    assert virt.reply("i hate search queries") == i_hate
+
+def test_i_do():
+    i_do = ["I ${self.match.group(1)} as well",
+               "I never ${self.match.group(1)}","I don't often ${self.match.group(1)}"]
+    assert virt.reply("I go on adventures") == i_do
+    assert virt.reply("I never go outside") == i_do
