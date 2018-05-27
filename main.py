@@ -1643,8 +1643,6 @@ class VirtAssistant:
             for choice in r["input"]:
                 self.match = re.match(choice,text,re.IGNORECASE)
                 if self.match is not None:
-                    print(choice)
-                    print(self.match)
                     try:
                         rep = ''.join(self.process_reply(r["reply"]))
                         return self.replaceify(self.evaluate(rep))
