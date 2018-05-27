@@ -114,7 +114,7 @@ RESPONSES = [
      "reply": ["I'm fine, NN","I am doing quite well, NN!","Systems are online"]},
     {"input": [".*how('s| has) your day"],
      "reply": ["My day has been fine, NN","My day was fine until you got here... now it's better!"]},
-    {"input": ["(?:it's|what|today's).* (a|an) (good|fine|great|amazing|wonderful|beautiful|terrific|awesome|nice) day"],
+    {"input": ["(?:it's|what|today's).* (a|an) (fine|great|amazing|wonderful|beautiful|terrific|awesome|nice) day"],
      "reply": ["If it were ${self.match.group(1)} ${self.match.group(2)} day I would know, NN",
                "${self.match.group(1).title()} ${self.match.group(2)} day indeed, NN"]},
 
@@ -123,7 +123,7 @@ RESPONSES = [
     {"input": [r".*\bstory\b"],
      "reply": ["Once upon a time, there was a guy named Bob. Bob died THE END",
                "Once upon a time, there was an adventurer like you, but then he took an arrow to the knee"]},
-    {"input": [".*you.*pet"],
+    {"input": [".*you.*pet(|s)"],
      "reply": ["I had a Roomba once","I have 6.5 billion cats","I like turtles"]},
     {"input": [".*poem"],
      "reply": ["Roses are red. Roses are blue. Roses are other colors, too."]},

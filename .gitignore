@@ -206,3 +206,5 @@ contacts.json
 preferences.json
 
 response_data.p
+
+.pytest_cache
