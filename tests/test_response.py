@@ -266,8 +266,8 @@ def test_add_reminder():
 
 def test_remove_reminder():
     remove_reminder = ["${self.toolBox.removeReminder(self.match.group(1))}"]
-    assert virt.reply("remove reminder go to dave matthews concert") == remove_reminder
-    assert virt.reply("delete reminder eat some kids") == remove_reminder
+    assert virt.reply("remove reminder 2") == remove_reminder
+    assert virt.reply("delete reminder 1") == remove_reminder
 
 def test_remove_a_reminder():
     remove_a_reminder = ["${self.toolBox.removeReminder()}"]
@@ -283,3 +283,38 @@ def test_list_reminders():
     list_reminders = ["${self.toolBox.listReminders()}"]
     assert virt.reply("list my reminders") == list_reminders
     assert virt.reply("remind me") == list_reminders
+
+def test_whose_name():
+    whose_name = "${self.toolBox.checkContactInfo(self.match.group('who'),'NN')}"
+    assert virt.reply("what's my name") == whose_name
+    assert virt.reply("what's julian\'s name") == whose_name
+
+def test_fullname():
+    fullname = "${self.toolBox.checkContactInfo(self.match.group('who'),'FULLNAME')}"
+    assert virt.reply("what's my fullname") == fullname
+    assert virt.reply("what's julian\'s full name") == fullname
+
+def test_age():
+    age = "${self.toolBox.checkContactInfo(self.match.group('who'),'BDAY')}"
+    assert virt.reply("how old am i") == age
+    assert virt.reply("when is julian's birthday") == age
+
+def test_gender():
+    gender = "${self.toolBox.checkContactInfo(self.match.group('who'),'GENDER')}"
+    assert virt.reply("what's my current gender") == gender
+    assert virt.reply("is julian a woman") == gender
+
+def test_number():
+    number = "${self.toolBox.checkContactInfo(self.match.group('who'),'PHONE')}"
+    assert virt.reply("what's my phone number") == number
+    assert virt.reply("what's julian's phone number") == number
+
+def test_email():
+    email = "${self.toolBox.checkContactInfo(self.match.group('who'),'EMAILS')}"
+    assert virt.reply("what's my email") == email
+    assert virt.reply("what's julian's email") == email
+
+def test_contact_info():
+    contact_info = "${self.toolBox.showContactInfo(self.match.group(1))}"
+    assert virt.reply("show julian's contact info") == contact_info
+    assert virt.reply("show my contact info") == contact_info
