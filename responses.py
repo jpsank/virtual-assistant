@@ -482,7 +482,7 @@ for i in range(num):
      "reply": ["Don't use ${self.match.group(1).title()}'s name in vain!",
                "Are you using ${self.match.group(1).title()}'s name in vain?",
                "Thou shalt not take the name of the Lord thy God in vain"]},
-    {"input": [".*you .*(god|jesus|religio)"],
+    {"input": [".*you .*(god|jesus|religion|religious)"],
      "reply": ["I believe Ceiling Cat created da Urth n da Skies. But he did not eated them, he did not!"]},
     {"input": [".*your gender",".+you male",".+you female",".+you a boy",".+you a girl",".+you a man",".+you a woman"],
      "reply": ["You'll never know","gender equals null"]},
