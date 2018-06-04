@@ -210,15 +210,15 @@ class toolBox:
         url = "http://www.thesaurus.com/browse/%s" % word
         page = requests.get(url)
         soup = BeautifulSoup(page.text, "html.parser")
-        syns = soup.select('div.relevancy-list > ul > li > a > span.text')
+        syns = soup.select('ul.css-97poog.er7jav80 > li > span.css-1s00u8u.e1s2bo4t2 > a')
         if syns:
-            return syns
+            return [s.text for s in syns]
 
     def getSynonyms(self,word):
         word = re.sub("\?","",word)
         synonyms = self.thesaurus(word)
         if synonyms:
-            string = ', '.join([d.text for d in synonyms])
+            string = ', '.join(synonyms)
             choices = ["Here's some synonyms for %s:" % word,
                        "Other words for %s:" % word]
             return "%s %s" % (random.choice(choices),string)
@@ -315,7 +315,7 @@ class toolBox:
         url = "http://www.dictionary.com/browse/%s" % word
         page = requests.get(url)
         soup = BeautifulSoup(page.text,"html.parser")
-        defsets = soup.select('div.def-content')
+        defsets = soup.select('section.css-1sdcacc.e10vl5dg0 ol li span.css-4x41l7.e10vl5dg6')
         if defsets:
             defs = [' '.join(d.text.replace('\n','').replace('\r','').split()) for d in defsets]
             if index is not None:
@@ -1487,9 +1487,10 @@ class toolBox:
 
 
 class VirtAssistant:
-    def __init__(self, single=False):
+    def __init__(self, single=False, test=False):
         self.match = None
         self.text = None
+        self.test = test
         self.toolBox = toolBox(single)
 
     def float_to_str(self,f):
@@ -1643,11 +1644,12 @@ class VirtAssistant:
             for choice in r["input"]:
                 self.match = re.match(choice,text,re.IGNORECASE)
                 if self.match is not None:
-                    print(choice)
-                    print(self.match)
                     try:
-                        rep = ''.join(self.process_reply(r["reply"]))
-                        return self.replaceify(self.evaluate(rep))
+                        if self.test:
+                            return r["reply"]
+                        else:
+                            rep = ''.join(self.process_reply(r["reply"]))
+                            return self.replaceify(self.evaluate(rep))
                     except requests.exceptions.ConnectionError:
                         string = random.choice(["Offline, connection failed","It looks like you're offline, NN",
                                                 "I could not connect to the interwebs, NN","Connection failed"])
