@@ -206,6 +206,43 @@ class toolBox:
         else:
             return "'%s' is not a palindrome" % word
 
+    def get_bcast_ip(self):
+        ifconfig = os.popen("ifconfig | grep -Eo '(Bcast:)?(([0-9]+\.){3}255)' | grep -Eo '(([0-9]+\.){3}255)'").read()
+        bcast = ifconfig.split("\n")[0]
+        return bcast
+
+    def retrieveIP(self):
+        re_ip = "(([0-9]+\.){3}[0-9]+)"
+        cmd = "ifconfig | grep -Eo 'inet (addr:)?{0}' | grep -Eo '{0}' | grep -v '127.0.0.1'".format(re_ip)
+        ifconfig = os.popen(cmd).read()
+        ips = ifconfig.split("\n")
+        bcast = self.get_bcast_ip()
+        ip_start = '.'.join(bcast.split('.')[:-1])
+        ips = [i for i in ips if i.startswith(ip_start) and i != bcast]
+        ip = ips[0]
+        return ip
+
+    def getLocalIP(self):
+        if platform.system() == "Windows":
+            return "Sorry, that feature isn't supported for you yet"
+        ip = self.retrieveIP()
+        return random.choice([
+            "Your local IP is {}, NN",
+            "I found your local IP: {}",
+        ]).format(ip)
+
+    def retrievePublicIP(self):
+        return requests.get('http://ip.42.pl/raw').text
+
+    def getPublicIP(self):
+        if platform.system() == "Windows":
+            return "Sorry, that feature isn't supported for you yet"
+        ip = self.retrievePublicIP()
+        return random.choice([
+            "Your public IP is {}, NN",
+            "I found your public IP: {}",
+        ]).format(ip)
+
     def thesaurus(self,word):
         url = "http://www.thesaurus.com/browse/%s" % word
         page = requests.get(url)

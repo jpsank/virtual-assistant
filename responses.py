@@ -247,6 +247,12 @@ for i in range(num):
     {"input": [r"\b(sleep|shutdown|suspend|reboot)\b"],
      "reply": ["${self.toolBox.sleep(self.match.group(1))}"]},
 
+    # what's my ip
+    {"input": [".*what's my ip",".*public ip",".*my ip"],
+     "reply": ["${self.toolBox.getPublicIP()}"]},
+    {"input": [".*(local|private) ip"],
+     "reply": ["${self.toolBox.getLocalIP()}"]},
+
     # SEARCHING THE WEB
     # movies
     {"input": [".*movie (?:times|show times|showtimes)"],
