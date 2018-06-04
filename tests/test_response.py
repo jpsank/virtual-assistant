@@ -463,3 +463,119 @@ def test_roll_special_die():
 def test_roll_die():
     roll_die = (["it's ","rolling... it's ","OK, it's "],"${str(random.randint(1,6))}",[" this time",""])
     assert virt.reply("roll a die") == roll_die
+
+def test_basic_math():
+    basic_math = ("${print('%s = %s' % self.toolBox.basicMath(self.match.group(1)))}")
+    assert virt.reply("calculate square root of 2 time 4") == basic_math
+    assert virt.reply("solve 13 squared") == basic_math
+
+def test_timer():
+    timer = (["all done","happy new years!"],'''<exec>
+num = int(self.match.group(2))
+for i in range(num):
+    print(num-i)
+</exec>''')
+    assert virt.reply("countdown from 10") == timer
+    assert virt.reply("count down from 500") == timer
+
+def test_countdown():
+    countdown = (["all done","happy new years!"],'''<exec>
+num = self.toolBox.promptD("from what?")[0]
+for i in range(num):
+    print(num-i)
+    </exec>''')
+    assert virt.reply("countdown") == countdown
+    assert virt.reply("count down") == countdown
+
+def test_battery():
+    battery = "${self.toolBox.battery()}"
+    assert virt.reply("battery") == battery
+
+def test_terminal_cmd():
+    terminal_cmd =  "<exec>self.toolBox.runTerminal(self.match.group(1))</exec>"
+    assert virt.reply("run ls in cmd") == terminal_cmd
+    assert virt.reply("run lolcat") == terminal_cmd
+
+def test_terminal_mode():
+    terminal_mode = "<exec>self.toolBox.terminalMode()</exec>"
+    assert virt.reply("terminal mode") == terminal_mode
+    assert virt.reply("activate cmd") == terminal_mode
+
+def test_sleep():
+    sleep = ["${self.toolBox.sleep(self.match.group(1))}"]
+    assert virt.reply("sleep") == sleep
+    assert virt.reply("reboot") == sleep
+    assert virt.reply("shutdown") == sleep
+
+def test_general_showtimes():
+    general_showtimes = ('''${self.toolBox.getMovieTimes()}''')
+    assert virt.reply("get movie times") == general_showtimes
+    assert virt.reply("movie showtimes") == general_showtimes
+
+def test_specific_showtimes():
+    specific_showtimes = ('''${self.toolBox.getMovieTimes(self.match.group(1))}''')
+    assert virt.reply("get showtimes for Julian's Cool Movie") == specific_showtimes
+    assert virt.reply("show times for Kidz Bop: The Movie") == specific_showtimes
+
+def test_nearby_movies():
+    nearby_movies = ('''${self.toolBox.getMoviesNearMe()}''')
+    assert virt.reply("find movies near me") == nearby_movies
+    assert virt.reply("display nearby movies") == nearby_movies
+
+def test_directions_to():
+    directions_to = (["Opening Google Maps...","Finding directions..."],"${webbrowser.open(self.toolBox.directionsURL(*reversed(self.match.groups())))}")
+    assert virt.reply("find directions from fayetteville to seattle") == directions_to
+    assert virt.reply("directions to china") == directions_to
+
+def test_how_long():
+    how_long = (["Opening Google Maps...", "Finding directions..."],
+     "${webbrowser.open(self.toolBox.directionsURL(self.match.group(3),self.match.group(2)))}")
+    assert virt.reply("how long from california to arkansas") == how_long
+    assert virt.reply("how many miles from california to new mexico") == how_long
+
+def test_google_map_search():
+    google_map_search = '''${self.toolBox.googleMapSearch(self.match.group(1))}'''
+    assert virt.reply("show me california on the map") == google_map_search
+    assert virt.reply("find north carolina on a map") == google_map_search
+
+def test_open_something():
+    open_something = '''${self.toolBox.openSomething(self.match.group(1))}'''
+    assert virt.reply("open /etc/hosts.txt") == open_something
+    assert virt.reply("open coolFile.txt") == open_something
+    assert virt.reply("open steam") == open_something
+    assert virt.reply("open google chrome") == open_something
+    assert virt.reply("open https://github.com/puffyboa/virtual-assistant") == open_something
+    assert virt.reply("open https://duckduckgo.com") == open_something
+
+def test_music_control():
+    music_control = "${self.toolBox.musicControl(self.match.group(1))}"
+    assert virt.reply("play music") == music_control
+    assert virt.reply('previous track') == music_control
+    assert virt.reply("commence next song") == music_control
+    assert virt.reply("next track") == music_control
+
+def test_start_music():
+    start_music = "${self.toolBox.musicControl('play')}"
+    assert virt.reply("commence track") == start_music
+    assert virt.reply("initiate music") == start_music
+
+def test_stop_music():
+    stop_music = "${self.toolBox.musicControl('pause')}"
+    assert virt.reply("turn off music") == stop_music
+    assert virt.reply("end track") == stop_music
+
+def test_play_song():
+    play_song = "${self.toolBox.browseMusic(self.match.group(1))}"
+    assert virt.reply("play Lucas's mix") == play_song
+    assert virt.reply("play bean dip") == play_song
+
+def test_currently_playing():
+    currently_playing = "Currently Playing: ${self.toolBox.getCurrentSong()}"
+    assert virt.reply("what song is this") == currently_playing
+    assert virt.reply("what is this song") == currently_playing
+    assert virt.reply("what\'s playing") == currently_playing
+
+def test_volume():
+    volume = "${self.toolBox.volumeControl(self.match.group(1))}"
+    assert virt.reply("set volume to 10") == volume
+    assert virt.reply("volume 5") == volume

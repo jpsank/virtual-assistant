@@ -218,7 +218,7 @@ RESPONSES = [
      "reply": ("${print('%s = %s' % self.toolBox.basicMath(self.match.group(1)))}")},
 
     # TIMER/COUNTDOWN
-    {"input": [".*(countdown|count down from (\d+))"],
+    {"input": [".*(countdown|count down) from (\d+)"],
      "reply": (["all done","happy new years!"],'''<exec>
 num = int(self.match.group(2))
 for i in range(num):
@@ -265,10 +265,6 @@ for i in range(num):
      "reply": '''${self.toolBox.googleMapSearch(self.match.group(1))}'''},
 
     # open website/file
-    {"input": [".*(?:open|go to) ((?:.+\.)?.+\..+)"],
-     "reply": '''${self.toolBox.openSomething(self.match.group(1))}'''},
-    {"input": [".*(?:open|go to) (https|http)://(.+)\.(.+)"],
-     "reply": '''${self.toolBox.openSomething("%s://%s.%s" % self.match.groups())}'''},
     {"input": [".*(?:open|launch) (.+)"],
      "reply": '''${self.toolBox.openSomething(self.match.group(1))}'''},
 
@@ -283,7 +279,7 @@ for i in range(num):
      "reply": "${self.toolBox.musicControl('pause')}"},
     {"input": ["play (.+)"],
      "reply":"${self.toolBox.browseMusic(self.match.group(1))}"},
-    {"input":["what(\'|)s playing", "song is this", "this song"],
+    {"input":["what(\'|)s playing", "(what |)song(\'s| is) this", "(what |what is |what's |)this song"],
      "reply":"Currently Playing: ${self.toolBox.getCurrentSong()}"},
 
     # volume control
