@@ -408,3 +408,58 @@ def test_list_contact():
     list_contact = "${'Here are all your contacts: \\n'+'\\n'.join(self.toolBox.contactList())}"
     assert virt.reply("list my contacts") == list_contact
     assert virt.reply("what're my contacts") == list_contact
+
+def test_favorite_color():
+    favorite_color = ["I really love the unique shades of beige.", "Blood red has a relaxing quality.","I enjoy the color #F5F5DC"]
+    assert virt.reply("what's your favorite color") == favorite_color
+
+def test_favorite_movie():
+    favorite_movie = ["The Terminator","Star Wars: Holiday Special", "Kidz Bop: The Movie"]
+    assert virt.reply("what's your favorite movie") ==favorite_movie
+
+def test_favorite_idiot():
+    favorite_idiot = ["You!"]
+    assert virt.reply("who is your favorite idiot") == favorite_idiot
+    assert virt.reply("who's your favorite dingbat") == favorite_idiot
+
+def test_favorite_animal():
+    favorite_anmial = ["I love the sea slug"]
+    assert virt.reply("what's your favorite animal") == favorite_anmial
+    assert virt.reply("do you have a favorite pet") == favorite_anmial
+
+def test_favorite_holiday():
+    favorite_holiday = ["Crosswalk Safety Awareness Day!!"]
+    assert virt.reply("what's your favorite holiday") == favorite_holiday
+
+def test_general_favorite():
+    general_favorite = ['I have no favorite ${self.match.group(1)}',"I don't like to play favorites, NN"]
+    assert virt.reply("what's your favorite cat meat") == general_favorite
+    assert virt.reply("what's your favorite therapist") == general_favorite
+
+def test_help_with():
+    help_with = ["${self.toolBox.getHelp(self.match.group(1))}"]
+    assert virt.reply("help email") == help_with
+    assert virt.reply("help music") == help_with
+
+def test_help():
+    help = ["${self.toolBox.getHelp()}"]
+    assert virt.reply("help") == help
+    assert virt.reply("what can i ask you") == help
+
+def test_random_number():
+    random_number = (["it's ","that would be "],"${str(random.randint(int(self.match.group(1)),int(self.match.group(2))))}")
+    assert virt.reply("pick a number between 1 and 10") == random_number
+    assert virt.reply("pick a number from 1 to 10") == random_number
+
+def test_coin_flip():
+    coin_flip = (["it landed on ","it landed "],"${'heads' if random.randint(0,1)==1 else 'tails'}",[" this time",""])
+    assert virt.reply("flip a coin") == coin_flip
+
+def test_roll_special_die():
+    roll_special_die = (["it's ","rolling... it's ","OK, it's "],"${str(random.randint(1,int(self.match.group(1))))}",[" this time",""])
+    assert virt.reply("roll a twenty sided die") == roll_special_die
+    assert virt.reply("roll a 20 sided die") == roll_special_die
+
+def test_roll_die():
+    roll_die = (["it's ","rolling... it's ","OK, it's "],"${str(random.randint(1,6))}",[" this time",""])
+    assert virt.reply("roll a die") == roll_die
