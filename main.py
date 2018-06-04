@@ -1487,9 +1487,10 @@ class toolBox:
 
 
 class VirtAssistant:
-    def __init__(self, single=False):
+    def __init__(self, single=False, test=False):
         self.match = None
         self.text = None
+        self.test = test
         self.toolBox = toolBox(single)
 
     def float_to_str(self,f):
@@ -1643,11 +1644,12 @@ class VirtAssistant:
             for choice in r["input"]:
                 self.match = re.match(choice,text,re.IGNORECASE)
                 if self.match is not None:
-                    print(choice)
-                    print(self.match)
                     try:
-                        rep = ''.join(self.process_reply(r["reply"]))
-                        return self.replaceify(self.evaluate(rep))
+                        if self.test:
+                            return r["reply"]
+                        else:
+                            rep = ''.join(self.process_reply(r["reply"]))
+                            return self.replaceify(self.evaluate(rep))
                     except requests.exceptions.ConnectionError:
                         string = random.choice(["Offline, connection failed","It looks like you're offline, NN",
                                                 "I could not connect to the interwebs, NN","Connection failed"])
