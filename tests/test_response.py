@@ -318,3 +318,93 @@ def test_contact_info():
     contact_info = "${self.toolBox.showContactInfo(self.match.group(1))}"
     assert virt.reply("show julian's contact info") == contact_info
     assert virt.reply("show my contact info") == contact_info
+
+def test_change_name():
+    change_name = "${self.toolBox.changeContactInfoSTR(self.match.group('who'),'NN',self.match.group('val'))}"
+    assert virt.reply("change julian's name to silly") == change_name
+    assert virt.reply("call me brian") == change_name
+
+def test_change_fullname():
+    change_fullname = "${self.toolBox.changeContactInfoSTR(self.match.group('who'),'FULLNAME',self.match.group('val'))}"
+    assert virt.reply("change virt's fullname to brian") == change_fullname
+    assert virt.reply("change my full name to brian") == change_fullname
+
+def test_birthday():
+    birthday = "${self.toolBox.changeContactInfoSTR(self.match.group('who'),'BDAY',self.match.group('val'))}"
+    assert virt.reply("change brian's birthday to 08/05/03") == birthday
+    assert virt.reply("change my birthday to tomorrow") == birthday
+
+def test_change_female():
+    change_female = "${self.toolBox.changeContactInfoSTR(self.match.group('who'),'GENDER','female')}"
+    assert virt.reply("Brian is a woman") == change_female
+    assert virt.reply("Julian is a girl") == change_female
+
+def test_change_male():
+    change_male = "${self.toolBox.changeContactInfoSTR(self.match.group('who'),'GENDER','male')}"
+    assert virt.reply("Brian is a man") == change_male
+    assert virt.reply("My gender is male") == change_male
+
+def test_change_phone():
+    change_phone = "${self.toolBox.changeContactInfoSTR(self.match.group('who'),'PHONE',self.match.group('val'))}"
+    assert virt.reply("change brian's phone number to 123456789") == change_phone
+    assert virt.reply("change my number to 234566789") == change_phone
+
+def test_change_email():
+    change_email = "${self.toolBox.changeContactInfoLIST(self.match.group('who'),'EMAILS','update',self.match.group('val'))}"
+    assert virt.reply("change my email to brian@puffyboa.xyz") == change_email
+    assert virt.reply("change brian's email to brian@puffyboa.xyz") == change_email
+
+def test_update_email():
+    update_email = "${self.toolBox.changeContactInfoLIST(self.match.group('who'),'EMAILS','update')}"
+    assert virt.reply("change my email") == update_email
+    assert virt.reply("change brian's email") == update_email
+
+def test_add_email():
+    add_email = "${self.toolBox.changeContactInfoLIST(self.match.group('who'),'EMAILS','add',self.match.group('val'))}"
+    assert virt.reply("add brian's email brian@puffyboa.xyz") == add_email
+    assert virt.reply("add my email brian@puffyboa.xyz") == add_email
+
+def test_add_email_no_input():
+    add_email_no_input ="${self.toolBox.changeContactInfoLIST(self.match.group('who'),'EMAILS','add')}"
+    assert virt.reply("add my email") == add_email_no_input
+    assert virt.reply("add brian's email") == add_email_no_input
+
+def test_add_an_email():
+    add_an_email = "${self.toolBox.changeContactInfoLIST('my','EMAILS','add')}"
+    assert virt.reply("add an email") == add_an_email
+    assert virt.reply("add another email") == add_an_email
+
+def test_remove_an_email():
+    remove_an_email = "${self.toolBox.changeContactInfoLIST(self.match.group('who'),'EMAILS','remove',self.match.group('val'))}"
+    assert virt.reply("remove brian's email brian@puffyboa.xyz") == remove_an_email
+    assert virt.reply("remove my email brian@puffyboa.xyz") == remove_an_email
+
+def test_remove_email():
+    remove_email = "${self.toolBox.changeContactInfoLIST(self.match.group('who'),'EMAILS','remove')}"
+    assert virt.reply("remove brian's email") == remove_email
+    assert virt.reply("remove my email") == remove_email
+
+def test_add_contact():
+    add_contact = "${self.toolBox.addContact(self.match.group(1))}"
+    assert virt.reply("add contact brian") == add_contact
+    assert virt.reply("add brian as a contact") == add_contact
+
+def test_create_contact():
+    create_contact = "${self.toolBox.addContact()}"
+    assert virt.reply("make contact") == create_contact
+    assert virt.reply("create contact") == create_contact
+
+def test_remove_contact():
+    remove_contact = "${self.toolBox.removeContact(self.match.group(1))}"
+    assert virt.reply("forget brian as a contact") == remove_contact
+    assert virt.reply("remove brian as a contact") == remove_contact
+
+def test_remove_a_contact():
+    remove_a_contact = "${self.toolBox.removeContact()}"
+    assert virt.reply("remove a contact") == remove_a_contact
+    assert virt.reply("forget contact") == remove_a_contact
+
+def test_list_contact():
+    list_contact = "${'Here are all your contacts: \\n'+'\\n'.join(self.toolBox.contactList())}"
+    assert virt.reply("list my contacts") == list_contact
+    assert virt.reply("what're my contacts") == list_contact
