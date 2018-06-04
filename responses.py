@@ -344,6 +344,10 @@ for i in range(num):
     {"input": ["duck"],
      "reply": ["${self.toolBox.duckIt()}"]},
 
+    {"input": [".*meaning of life"],
+     "reply": ["that's right, ask a computer a question it cannot understand",
+               "life is unimportant"]},
+
     # dictionary stuff
     {"input": ["define (.+)",".+definition of (.+)",".+meaning of (.+)",".+ does (.+) mean"],
      "reply": "${self.toolBox.getDefinition(re.sub(r'[\W]', ' ', self.match.group(1)))}"},
@@ -525,8 +529,6 @@ for i in range(num):
      "reply": ["how many roads must a man walk down?",
                "The Answer to the Great Question... Of Life, the Universe and Everything... Is... Forty-Two",
                "You're really not going to like it"]},
-    {"input": [".*meaning of life"],
-     "reply": ["that's right, ask a computer a question it cannot understand","life is unimportant"]},
     {"input": [".*'re you so smart"],
      "reply": ["I am only as smart as my creator"]},
     {"input": [".*describe yourself"],

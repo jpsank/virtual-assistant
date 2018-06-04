@@ -43,10 +43,15 @@ def test_best_friend():
     assert virt.reply("you're my best friend") == best_friend
     assert virt.reply("you're my bff") == best_friend
 
+def test_you_are_a():
+    you_are_a = ["You could say that", "How dare you call me ${self.match.group(2)}", "I'm touched",
+               "I'm your ${self.match.group(2)}"]
+    assert virt.reply("you're a meanie") == you_are_a
+    assert virt.reply("i think you're a scary robot") == you_are_a
+
 def test_you_are():
-    you_are = ["You could say that", "How dare you call me ${self.match.group(1)}","I'm touched"]
-    assert virt.reply("you're a meanie") == you_are
-    assert virt.reply("i think you're a scary robot") == you_are
+    you_are = ["You could say that", "How dare you call me ${self.match.group(1)}", "I'm touched"]
+    assert virt.reply("you're mean") == you_are
 
 def test_i_am():
     i_am = ["Hello ${self.match.group(1)}, I'm your personal assistant","Nice to meet you, ${self.match.group(1)}, I'm your personal assistant"]
@@ -223,3 +228,58 @@ def test_i_do():
                "I never ${self.match.group(1)}","I don't often ${self.match.group(1)}"]
     assert virt.reply("I go on adventures") == i_do
     assert virt.reply("I never go outside") == i_do
+
+def test_answer_to():
+    answer_to = ["how many roads must a man walk down?","The Answer to the Great Question... Of Life, the Universe and Everything... Is... Forty-Two","You're really not going to like it"]
+    assert virt.reply("what's the answer to life") == answer_to
+    assert virt.reply("do you know the answer to the universe") == answer_to
+    assert virt.reply("the answer to everything") == answer_to
+
+def test_meaning_of_life():
+    meaning_of_life = ["that's right, ask a computer a question it cannot understand","life is unimportant"]
+    assert virt.reply("what's the meaning of life") == meaning_of_life
+
+def test_you_smart():
+    you_smart = ["I am only as smart as my creator"]
+    assert virt.reply("why're you so smart") == you_smart
+
+def test_describe_yourself():
+    describe_yourself = ["Cold and calculating. Sometimes warm, if my processor gets excited",
+               "I'm loyal, and would never do anything to hurt you","I'm trustworthy. I never lie","Eager to assist you"]
+    assert virt.reply("how do you describe yourself") == describe_yourself
+    assert virt.reply("describe yourself") == describe_yourself
+
+def test_palindrome():
+    palindrome = ["${self.toolBox.doCheckPalindrome(self.match.group(1))}"]
+    assert virt.reply("is racecar palindromic") == palindrome
+    assert virt.reply("is tacocat a palindrome") == palindrome
+
+def test_make_reminder():
+    make_reminder = ["${self.toolBox.addReminder(self.match.group(1))}"]
+    assert virt.reply("make reminder eat some kids") == make_reminder
+    assert virt.reply("remind me to go to dave matthews concert") == make_reminder
+
+def test_add_reminder():
+    add_reminder = ["${self.toolBox.addReminder()}"]
+    assert virt.reply("add a reminder") == add_reminder
+    assert virt.reply("add reminder") == add_reminder
+
+def test_remove_reminder():
+    remove_reminder = ["${self.toolBox.removeReminder(self.match.group(1))}"]
+    assert virt.reply("remove reminder go to dave matthews concert") == remove_reminder
+    assert virt.reply("delete reminder eat some kids") == remove_reminder
+
+def test_remove_a_reminder():
+    remove_a_reminder = ["${self.toolBox.removeReminder()}"]
+    assert virt.reply("remove a reminder") == remove_a_reminder
+    assert virt.reply("delete a reminder") == remove_a_reminder
+
+def test_remove_all_reminders():
+    remove_all_reminders = ["${self.toolBox.removeAllReminders()}"]
+    assert virt.reply("remove all my reminders") == remove_all_reminders
+    assert virt.reply("delete all my reminders") == remove_all_reminders
+
+def test_list_reminders():
+    list_reminders = ["${self.toolBox.listReminders()}"]
+    assert virt.reply("list my reminders") == list_reminders
+    assert virt.reply("remind me") == list_reminders
