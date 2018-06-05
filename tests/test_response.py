@@ -579,3 +579,109 @@ def test_volume():
     volume = "${self.toolBox.volumeControl(self.match.group(1))}"
     assert virt.reply("set volume to 10") == volume
     assert virt.reply("volume 5") == volume
+
+def test_reddit_one():
+    reddit_one = ['''${self.toolBox.redditLookup(self.match.group(1))}''']
+    assert virt.reply("search reddit for cats") == reddit_one
+    assert virt.reply("reddit cats") == reddit_one
+
+def test_reddit_two():
+    reddit_two = ['''${self.toolBox.redditLookup(self.match.group(2))}''']
+    assert virt.reply("look up cats on reddit") == reddit_two
+    assert virt.reply("find cats on reddit") == reddit_two
+
+def test_browse_reddit():
+    browse_reddit = ['''${self.toolBox.redditLookup()}''']
+    assert virt.reply("browse reddit") == browse_reddit
+    assert virt.reply("search reddit") == browse_reddit
+
+def test_xkcd_lookup():
+    xkcd_lookup = ["${self.toolBox.xkcdComic(self.match.group(1))}"]
+    assert virt.reply("xkcd comic number 10") == xkcd_lookup
+    assert virt.reply("xkcd number 1337") == xkcd_lookup
+
+def test_xkcd():
+    xkcd = ["${self.toolBox.xkcdComic()}"]
+    assert virt.reply("xkcd") == xkcd
+    assert virt.reply("view a comic") == xkcd
+
+def test_wikipedia_for():
+    wikipedia_for = ["${self.toolBox.wikiLookupRespond(self.match.group(1))}"]
+    assert virt.reply("wikipedia for cats") == wikipedia_for
+    assert virt.reply("wikipedia cats") == wikipedia_for
+
+def test_find_on_wikipedia():
+    find_on_wikipedia = ["${self.toolBox.wikiLookupRespond(self.match.group(1))}"]
+    assert virt.reply("find cats on wikipedia") == find_on_wikipedia
+    assert virt.reply("show me cats on wikipedia") == find_on_wikipedia
+
+def test_wiki_decade():
+    wiki_decade = ["${self.toolBox.wikiDecadeFind(self.match.group(1))}"]
+    assert virt.reply("find the 3rd century") == wiki_decade
+    assert virt.reply("look up the 15th century") == wiki_decade
+
+def test_news_about():
+    news_about = (["Will do, NN","opening Google News...","Here's the news about ${self.match.group(1)}"],"${webbrowser.open('https://news.google.com/news/search/section/q/%s' % self.match.group(1))}")
+    assert virt.reply("news about cats") == news_about
+    assert virt.reply("news for cat meat") == news_about
+
+def test_news():
+    news = (["Will do, NN","opening Google News...","Here's the news"],"${webbrowser.open('https://news.google.com/news/')}")
+    assert virt.reply("news") == news
+
+def test_lookup_amazon():
+    lookup_amazon = ["${self.toolBox.getSearchAmazon(self.match.group(2))}"]
+    assert virt.reply("look up cats on amazon") == lookup_amazon
+    assert virt.reply("search cats on amazon") == lookup_amazon
+
+def test_amazon_for():
+    amazon_for = ["${self.toolBox.getSearchAmazon(self.match.group(1))}"]
+    assert virt.reply("amazon for cats") == amazon_for
+    assert virt.reply("amazon cats") == amazon_for
+
+def test_search_amazon():
+    search_amazon = ["${self.toolBox.getSearchAmazon()}"]
+    assert virt.reply("search amazon") == search_amazon
+    assert virt.reply("shop amazon") == search_amazon
+
+def test_google_images():
+    google_images = ["${webbrowser.open('https://www.google.com/search?q=%s&tbm=isch' % self.match.group(1))}"]
+    assert virt.reply("find pictures of cats") == google_images
+    assert virt.reply("search the web for cat photos") == google_images
+
+def test_google_videos():
+    google_videos = ["${webbrowser.open('https://www.google.com/search?q=%s&tbm=vid' % self.match.group(1))}"]
+    assert virt.reply("find cat videos") == google_videos
+    assert virt.reply("search for cat vids") == google_videos
+
+def test_google_search():
+    google_search = ["${self.toolBox.googleIt(self.match.group(1))}"]
+    assert virt.reply("google cats") == google_search
+    assert virt.reply("look up cats") == google_search
+
+def test_search_web():
+    search_web = ["${self.toolBox.googleIt()}"]
+    assert virt.reply("search the web") == search_web
+
+def test_duck_it():
+    duck_it = ["${self.toolBox.duckIt(self.match.group(1))}"]
+    assert virt.reply("duck cat pictures") == duck_it
+
+def test_duck():
+    duck = ["${self.toolBox.duckIt()}"]
+    assert virt.reply("duck") == duck
+
+def test_define():
+    define = "${self.toolBox.getDefinition(re.sub(r'[\W]', ' ', self.match.group(1)))}"
+    assert virt.reply("define cat") == define
+    assert virt.reply("what's the definition of cat") == define
+
+def test_example_of():
+    example_of = ("${self.toolBox.usedInASentence(re.sub(r'[\W]', ' ', self.match.group(1)))}")
+    assert virt.reply("example of cat in a sentence") == example_of
+    assert virt.reply("use cat in a sentence") == example_of
+
+def test_synonym():
+    synonym = ("${self.toolBox.getSynonyms(self.match.group(1))}")
+    assert virt.reply("synonyms of cat") == synonym
+    assert virt.reply("synonym for dog") == synonym
