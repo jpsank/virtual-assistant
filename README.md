@@ -50,7 +50,7 @@ Virtual-assistant is also mostly mobile compatible! Install in on Pythonista on 
 ## Featured In
 - [Meta-Guide](http://meta-guide.com/software-meta-guide/100-best-github-virtual-assistant)
 - [Open-Open](http://www.open-open.com/github/view/github2017-09-03.html)
-- [Thailand-Mobilezone](http://thailand-mobilezone.com/provision.php?homework-helper-bot)
+- [Thailand-Mobilezone](https://web.archive.org/web/20180604062221/http://thailand-mobilezone.com/provision.php?homework-helper-bot)
 
 ## Contribution
 You can contribute by opening issues and reporting bugs, and you can also help by making pull requests to improve or add new dialog and features. I welcome anything that could help make your virtual assistant better.
