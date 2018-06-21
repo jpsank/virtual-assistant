@@ -811,3 +811,78 @@ def test_my_ip():
     my_ip = ("your ip address is ","${self.toolBox.locationData('query')[0]}",[", NN",""])
     assert virt.reply("what's my ip") == my_ip
     assert virt.reply("what's my ip address") == my_ip
+
+def test_liar():
+    liar = ["I would never tell a lie","Not me"]
+    assert virt.reply("are you a liar") == liar
+    assert virt.reply("do you lie") == liar
+
+def test_guess_what():
+    guess_what = ["what?","tell me!","did you win?"]
+    assert virt.reply("guess what") == guess_what
+
+def test_knock_knock():
+    knock_knock = [" in c stop right there, NN, I know it's you"]
+    assert virt.reply("knock knock") == knock_knock
+
+def test_chicken():
+    chicken = ["How am I supposed to know? Ask the chicken","which chicken?","it just happened to","it probably just wanted to make a difference in the world","To truly know the chicken's motives, you must first understand the chicken itself"]
+    assert virt.reply("why'd the chicken cross the road") == chicken
+
+def test_where_are_you():
+    where_are_you = ["I'm with you, NN", "Where do you think I am?"]
+    assert virt.reply("where're you") == where_are_you
+
+
+def test_shun_mode():
+    shun_mode = "${self.toolBox.shunMode()}"
+    assert virt.reply("please stop talking") == shun_mode
+    assert virt.reply("shut up") == shun_mode
+    assert virt.reply("go away") == shun_mode
+
+def test_sing():
+    sing = ["${self.toolBox.sing()}"]
+    assert virt.reply("sing") == sing
+
+def test_exit():
+    exit = "${exit()}"
+    assert virt.reply("exit") == exit
+    assert virt.reply("turn off") == exit
+
+def test_do_you_like():
+    do_you_like = ["I have never tried ${self.match.group(1)} before","I like whatever you like, NN","It depends, NN"]
+    assert virt.reply("do you like cats") == do_you_like
+    assert virt.reply("do you enjoy warrior cats") == do_you_like
+
+def test_say():
+    say = ["${self.match.group(1)}"]
+    assert virt.reply("say cat") == say
+    assert virt.reply("read book") == say
+
+def test_copycat():
+    copycat = ["${self.match.group(0)}"]
+    assert virt.reply("copycat") == copycat
+    assert virt.reply("stop copying me") == copycat
+
+def test_prank():
+    prank = (["Will do, NN","I would never","Don't give me any ideas"],["${webbrowser.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ')}","${webbrowser.open('http://www.nyan.cat')}"])
+    assert virt.reply("prank me") == prank
+    assert virt.reply("please prank me") == prank
+
+def test_kill_me():
+    kill_me = ["Shall I hire an assassin?"]
+    assert virt.reply("please kill me") == kill_me
+
+def test_who_am_i():
+    who_am_i = ["You're NN, NN","You are the one and only NN","I don't answer philosophical questions","${self.toolBox.personLookup(CONTACTS[0]['NN'])}"]
+    assert virt.reply("who am i") == who_am_i
+
+def test_nice_job():
+    nice_job = ["sarcasm killed the cat, NN", "Don't expect it"]
+    assert virt.reply("nice job") == nice_job
+    assert virt.reply("good job") == nice_job
+
+def test_deny_sarcastic():
+    deny_sarcastic = ["I totally believe you","Hmm...","Sure...","If you say so"]
+    assert virt.reply("that wasn't sarcasm") == deny_sarcastic
+    assert virt.reply("i'm not being sarcastic") == deny_sarcastic
