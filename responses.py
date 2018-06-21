@@ -377,7 +377,7 @@ for i in range(num):
      "reply": "${self.toolBox.weatherPrint('Cloud Cover')}"},
 
     # time/date
-    {"input": [".+time's it",".+s the time",".*current time"],
+    {"input": [".+time's it",".+s the time",".*current time", "time"],
      "reply": (["It's ","the clock says "],"${time.asctime().split()[3]}",[" o'clock",""],", NN")},
     {"input": [".+s the date",".*current date",".+today's date",".+day's it",".*what's today"],
      "reply": ("It's ","${' '.join(time.asctime().split()[:3])}",", NN")},

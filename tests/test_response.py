@@ -737,3 +737,77 @@ def test_cloud_cover():
     cloud_cover = "${self.toolBox.weatherPrint('Cloud Cover')}"
     assert virt.reply("cloud cover") == cloud_cover
     assert virt.reply("what's the cloud cover") == cloud_cover
+
+def test_current_time():
+    current_time =(["It's ","the clock says "],"${time.asctime().split()[3]}",[" o'clock",""],", NN")
+    assert virt.reply("time") == current_time
+    assert virt.reply("what time is it") == current_time
+    assert virt.reply("what's the current time") == current_time
+
+def test_current_day():
+    current_date = ("It's ","${' '.join(time.asctime().split()[:3])}",", NN")
+    assert virt.reply("what's the date") == current_date
+    assert virt.reply("what's today") == current_date
+    assert virt.reply("what's the current date") == current_date
+
+def test_current_year():
+    current_year = (["It's ","The year is ","It's the year of "],"${time.asctime().split()[4]}",", NN")
+    assert virt.reply("what's the current year") == current_year
+    assert virt.reply("WhAT year is it") == current_year
+
+def test_check_email():
+    check_email = ("${self.toolBox.doCheckMail()}")
+    assert virt.reply("check my email") == check_email
+    assert virt.reply("show the gmail") == check_email
+    assert virt.reply("display inbox") == check_email
+
+def test_send_email_to():
+    send_email_to = ["${self.toolBox.doSendMail(self.match.group(1))}"]
+    assert virt.reply("send an email to example@example.com") == send_email_to
+    assert virt.reply("email thomas@catnet.org") == send_email_to
+
+def test_send_email():
+    send_email = ["${self.toolBox.doSendMail()}"]
+    assert virt.reply("send email") == send_email
+    assert virt.reply("send an email") == send_email
+
+def test_where_am_i():
+    where_am_i = "${self.toolBox.whereAmI()}"
+    assert virt.reply("where am i") == where_am_i
+    assert virt.reply("what's my location") == where_am_i
+
+def test_zipcode():
+    zipcode = (["your zipcode is "],"${'{}'.format(*self.toolBox.locationData('zip_code'))}")
+    assert virt.reply("what's my zipcode") == zipcode
+    assert virt.reply("zipcode") == zipcode
+
+def test_state():
+    state = (["right now, ",""],["you're in "],"${self.toolBox.locationData('region_name')[0]}",[", NN",""])
+    assert virt.reply("what state am i in") == state
+    assert virt.reply("what's my state") == state
+
+def test_city():
+    city = (["right now, ",""],["you're in ","your city is "],"${self.toolBox.locationData('city')[0]}",[", NN",""])
+    assert virt.reply("what city am i in") == city
+    assert virt.reply("what's my city") == city
+
+def test_country():
+    country = (["right now, ",""],["you're in ","your country is ","you're standing in the country of "],"${self.toolBox.locationData('country_name')[0]}",[", NN",""])
+    assert virt.reply("what country am i in") == country
+    assert virt.reply("what's my country") == country
+
+def test_timezone():
+    timezone = (["right now, ",""],["you're in the "],"${self.toolBox.locationData('time_zone')[0]}"," timezone")
+    assert virt.reply("what timezone am i in") == timezone
+    assert virt.reply("what's my time zone") == timezone
+
+def test_coordinates():
+    coordinates = (["right now, ",""],["you're at latitude/longitude "],"${'{}, {}'.format(*self.toolBox.locationData('latitude','longitude'))}")
+    assert virt.reply("what are my coordinates") == coordinates
+    assert virt.reply("what's my latitude") == coordinates
+    assert virt.reply("What's my longitude") == coordinates
+
+def test_my_ip():
+    my_ip = ("your ip address is ","${self.toolBox.locationData('query')[0]}",[", NN",""])
+    assert virt.reply("what's my ip") == my_ip
+    assert virt.reply("what's my ip address") == my_ip
