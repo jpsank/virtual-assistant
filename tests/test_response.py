@@ -685,3 +685,55 @@ def test_synonym():
     synonym = ("${self.toolBox.getSynonyms(self.match.group(1))}")
     assert virt.reply("synonyms of cat") == synonym
     assert virt.reply("synonym for dog") == synonym
+
+def test_translate_phrase():
+    translate_phrase = "${self.toolBox.translateTo(self.match.group(1),self.match.group(3),self.match.group(2))}"
+    assert virt.reply("translate hello from english to spanish") == translate_phrase
+    assert virt.reply("translate hola from spanish to english") == translate_phrase
+
+def test_translate():
+    translate = "${self.toolBox.translateTo(self.match.group(1),self.match.group(2))}"
+    assert virt.reply("translate english to spanish") == translate
+    assert virt.reply("translate italian to english") == translate
+
+def test_weather_outside():
+    weather_outside = ["${self.toolBox.weatherPrint()}"]
+    assert virt.reply("what's the weather like") == weather_outside
+    assert virt.reply("how's it outside") == weather_outside
+    assert virt.reply("what's it like outside") == weather_outside
+
+def test_humidity():
+    humidity = "${self.toolBox.weatherPrint('Humidity')}"
+    assert virt.reply("what's the humidity") == humidity
+    assert virt.reply("is it humid") == humidity
+    assert virt.reply("is it humid today") == humidity
+
+def test_temp():
+    temp = "${self.toolBox.weatherPrint('Temp.')}"
+    assert virt.reply("what's the temperature") == temp
+    assert virt.reply("how cold out") == temp
+
+def test_wind_pressure():
+    wind_pressure = "${self.toolBox.weatherPrint('Pressure')}"
+    assert virt.reply("what's the wind pressure") == wind_pressure
+    assert virt.reply("do you know the atmospheric pressure") == wind_pressure
+
+def test_wind():
+    wind = "${self.toolBox.weatherPrint('Wind')}"
+    assert virt.reply("wind") == wind
+    assert virt.reply("how is the wind") == wind
+
+def test_precipitation():
+    precipitation = "${self.toolBox.weatherPrint('Precip')}"
+    assert virt.reply("precipitation") == precipitation
+    assert virt.reply("how's the precipitation") == precipitation
+
+def test_dew_point():
+    dew_point = "${self.toolBox.weatherPrint('Dew Point')}"
+    assert virt.reply("dew point") == dew_point
+    assert virt.reply("what's the measure of the dew point") == dew_point
+
+def test_cloud_cover():
+    cloud_cover = "${self.toolBox.weatherPrint('Cloud Cover')}"
+    assert virt.reply("cloud cover") == cloud_cover
+    assert virt.reply("what's the cloud cover") == cloud_cover
