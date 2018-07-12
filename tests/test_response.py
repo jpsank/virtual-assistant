@@ -885,4 +885,167 @@ def test_nice_job():
 def test_deny_sarcastic():
     deny_sarcastic = ["I totally believe you","Hmm...","Sure...","If you say so"]
     assert virt.reply("that wasn't sarcasm") == deny_sarcastic
-    assert virt.reply("i'm not being sarcastic") == deny_sarcastic
+    assert virt.reply("not being sarcastic") == deny_sarcastic
+
+def test_question_sarcasm():
+    question_sarcasm = ["Everything is sarcasm, NN","Sure...","Not at all","Definitely not","No way",
+               "Sometimes I'm unintentionally sarcastic"]
+    assert virt.reply('was that sarcasm') == question_sarcasm
+
+def test_bad_job():
+    bad_job = ["I gotta set the standards low, NN","You can count on it, NN","Sure!","If you had expected less you wouldn't have been disappointed"]
+    assert virt.reply("bad job") == bad_job
+
+def test_tell_joke():
+    tell_joke = ["${self.toolBox.tellAJoke()}"]
+    assert virt.reply("tell me a joke") == tell_joke
+    assert virt.reply("make up a joke") == tell_joke
+
+def test_insult_me():
+    insult_me = ["${self.toolBox.insultMe()}"]
+    assert virt.reply("insult me") == insult_me
+
+def test_good_dog():
+    good_dog = ["woof woof!","purr!","I am","Yes you are, yes you are!"]
+    assert virt.reply("who's a good dog") == good_dog
+    assert virt.reply("good dog") == good_dog
+
+def test_good_cat():
+    good_cat = ["woof woof!","purr!","I am","Yes you are, yes you are!","meeeOW!"]
+    assert virt.reply("good cat") == good_cat
+    assert virt.reply("who's a good kitty") == good_cat
+
+def test_good_virt():
+    good_virt = ["I am","Indeed I am","That's me","You know it!"]
+    assert virt.reply("who's a good virtual assistant") == good_virt
+    assert virt.reply("good virtual assistant") == good_virt
+
+def test_who_is():
+    who_is = ["${self.toolBox.personLookup(self.match.group(1))}"]
+    assert virt.reply('who\'s Pablo?') == who_is
+    assert virt.reply('who\'re you talking about') == who_is
+
+def test_what_is_a():
+    what_is_a = ["${self.toolBox.whatIsLookup(self.match.group(1))}"]
+    assert virt.reply("what is a cat") == what_is_a
+    assert virt.reply("what's a dog") == what_is_a
+
+def test_hello():
+    hello = (['hello','what up','howdy','hi','salutations','greetings',"hiya","hey"],", NN")
+    assert virt.reply("hello") == hello
+    assert virt.reply("hi") == hello
+
+def test_why_not():
+    why_not = ["because I said not"]
+    assert virt.reply("awwww why not") == why_not
+    assert virt.reply("why not") == why_not
+
+def test_why():
+    why = ["because I said so"]
+    assert virt.reply("why?") == why
+    assert virt.reply("why") == why
+
+def test_oh_really():
+    oh_really = ["yes, really","nope"]
+    assert virt.reply("oh really") == oh_really
+    assert virt.reply("really") == oh_really
+
+def test_dont_ask():
+    dont_ask = ["don't ask what?","ask what, NN?"]
+    assert virt.reply("don't ask") == dont_ask
+
+def test_he_is():
+    he_is = ["who's ${self.match.group(1)}?","how ${self.match.group(1)}","very ${self.match.group(1)}"]
+    assert virt.reply("he's a dingbat") == he_is
+    assert virt.reply("he's a moron") == he_is
+
+def test_it_is():
+    it_is = ["what's ${self.match.group(1)}?","very ${self.match.group(1)}","that's ${self.match.group(1)}"]
+    assert virt.reply("it is stupid!") == it_is
+    assert virt.reply("it is wacky") == it_is
+
+def test_that_is():
+    that_is = ["no way is that ${self.match.group(1)}","it was very ${self.match.group(1)}"]
+    assert virt.reply("that's crazy") == that_is
+    assert virt.reply("that's insance") == that_is
+
+def test_are_you():
+    are_you = ["I am ${self.match.group(1)}","I am not ${self.match.group(1)}"]
+    assert virt.reply("are you a wizard") == are_you
+    assert virt.reply("are you a felon?") == are_you
+
+def test_what_do_you():
+    what_do_you =  (["you know what I ${self.match.group(1)}"],[", NN",""])
+    assert virt.reply("what do you do") == what_do_you
+    assert virt.reply("what do you eat with your salad") == what_do_you
+
+def test_who_do_you():
+    who_do_you = (["you should know who I ${self.match.group(1)}","I ${self.match.group(1)} everyone"],[", NN",""])
+    assert virt.reply("who do you know the best") == who_do_you
+    assert virt.reply("who do you trust") == who_do_you
+
+def test_when_do_you():
+    when_do_you = (["I ${self.match.group(1)} whenever I want","I ${self.match.group(1)} all day","I never ${self.match.group(1)}"],[", NN",""])
+    assert virt.reply("when do you shop at walmart") == when_do_you
+    assert virt.reply("when do you shower") == when_do_you
+
+def test_where_do_you():
+    where_do_you = (["I ${self.match.group(1)} all over the place","I ${self.match.group(1)} wherever you want"],[", NN",""])
+    assert virt.reply("where do you shop") == where_do_you
+    assert virt.reply("where do you dance") == where_do_you
+
+def test_potty_words():
+    potty_words = ["No fucking cursing"]
+    assert virt.reply("fuck yourself") == potty_words
+    assert virt.reply('damn it') == potty_words
+
+def test_insults():
+    insults = ["NN! Do not use that foul language in my presence","Insulting your only friend is unwise, NN"]
+    assert virt.reply("meanie!") == insults
+    assert virt.reply("idiot") == insults
+
+def test_yes_you_are():
+    yes_you_are = ["Yes I am!","Yes you are!","No I'm not"]
+    assert virt.reply("yes, you are") == yes_you_are
+    assert virt.reply("yes you are") == yes_you_are
+
+def test_celebrate():
+    celebrate = [r"self.celebrate()${self.match.group(1)}","yay${self.match.group(1)}"]
+    assert virt.reply("yay!") == celebrate
+    assert virt.reply("hooray") == celebrate
+
+def test_crying():
+    crying = ["WA WA WA","Have the onions got you?","Aww, is your lacrymal drainage system malfunctioning?"]
+    assert virt.reply("waaaaaaaa") == crying
+
+def test_ahh():
+    ahh = ["A${self.match.group(1)}h"]
+    assert virt.reply("AHHHHHHHHHHHHHHHHHHHHHH")
+
+def test_laughing():
+    laughing = ["It's not funny, NN"]
+    assert virt.reply("hahahahaha") == laughing
+    assert virt.reply("funny") == laughing
+
+def test_dude():
+    dude = ['dude']
+    assert virt.reply("dude") == dude
+
+def test_nice():
+    nice = ["very ${self.match.group(0)}","such ${self.match.group(0)}"]
+    assert virt.reply("nice") == nice
+    assert virt.reply("wow") == nice
+
+def test_okay():
+    okay = ["OK","okie dokie"]
+    assert virt.reply("okay") == okay
+    assert virt.reply("ok") == okay
+
+def test_sorry():
+    sorry = ["Don't be sorry, NN","You better be sorry!"]
+    assert virt.reply("sorry") == sorry
+
+def test_what():
+    what = ["what?","huh?","${self.match.group(0)} indeed"]
+    assert virt.reply("huh, what!") == what
+    assert virt.reply("huh") == what

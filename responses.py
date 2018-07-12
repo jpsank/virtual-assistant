@@ -601,9 +601,6 @@ for i in range(num):
      "reply": ["because I said not"]},
     {"input": [".*why(\?|\!)*\Z"],
      "reply": ["because I said so"]},
-
-    {"input": [".*i don't",".*i do not"],
-     "reply": ["I know you don't, NN", "you should"]},
     {"input": [".*i do"],
      "reply": ["I don't","no you don't","you do?"]},
 
@@ -620,16 +617,16 @@ for i in range(num):
     {"input": [r".*\bthat's (.+)"],
      "reply": ["no way is that ${self.match.group(1)}","it was very ${self.match.group(1)}"]},
 
-    {"input": [".*are you (.+)"],
+    {"input": ["are you (.+)"],
      "reply": ["I am ${self.match.group(1)}","I am not ${self.match.group(1)}"]},
 
-    {"input": [".*what do you (.+)"],
+    {"input": ["what do you (.+)"],
      "reply": (["you know what I ${self.match.group(1)}"],[", NN",""])},
-    {"input": [".*who do you (.+)"],
+    {"input": ["who do you (.+)"],
      "reply": (["you should know who I ${self.match.group(1)}","I ${self.match.group(1)} everyone"],[", NN",""])},
-    {"input": [".*when do you (.+)"],
+    {"input": ["when do you (.+)"],
      "reply": (["I ${self.match.group(1)} whenever I want","I ${self.match.group(1)} all day","I never ${self.match.group(1)}"],[", NN",""])},
-    {"input": [".*where do you (.+)"],
+    {"input": ["where do you (.+)"],
      "reply": (["I ${self.match.group(1)} all over the place","I ${self.match.group(1)} wherever you want"],[", NN",""])},
 
     # POTTY WORD DETECTION (SHIELD YOUR EYES)
@@ -666,9 +663,6 @@ for i in range(num):
 
     {"input": ["nice","great","wow"],
      "reply": ["very ${self.match.group(0)}","such ${self.match.group(0)}"]},
-
-    {"input": ["i'm not (.+)"],
-     "reply": (["You aren't ${self.match.group(1)}","You are ${self.match.group(1)}","if you say so"],[", NN",""])},
 
     {"input": ["okay","ok"],
      "reply": ["OK","okie dokie"]},
