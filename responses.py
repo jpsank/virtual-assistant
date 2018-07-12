@@ -607,6 +607,8 @@ for i in range(num):
      "reply": ["because I said not"]},
     {"input": [".*why(\?|\!)*\Z"],
      "reply": ["because I said so"]},
+    {"input": [".*i don't",".*i do not"],
+     "reply": ["I know you don't, NN", "you should"]},
     {"input": [".*i do"],
      "reply": ["I don't","no you don't","you do?"]},
 
@@ -669,6 +671,9 @@ for i in range(num):
 
     {"input": ["nice","great","wow"],
      "reply": ["very ${self.match.group(0)}","such ${self.match.group(0)}"]},
+    
+    {"input": ["i'm not (.+)"],
+     "reply": (["You aren't ${self.match.group(1)}","You are ${self.match.group(1)}","if you say so"],[", NN",""])},
 
     {"input": ["okay","ok"],
      "reply": ["OK","okie dokie"]},
