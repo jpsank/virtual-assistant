@@ -807,11 +807,6 @@ def test_coordinates():
     assert virt.reply("what's my latitude") == coordinates
     assert virt.reply("What's my longitude") == coordinates
 
-def test_my_ip():
-    my_ip = ("your ip address is ","${self.toolBox.locationData('query')[0]}",[", NN",""])
-    assert virt.reply("what's my ip") == my_ip
-    assert virt.reply("what's my ip address") == my_ip
-
 def test_liar():
     liar = ["I would never tell a lie","Not me"]
     assert virt.reply("are you a liar") == liar
@@ -1049,3 +1044,13 @@ def test_what():
     what = ["what?","huh?","${self.match.group(0)} indeed"]
     assert virt.reply("huh, what!") == what
     assert virt.reply("huh") == what
+
+def test_what_ip():
+    what_ip = ["${self.toolBox.getPublicIP()}"]
+    assert virt.reply("what's my public ip") == what_ip
+    assert virt.reply("what is my ip") == what_ip
+
+def test_local_ip():
+    local_ip = ["${self.toolBox.getLocalIP()}"]
+    assert virt.reply("what's my local ip") == local_ip
+    assert virt.reply("what's my private ip") == local_ip
