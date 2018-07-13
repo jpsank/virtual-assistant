@@ -67,16 +67,17 @@ else:
     if platform.system() == "Darwin":
         PREFERENCES.update({"afplay":False})
     # User initiation
-    print("Welcome to virtual-assistant setup, friend")
-    CONTACTS = PREFERENCES["contacts"]
-    print("Enter your nickname, or hit return and I'll keep calling you 'friend': ")
-    CONTACTS[0]["NN"] = input(secondaryCommandPrompt)
-    CONTACTS[0]["NN"] = CONTACTS[0]["NN"] if CONTACTS[0]["NN"] != '' else 'friend'
-    print("Okay, %s, here's some guidance:" % CONTACTS[0]["NN"])
-    print(" - At any time, you can tell me more about yourself and change your contact info")
-    print(" - You can also type 'help' if you get hopelessly lost or want to know what I can do")
-    PREFERENCES["contacts"] = CONTACTS
-    print("Setup complete")
+    if __name__ == '__main__':
+        print("Welcome to virtual-assistant setup, friend")
+        CONTACTS = PREFERENCES["contacts"]
+        print("Enter your nickname, or hit return and I'll keep calling you 'friend': ")
+        CONTACTS[0]["NN"] = input(secondaryCommandPrompt)
+        CONTACTS[0]["NN"] = CONTACTS[0]["NN"] if CONTACTS[0]["NN"] != '' else 'friend'
+        print("Okay, %s, here's some guidance:" % CONTACTS[0]["NN"])
+        print(" - At any time, you can tell me more about yourself and change your contact info")
+        print(" - You can also type 'help' if you get hopelessly lost or want to know what I can do")
+        PREFERENCES["contacts"] = CONTACTS
+        print("Setup complete")
 
 # Load responses
 if os.path.exists(currentDir+'/response_data.p') and mtime == float(PREFERENCES["mtime"]):
