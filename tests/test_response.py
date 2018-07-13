@@ -1,3 +1,6 @@
+import sys, os
+sys.path.append('{}/../'.format(os.path.dirname(os.path.abspath(__file__))))
+
 from main import VirtAssistant
 
 virt = VirtAssistant(test=True)
