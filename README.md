@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/puffyboa/virtual-assistant.svg?branch=master)](https://travis-ci.org/puffyboa/virtual-assistant)
+
 # virtual-assistant
 Text-based virtual assistant that tells you all you need to know (Python 3)
 
