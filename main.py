@@ -14,7 +14,6 @@ import threading
 import pickle
 import argparse
 from threading import Thread
-import readline
 
 import smtplib
 import imaplib
