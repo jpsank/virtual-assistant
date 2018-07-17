@@ -54,11 +54,11 @@ userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (Klxml
 
 currentDir = os.path.dirname(os.path.realpath(__file__))
 
-mtime = os.path.getmtime(currentDir+"/responses.py")
+mtime = os.path.getmtime(os.path.join(currentDir, "responses.py"))
 # Load preferences
-if os.path.exists(currentDir+"/preferences.json"):
+if os.path.exists(os.path.join(currentDir, "preferences.json")):
     # print("Fetching preferences...")
-    with open(currentDir+"/preferences.json", "r") as f:
+    with open(os.path.join(currentDir,  "preferences.json"), "r") as f:
         PREFERENCES = json.load(f)
 else:
     print("Generating preferences...")
@@ -79,27 +79,27 @@ else:
         print("Setup complete")
 
 # Load responses
-if os.path.exists(currentDir+'/response_data.p') and mtime == float(PREFERENCES["mtime"]):
+if os.path.exists(os.path.join(currentDir, 'response_data.p')) and mtime == float(PREFERENCES["mtime"]):
     # print("Fetching response data...")
-    with open(currentDir + '/response_data.p', 'rb') as f:
+    with open(os.path.join(currentDir, 'response_data.p'), 'rb') as f:
         RESPONSES = pickle.load(f)
 else:
     print("Generating response data...")
-    if os.path.exists(currentDir + '/response_data.p'): os.remove(currentDir + '/response_data.p')
+    if os.path.exists(os.path.join(currentDir, 'response_data.p')): os.remove(os.path.join(currentDir, 'response_data.p'))
     from responses import RESPONSES,offlineMode
     if not offlineMode:
-        with open(currentDir + '/response_data.p','wb') as f:
+        with open(os.path.join(currentDir, 'response_data.p'),'wb') as f:
             pickle.dump(RESPONSES,f)
     PREFERENCES["mtime"] = mtime
 
-with open(currentDir+"/preferences.json", "w") as f:
+with open(os.path.join(currentDir, "preferences.json"), "w") as f:
     json.dump(PREFERENCES,f)
 
 CONTACTS = PREFERENCES["contacts"]
 
 
 def save_preferences():
-    with open(currentDir + "/preferences.json", "w") as f:
+    with open(os.path.join(currentDir, "preferences.json"), "w") as f:
         json.dump(PREFERENCES, f)
 
 def save_contacts():
@@ -839,7 +839,7 @@ class toolBox:
             return random.choice(["Here's comic number %s" % number,"Opening comic number %s..." % number])
 
     def getHelp(self,key=None):
-        with open(currentDir+"/help.json", "r") as f:
+        with open(os.path.join(currentDir, "help.json"), "r") as f:
             helpData = json.load(f)
         if key is None:
             print("Here's what I can do:")
