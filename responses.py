@@ -29,8 +29,6 @@ def syn(word,amount=10,return_original=True):
             syns = [d.text for d in syns]
             if return_original: syns.append(word)
             return syns
-        else:
-            raise Exception("No synonyms grabbed for {}".format(word))
         #     print("logging", page.headers)
         #     with open("log.html", "w") as f:
         #         f.write(page.text)

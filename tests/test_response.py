@@ -931,7 +931,6 @@ def test_what_is_a():
 def test_hello():
     hello = (['hello','what up','howdy','hi','salutations','greetings',"hiya","hey"],", NN")
     assert virt.reply("hello") == hello
-    assert virt.reply("hi") == hello
 
 def test_why_not():
     why_not = ["because I said not"]
