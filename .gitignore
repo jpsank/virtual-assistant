@@ -210,3 +210,5 @@ response_data.p
 todo.txt
 
 .pytest_cache
+
+venv/

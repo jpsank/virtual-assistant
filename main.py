@@ -14,7 +14,6 @@ import threading
 import pickle
 import argparse
 from threading import Thread
-import readline
 
 import smtplib
 import imaplib
@@ -242,6 +241,28 @@ class toolBox:
             "Your public IP is {}, NN",
             "I found your public IP: {}",
         ]).format(ip)
+
+    def parseDate(self,date):
+        patterns = [r"(?:january|jan|february|feb|march|mar|april|apr|may|june|jun|july|jul|august|aug|september|sept|october|oct|november|nov|december|dec)(?:\d{1,2}(?:,? \d{4})?)?",
+                    r"(next)? (monday|mon|tuesday|tues|wednesday|wed|thursday|thurs|friday|fri|saturday|sat|sunday|sun)(?: next (week|month))?",
+                    r"((\d+)[-./](\d+)[-./](\d+))"]
+        day, month, year = None, None, None
+        now = datetime.now()
+        if re.search(patterns[1], date):
+            m = re.search(patterns[1], date)
+            timedate = m.group(0)
+        elif re.search(patterns[2], date):
+            m = re.search(patterns[2], date)
+            timedate = m.group(0)
+        elif re.search(patterns[3], date):
+            m = re.search(patterns[3], date)
+            timedate = datetime.strptime(m.group(0),"")
+        return datetime(day=day, month=month, year=year)
+
+    def daysUntil(self,future):
+        future = self.parseDate(future)
+        today = datetime.today().date()
+        return str(future - today)
 
     def thesaurus(self,word):
         url = "http://www.thesaurus.com/browse/%s" % word
@@ -640,17 +661,14 @@ class toolBox:
 
     def shunMode(self):
         print("Entering shun mode... beg for forgiveness required")
-        done = False
-        while not done:
+        while True:
             s = input(primaryCommandPrompt)
-            for e in [".*please",".*sorry"]:
-                if re.match(e,s):
-                    done = True
-                    break
-            if done:
-                print(random.choice(['So you came crawling back', 'There. I hope you have learned your lesson']))
+            if re.match(r"(.*please|.*sorry|.*i apologize|.*forgive me)",s):
+                print(random.choice(['So you came crawling back', 'There. I hope you have learned your lesson',
+                                     'I forgive you, NN']))
+                break
             else:
-                print("...")
+                print(random.choice(["...","....","Apologize","Waiting for apology..."]))
         print("Shun mode deactivated")
 
     def sleep(self, cmd):
@@ -1127,10 +1145,12 @@ class toolBox:
             prompt = self.promptANY("When should I remind you? (or 'cancel') ", cancel="cancel")
             return self.getReminderDate(prompt)
         result = []
-        if timeday is not None: result.append(timeday)
-        if timedate is not None: result.append(timedate)
+        if timeday is not None:
+            result.append(timeday)
+        if timedate is not None:
+            result.append(timedate)
         for p in patterns:
-            reminder = re.sub(p,"",reminder)
+            reminder = re.sub(p, "", reminder)
         return result, reminder
 
     def getReminderDatePAM(self,reminder):
@@ -1141,7 +1161,7 @@ class toolBox:
                     hrs, mins = rdate[0].split(":")
                     hrs, mins = int(hrs), int(mins)
                 elif rdate[0].isdigit():
-                    hrs, mins = int(rdate[0]),0
+                    hrs, mins = int(rdate[0]), 0
                 # rdate[0] = "{:02}:{:02}".format(hrs, mins)
                 if hrs <= 12:
                     currenthr = datetime.today().hour
@@ -1160,7 +1180,7 @@ class toolBox:
     def checkForAtRun(self):
         p = subprocess.Popen('launchctl list | grep "com.apple.atrun"', stdout=subprocess.PIPE, shell=True)
         output = p.stdout.read()
-        print("OUTPUT",output)
+        # print("OUTPUT",output)
         return False if output == "" else True
 
     def addReminder(self,reminder=None):
@@ -1196,7 +1216,7 @@ class toolBox:
         else:
             print("I won't add that to your reminders")
 
-    def removeReminder(self,index=None):
+    def removeReminder(self, index=None):
         if len(PREFERENCES["reminders"]) == 0:
             return "No reminders to remove"
         if index is not None:
@@ -1204,7 +1224,7 @@ class toolBox:
             if not 0 <= index < len(PREFERENCES["reminders"]):
                 return "You do not have that many reminders"
         else:
-            index = self.promptLIST(PREFERENCES["reminders"],"Which reminder to remove? (or 'cancel')",cancel="cancel")
+            index = self.promptLIST(PREFERENCES["reminders"], "Which reminder to remove? (or 'cancel')", cancel="cancel")
             if index is False:
                 return "Cancelled"
         reminder,job = PREFERENCES["reminders"][index]

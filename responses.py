@@ -194,11 +194,11 @@ RESPONSES = [
      "reply": ["I love the sea slug"]},
     {"input": [".* favorite holiday"],
      "reply": ["Crosswalk Safety Awareness Day!!"]},
-    {"input": [".*your favorite (.+)"],
+    {"input": [".*(?:your|you have a) favorite (.+)"],
      "reply": ['I have no favorite ${self.match.group(1)}',"I don't like to play favorites, NN"]},
 
     # HELP
-    {"input": ["help(?: on| for|) (?!me)(.+)"],
+    {"input": ["help(?: on| for|) (?:me with |me |)(?!me)(.+)"],
      "reply": ["${self.toolBox.getHelp(self.match.group(1))}"]},
     {"input": [".*help",".+(should|can) i ask you",".*i (should|can) ask you"],
      "reply": ["${self.toolBox.getHelp()}"]},
@@ -252,6 +252,10 @@ for i in range(num):
      "reply": ["${self.toolBox.getPublicIP()}"]},
     {"input": [".*(local|private) ip"],
      "reply": ["${self.toolBox.getLocalIP()}"]},
+
+    # how many days till
+    {"input": [".*(?:days|how long) (?:till|til|until) ((monday|tuesday|wednesday|thursday|friday))"],
+     "reply": ["${self.toolBox.daysUntil(self.match.group(1))}"]},
 
     # SEARCHING THE WEB
     # movies
@@ -838,6 +842,11 @@ for i in range(num):
     # dude
     {"input": ["dude"],
      "reply": ["dude"]},
+
+    {"input": ["stop it"],
+     "reply": ["Stop what","You stop it","Stop it yourself","Never"]},
+    {"input": ["stop"],
+     "reply": ["Stop what","You stop","Stop yourself","Never"]},
 
 
     {"input": ["nice","great","wow"],
