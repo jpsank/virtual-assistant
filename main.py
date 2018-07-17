@@ -89,6 +89,8 @@ else:
     if os.path.exists(currentDir + '/response_data.p'): os.remove(currentDir + '/response_data.p')
     from responses import RESPONSES,offlineMode
     if not offlineMode:
+        with open(currentDir + '/response_data.p', 'a'):
+            os.utime(currentDir + '/response_data.p', None)
         with open(currentDir + '/response_data.p','wb') as f:
             pickle.dump(RESPONSES,f)
     PREFERENCES["mtime"] = mtime
