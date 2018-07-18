@@ -1708,5 +1708,9 @@ if __name__ == '__main__':
         assistant = VirtAssistant()
         while True:
             text = input(primaryCommandPrompt)
+            st1=text.split()
+            for x in range(len(st1)):
+                st1[x]=(spell(st1[x]))
+            text=" ".join(str(x) for x in st1)    
             rep = assistant.reply(text)
             if rep is not '': print(rep)
