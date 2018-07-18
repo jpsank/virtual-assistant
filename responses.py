@@ -18,20 +18,18 @@ def offlineTest(url='https://www.github.com/', timeout=None):
 offlineMode = offlineTest()
 
 
-def syn(word,amount=10,return_original=True):
+def syn(word, amount=10, return_original=True):
     if offlineMode is False:
         url = "http://www.thesaurus.com/browse/{}".format(word)
-        page = session.get(url,allow_redirects=False,headers={"user-agent": "Mozilla/5.0"})  # session.get() is faster than requests.get()
-        soup = BeautifulSoup(page.text,"html.parser")
+        page = session.get(url, allow_redirects=True, headers={"User-Agent": "Mozilla/5.0"})
+        soup = BeautifulSoup(page.text, "html.parser")
         syns = soup.select('ul.css-97poog.er7jav80 > li > span.css-1s00u8u.e1s2bo4t2 > a')
         if syns:
             syns = syns if amount is None else syns[:amount]
             syns = [d.text for d in syns]
-            if return_original: syns.append(word)
+            if return_original:
+                syns.append(word)
             return syns
-        #     print("logging", page.headers)
-        #     with open("log.html", "w") as f:
-        #         f.write(page.text)
     return [word]
 
 
