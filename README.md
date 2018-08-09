@@ -1,8 +1,10 @@
 # virtual-assistant
 Text-based virtual assistant that tells you all you need to know (Python 3)
 
+[![Build Status](https://travis-ci.org/puffyboa/virtual-assistant.svg?branch=master)](https://travis-ci.org/puffyboa/virtual-assistant)
+
 ## Prerequisites
-You'll need the modules [beautifulsoup4](https://www.crummy.com/software/BeautifulSoup/bs4/doc/#installing-beautiful-soup) and [requests](http://docs.python-requests.org/en/master/user/install/), for web scraping.
+Install the modules with `pip install -r requirements.txt`
 
 ## Usage
 To start a session, type

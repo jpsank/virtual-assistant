@@ -54,11 +54,11 @@ userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (Klxml
 
 currentDir = os.path.dirname(os.path.realpath(__file__))
 
-mtime = os.path.getmtime(currentDir+"/responses.py")
+mtime = os.path.getmtime(os.path.join(currentDir, "responses.py"))
 # Load preferences
-if os.path.exists(currentDir+"/preferences.json"):
+if os.path.exists(os.path.join(currentDir, "preferences.json")):
     # print("Fetching preferences...")
-    with open(currentDir+"/preferences.json", "r") as f:
+    with open(os.path.join(currentDir,  "preferences.json"), "r") as f:
         PREFERENCES = json.load(f)
 else:
     print("Generating preferences...")
@@ -66,39 +66,40 @@ else:
     if platform.system() == "Darwin":
         PREFERENCES.update({"afplay":False})
     # User initiation
-    print("Welcome to virtual-assistant setup, friend")
-    CONTACTS = PREFERENCES["contacts"]
-    print("Enter your nickname, or hit return and I'll keep calling you 'friend': ")
-    CONTACTS[0]["NN"] = input(secondaryCommandPrompt)
-    CONTACTS[0]["NN"] = CONTACTS[0]["NN"] if CONTACTS[0]["NN"] != '' else 'friend'
-    print("Okay, %s, here's some guidance:" % CONTACTS[0]["NN"])
-    print(" - At any time, you can tell me more about yourself and change your contact info")
-    print(" - You can also type 'help' if you get hopelessly lost or want to know what I can do")
-    PREFERENCES["contacts"] = CONTACTS
-    print("Setup complete")
+    if __name__ == '__main__':
+        print("Welcome to virtual-assistant setup, friend")
+        CONTACTS = PREFERENCES["contacts"]
+        print("Enter your nickname, or hit return and I'll keep calling you 'friend': ")
+        CONTACTS[0]["NN"] = input(secondaryCommandPrompt)
+        CONTACTS[0]["NN"] = CONTACTS[0]["NN"] if CONTACTS[0]["NN"] != '' else 'friend'
+        print("Okay, %s, here's some guidance:" % CONTACTS[0]["NN"])
+        print(" - At any time, you can tell me more about yourself and change your contact info")
+        print(" - You can also type 'help' if you get hopelessly lost or want to know what I can do")
+        PREFERENCES["contacts"] = CONTACTS
+        print("Setup complete")
 
 # Load responses
-if os.path.exists(currentDir+'/response_data.p') and mtime == float(PREFERENCES["mtime"]):
+if os.path.exists(os.path.join(currentDir, 'response_data.p')) and mtime == float(PREFERENCES["mtime"]):
     # print("Fetching response data...")
-    with open(currentDir + '/response_data.p', 'rb') as f:
+    with open(os.path.join(currentDir, 'response_data.p'), 'rb') as f:
         RESPONSES = pickle.load(f)
 else:
     print("Generating response data...")
-    if os.path.exists(currentDir + '/response_data.p'): os.remove(currentDir + '/response_data.p')
+    if os.path.exists(os.path.join(currentDir, 'response_data.p')): os.remove(os.path.join(currentDir, 'response_data.p'))
     from responses import RESPONSES,offlineMode
     if not offlineMode:
-        with open(currentDir + '/response_data.p','wb') as f:
+        with open(os.path.join(currentDir, 'response_data.p'),'wb') as f:
             pickle.dump(RESPONSES,f)
     PREFERENCES["mtime"] = mtime
 
-with open(currentDir+"/preferences.json", "w") as f:
+with open(os.path.join(currentDir, "preferences.json"), "w") as f:
     json.dump(PREFERENCES,f)
 
 CONTACTS = PREFERENCES["contacts"]
 
 
 def save_preferences():
-    with open(currentDir + "/preferences.json", "w") as f:
+    with open(os.path.join(currentDir, "preferences.json"), "w") as f:
         json.dump(PREFERENCES, f)
 
 def save_contacts():
@@ -265,12 +266,14 @@ class toolBox:
         return str(future - today)
 
     def thesaurus(self,word):
-        url = "http://www.thesaurus.com/browse/%s" % word
-        page = requests.get(url)
-        soup = BeautifulSoup(page.text, "html.parser")
-        syns = soup.select('ul.css-97poog.er7jav80 > li > span.css-1s00u8u.e1s2bo4t2 > a')
+        url = "http://www.thesaurus.com/browse/{}".format(word)
+        page = requests.get(url, headers={"user-agent": "Mozilla/5.0"})
+        initial_state = re.search(r'<script>window\.INITIAL_STATE = (.+);</script>', page.text)
+        j = json.loads(initial_state.group(1))
+        posTabs = j['searchData']['tunaApiData']['posTabs']
+        syns = [s['term'] for s in posTabs[0]['synonyms']]
         if syns:
-            return [s.text for s in syns]
+            return syns
 
     def getSynonyms(self,word):
         word = re.sub("\?","",word)
@@ -857,7 +860,7 @@ class toolBox:
             return random.choice(["Here's comic number %s" % number,"Opening comic number %s..." % number])
 
     def getHelp(self,key=None):
-        with open(currentDir+"/help.json", "r") as f:
+        with open(os.path.join(currentDir, "help.json"), "r") as f:
             helpData = json.load(f)
         if key is None:
             print("Here's what I can do:")
