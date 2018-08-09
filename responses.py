@@ -3,6 +3,8 @@ import random
 from bs4 import BeautifulSoup
 import itertools
 import time
+import re
+import json
 
 session = requests.session()
 
@@ -18,15 +20,16 @@ def offlineTest(url='https://www.github.com/', timeout=None):
 offlineMode = offlineTest()
 
 
-def syn(word, amount=10, return_original=True):
+def syn(word,amount=10,return_original=True):
     if offlineMode is False:
         url = "http://www.thesaurus.com/browse/{}".format(word)
-        page = session.get(url, allow_redirects=True, headers={"User-Agent": "Mozilla/5.0"})
-        soup = BeautifulSoup(page.text, "html.parser")
-        syns = soup.select('ul.css-97poog.er7jav80 > li > span.css-1s00u8u.e1s2bo4t2 > a')
+        page = session.get(url,headers={"user-agent": "Mozilla/5.0"})  # session.get() is faster than requests.get()
+        initial_state = re.search(r'<script>window\.INITIAL_STATE = (.+);</script>', page.text)
+        j = json.loads(initial_state.group(1))
+        posTabs = j['searchData']['tunaApiData']['posTabs']
+        syns = [s['term'] for s in posTabs[0]['synonyms']]
         if syns:
             syns = syns if amount is None else syns[:amount]
-            syns = [d.text for d in syns]
             if return_original:
                 syns.append(word)
             return syns

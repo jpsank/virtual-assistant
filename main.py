@@ -244,12 +244,14 @@ class toolBox:
         ]).format(ip)
 
     def thesaurus(self,word):
-        url = "http://www.thesaurus.com/browse/%s" % word
-        page = requests.get(url)
-        soup = BeautifulSoup(page.text, "html.parser")
-        syns = soup.select('ul.css-97poog.er7jav80 > li > span.css-1s00u8u.e1s2bo4t2 > a')
+        url = "http://www.thesaurus.com/browse/{}".format(word)
+        page = requests.get(url, headers={"user-agent": "Mozilla/5.0"})
+        initial_state = re.search(r'<script>window\.INITIAL_STATE = (.+);</script>', page.text)
+        j = json.loads(initial_state.group(1))
+        posTabs = j['searchData']['tunaApiData']['posTabs']
+        syns = [s['term'] for s in posTabs[0]['synonyms']]
         if syns:
-            return [s.text for s in syns]
+            return syns
 
     def getSynonyms(self,word):
         word = re.sub("\?","",word)
