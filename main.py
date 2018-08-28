@@ -265,7 +265,7 @@ class toolBox:
             return random.choice(["Never heard of it", "I could not find any synonyms for %s, NN" % word])
 
     def weatherHourly(self,*keys):
-        r = requests.get("https://www.wunderground.com/hourly/{}/{}/{}".format(*self.locationData("region_code","city","zip_code")))
+        r = requests.get("https://www.wunderground.com/hourly/{}/{}/{}".format(*self.locationData("country","region","city")))
         page = BeautifulSoup(r.text,"html.parser")
         rows = page.select("table#hourly-forecast-table > tbody > tr")
         if rows:
@@ -289,7 +289,7 @@ class toolBox:
             return result
 
     def weatherCurrent(self,*keys):
-        r = requests.get("https://www.wunderground.com/hourly/{}/{}/{}".format(*self.locationData("region_code", "city", "zip_code")))
+        r = requests.get("https://www.wunderground.com/hourly/{}/{}/{}".format(*self.locationData("country","region", "city")))
         page = BeautifulSoup(r.text,"html.parser")
         rows = page.select("table#hourly-forecast-table tbody tr")
         if rows:
@@ -323,13 +323,13 @@ class toolBox:
             printColumns(self.weatherHourly())
 
     def locationData(self,*keys):
-        url = 'http://freegeoip.net/json'
+        url = 'https://ipinfo.io'
         r = requests.get(url)
         j = json.loads(r.text)
         return [j[k] if k in j else None for k in keys]
 
     def whereAmI(self):
-        city, region = self.locationData('city','region_name')
+        city, region = self.locationData('city','region')
         loc = ("" if city is "" else city+", ") + region
         return random.choice(["you're in ","your location is "])+loc+random.choice([", NN",""])
 
