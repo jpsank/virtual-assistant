@@ -26,6 +26,7 @@
   "shutdown":"Shutdown computer. Ex: 'shutdown'",
   "sing":"Play a nice song, Windows only. Ex: 'sing a song'",
   "sleep":"Suspend the computer. Ex: 'sleep'",
+  "stocks": "Get finance stats for given ticker. Ex: 'quote for AAPL', 'AAPL market cap'",
   "terminal":"Run a command in Terminal. Ex: 'run ls'",
   "terminal mode": "Open a terminal session. Ex: 'terminal mode'",
   "thesaurus":"Find synonyms of a word. Ex: 'Synonyms for silly', 'what's another word for window?'",

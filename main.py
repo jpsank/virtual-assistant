@@ -264,6 +264,52 @@ class toolBox:
         else:
             return random.choice(["Never heard of it", "I could not find any synonyms for %s, NN" % word])
 
+    def stockInfo(self,symbol):
+        r = requests.get("https://finance.yahoo.com/quote/"+symbol)
+        page = BeautifulSoup(r.text,"html.parser")
+        priceStats = page.select("#quote-header-info span")[1:3]
+        marketCap = page.select_one('[data-test="MARKET_CAP-value"]')
+        info = {"price": [s.text for s in priceStats],
+                "marketCap": marketCap.text if marketCap else None}
+        return info
+
+    def getStockPrice(self, symbol):
+        info = self.stockInfo(symbol)
+        if info["price"]:
+            price, change = info["pric"]
+
+            if change.startswith("+"):
+                return random.choice([
+                    "{} stock is up {} to ${}, NN".format(symbol.upper(), change, price),
+                    "{} price: ${} {}".format(symbol.upper(), price, change),
+                ])
+            else:
+                return random.choice([
+                    "{} stock is down {} to ${}, NN".format(symbol.upper(), change, price),
+                    "{} price: ${} {}".format(symbol.upper(), price, change),
+                ])
+        else:
+            return random.choice([
+                "Could not retrieve info for {}, julian".format(symbol.upper()),
+                "I could not find {}, julian".format(symbol.upper()),
+                "Unable to find ticker {}, julian".format(symbol.upper())
+            ])
+
+    def getStockMarketCap(self, symbol):
+        info = self.stockInfo(symbol)
+        if info["marketCap"]:
+            marketCap = info["marketCap"]
+            return random.choice([
+                "{} market cap is ${}, NN".format(symbol.upper(), marketCap),
+                "Market cap for {}: ${}".format(symbol.upper(), marketCap),
+            ])
+        else:
+            return random.choice([
+                "Could not retrieve info for {}, julian".format(symbol.upper()),
+                "I could not find {}, julian".format(symbol.upper()),
+                "Unable to find ticker {}, julian".format(symbol.upper())
+            ])
+
     def weatherHourly(self,*keys):
         r = requests.get("https://www.wunderground.com/hourly/{}/{}/{}".format(*self.locationData("country","region","city")))
         page = BeautifulSoup(r.text,"html.parser")
