@@ -266,27 +266,30 @@ class toolBox:
 
     def stockInfo(self,symbol):
         r = requests.get("https://finance.yahoo.com/quote/"+symbol)
-        page = BeautifulSoup(r.text,"html.parser")
-        priceStats = page.select("#quote-header-info span")[1:3]
-        marketCap = page.select_one('[data-test="MARKET_CAP-value"]')
-        info = {"price": [s.text for s in priceStats],
-                "marketCap": marketCap.text if marketCap else None}
-        return info
+        m = re.search("root\.App\.main = ({.+});",r.text)
+        if m:
+            j = json.loads(m.group(1))
+            if "QuoteSummaryStore" in j["context"]["dispatcher"]["stores"]:
+                return j["context"]["dispatcher"]["stores"]["QuoteSummaryStore"]
 
     def getStockPrice(self, symbol):
         info = self.stockInfo(symbol)
-        if info["price"]:
-            price, change = info["pric"]
-
-            if change.startswith("+"):
+        if info:
+            name = info["price"]["shortName"]
+            price = info["financialData"]["currentPrice"]["fmt"]
+            marketChange = info["price"]["regularMarketChange"]["fmt"]
+            marketChangePercent = info["price"]["regularMarketChangePercent"]["fmt"]
+            if marketChange.startswith("-"):
+                change = "{} ({})".format(marketChange,marketChangePercent)
                 return random.choice([
-                    "{} stock is up {} to ${}, NN".format(symbol.upper(), change, price),
-                    "{} price: ${} {}".format(symbol.upper(), price, change),
+                    "{} stock is down {} to ${}, NN".format(name, change, price),
+                    "{} price: ${} {}".format(name, price, change),
                 ])
             else:
+                change = "+{} (+{})".format(marketChange, marketChangePercent)
                 return random.choice([
-                    "{} stock is down {} to ${}, NN".format(symbol.upper(), change, price),
-                    "{} price: ${} {}".format(symbol.upper(), price, change),
+                    "{} stock is up {} to ${}, NN".format(name, change, price),
+                    "{} price: ${} {}".format(name, price, change),
                 ])
         else:
             return random.choice([
@@ -297,11 +300,13 @@ class toolBox:
 
     def getStockMarketCap(self, symbol):
         info = self.stockInfo(symbol)
-        if info["marketCap"]:
-            marketCap = info["marketCap"]
+        if info:
+            name = info["price"]["shortName"]
+            marketCap = info["price"]["marketCap"]
+            marketCap = "{} ({})".format(marketCap["longFmt"],marketCap["fmt"])
             return random.choice([
-                "{} market cap is ${}, NN".format(symbol.upper(), marketCap),
-                "Market cap for {}: ${}".format(symbol.upper(), marketCap),
+                "{} market cap is ${}, NN".format(name, marketCap),
+                "Market cap for {}: ${}".format(name, marketCap),
             ])
         else:
             return random.choice([

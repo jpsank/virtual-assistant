@@ -364,9 +364,9 @@ for i in range(num):
      "reply": "${self.toolBox.translateTo(self.match.group(1),self.match.group(2))}"},
 
     # stocks
-    {"input": [".*?(?:quote for|price of|price for) (\w{2,5})", ".*?(\w{2,5})(?:'s)? price"],
+    {"input": [".*?(?:quote for|price of|price for) (\w{1,5})", ".*?(\w{1,5})(?:'s)? price"],
      "reply": ('''${self.toolBox.getStockPrice(self.match.group(1))}''')},
-    {"input": [".*?market (?:cap|value|capitalization) (?:of|for) (\w{2,5})", ".*?(\w{2,5})(?:'s)? market (?:cap|value|capitalization)"],
+    {"input": [".*?market (?:cap|value|capitalization)(?: of| for|) (\w{1,5})", ".*?(\w{1,5})(?:'s)? market (?:cap|value|capitalization)"],
      "reply": ('''${self.toolBox.getStockMarketCap(self.match.group(1))}''')},
 
     # weather
