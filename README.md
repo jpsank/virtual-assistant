@@ -42,7 +42,7 @@ Things you can ask it:
  - Find cat food on Amazon
  - Send an email to johndoe@example.com
  - Check my mail
- -
+ - Quote for AAPL
 ```
 And much more!
 
