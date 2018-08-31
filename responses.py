@@ -84,7 +84,7 @@ RESPONSES = [
      "reply": ["${self.toolBox.removeReminder(self.match.group(1))}"]},
     {"input": [".*(?:remove|delete) a reminder"],
      "reply": ["${self.toolBox.removeReminder()}"]},
-    {"input": [".*(?:remove|delete)(?: all|) my reminders"],
+    {"input": [".*(?:remove|delete)(?: all|)(?: my|) reminders"],
      "reply": ["${self.toolBox.removeAllReminders()}"]},
     {"input": [".*my reminders","remind me"],
      "reply": ["${self.toolBox.listReminders()}"]},

@@ -1142,7 +1142,7 @@ class toolBox:
         return random.choice(["Searching Duck Duck Go for {}".format(search), "Ducking it!", "Searching for {}".format(search)])
 
     def getReminderDate(self,reminder):
-        patterns = [r"\s?(?:at |on )?(?:!in )((\d{1,2}(:\d{2})?) ?(pm|am|))",
+        patterns = [r"\s?(?:at |on )?(?<!in )((\d{1,2}(:\d{2})?) ?(pm|am|))",
                     r"next (?:week|month)",
                     r"(?:january|jan|february|feb|march|mar|april|apr|may|june|jun|july|jul|august|aug|september|sept|october|oct|november|nov|december|dec)(?:\d{1,2}(?:, \d{4})?)?",
                     r"(?:teatime|midnight|noon)",
@@ -1178,7 +1178,8 @@ class toolBox:
             timedate = "now + " + m.group(1)
         if timeday is None and timedate is None:
             prompt = self.promptANY("When should I remind you? (or 'cancel') ", cancel="cancel")
-            return self.getReminderDate(prompt)
+            if prompt:
+                return self.getReminderDate(prompt)
         result = []
         if timeday is not None: result.append(timeday)
         if timedate is not None: result.append(timedate)
@@ -1189,14 +1190,14 @@ class toolBox:
     def getReminderDatePAM(self,reminder):
         rdate, reminder = self.getReminderDate(reminder)
         if rdate:
-            if not rdate[0].endswith("pm") and not rdate[0].endswith("am") and (":" in rdate[0] or rdate[0].isdigit()):
+            if not rdate[0].endswith("pm") and not rdate[0].endswith("am"):
+                hrs, mins = None, None
                 if ":" in rdate[0]:
                     hrs, mins = rdate[0].split(":")
                     hrs, mins = int(hrs), int(mins)
                 elif rdate[0].isdigit():
                     hrs, mins = int(rdate[0]),0
-                # rdate[0] = "{:02}:{:02}".format(hrs, mins)
-                if hrs <= 12:
+                if hrs and mins and hrs <= 12:
                     currenthr = datetime.today().hour
                     if currenthr > 12:
                         choice = "pm"
@@ -1213,7 +1214,6 @@ class toolBox:
     def checkForAtRun(self):
         p = subprocess.Popen('launchctl list | grep "com.apple.atrun"', stdout=subprocess.PIPE, shell=True)
         output = p.stdout.read()
-        print("OUTPUT",output)
         return False if output == "" else True
 
     def addReminder(self,reminder=None):
@@ -1222,7 +1222,7 @@ class toolBox:
         if reminder is None:
             reminder = self.promptANY("What should I add to your reminders? ")
         if self.promptYN("Add '%s' to your reminders? " % reminder):
-            PREFERENCES["reminders"].append([reminder,None])
+            PREFERENCES["reminders"].append([reminder, None])
             save_preferences()
             print("I've added that to your reminders")
             if platform.system() == "Darwin":
@@ -1245,7 +1245,7 @@ class toolBox:
                         print(random.choice(["Okay, I won't make a popup reminder."]))
                 else:
                     print('Tip: to allow for scheduled reminders, run:')
-                    print('    sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.atrun.plist')
+                    print('    launchctl load -w /System/Library/LaunchDaemons/com.apple.atrun.plist')
         else:
             print("I won't add that to your reminders")
 
